@@ -22,14 +22,15 @@ app.use(im.cookieParser());
 //app.use(im.express.static(im.path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
-});
+});*/
 
 // error handlers
 
+/*
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -37,10 +38,10 @@ if (app.get('env') === 'development') {
     console.log('error ' + (err.status || 500))
 //    res.status(err.status || 500);
 
-/*    res.render('error', {
+/!*    res.render('error', {
       message: err.message,
       error: err
-    });*/
+    });*!/
   });
 }
 
@@ -49,11 +50,12 @@ if (app.get('env') === 'development') {
 app.use(function(err, req, res, next) {
   console.log('error ' + (err.status || 500))
   //res.status(err.status || 500);
-/*  res.render('error', {
+/!*  res.render('error', {
     message: err.message,
     error: {}
-  });*/
+  });*!/
 });
+*/
 
 
 module.exports = app;

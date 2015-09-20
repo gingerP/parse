@@ -7,6 +7,7 @@ module.exports = {
         handlers.forEach(function(handler) {
             express.use(handler.path, handler.mod);
         })
+        return this;
     }
 }
 
