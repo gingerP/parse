@@ -1,9 +1,6 @@
 var u = require('../utils');
 var c = require('../constants');
 var express = require('express');
-var xpath = require('xpath');
-var dom = require('xmldom').DOMParser;
-var request = require('request');
 var router = express.Router();
 
 var getter = {
