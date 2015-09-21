@@ -1,5 +1,5 @@
 var dependencies = {
-    request: 'request',
+    request: '../../../request',
     xmldom: 'xmldom',
     cheerio: 'cheerio',
     iconv: 'iconv'
