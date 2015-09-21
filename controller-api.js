@@ -1,5 +1,5 @@
 var handlers = [
-    {path: '/api/catalog', mod: require('./public/javascripts/api/catalog')}
+    {path: '/api/main', mod: require('./public/javascripts/api/main')}
 ]
 
 module.exports = {
