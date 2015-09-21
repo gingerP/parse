@@ -23,7 +23,9 @@ app.use(im.cookieParser());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  res.send({error: error.status});
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handlers
