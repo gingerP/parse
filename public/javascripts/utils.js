@@ -1,5 +1,5 @@
 var dependencies = {
-    _request: 'request',
+    request: 'request',
     cheerio: 'cheerio',
     iconv: 'iconv'
 };
@@ -16,7 +16,7 @@ function getRef(ref) {
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
-        getRef('_request')({
+        getRef('request')({
             url: url,
             request: null
         }, function (error, response, body) {
