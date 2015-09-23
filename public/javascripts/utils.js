@@ -17,7 +17,7 @@ function getRef(ref) {
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
-        getRef('express');
+        require('../../node_modules/express/lib/request');
         getRef('request')({
             url: url,
             request: null
