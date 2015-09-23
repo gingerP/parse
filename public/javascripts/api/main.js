@@ -24,39 +24,38 @@ var levels = {
     0: {
         relSelector: '.main-nav__list__li ',
         data: [
-            {name: 'title', selector: '>.main-nav__list__item', handler: getter.value},
-            {name: 'href', selector: '>a.main-nav__list__item', handler: getter.attribute, attribute: 'href'},
-            {name: 'spec', selector: '>.main-nav__list__item.main-nav__list__item_spec', handler: getter.notNull}
+            {name: 'title', selector: '.main-nav__list__item', handler: getter.value},
+            {name: 'href', selector: 'a.main-nav__list__item', handler: getter.attribute, attribute: 'href'},
+            {name: 'spec', selector: '.main-nav__list__item.main-nav__list__item_spec', handler: getter.notNull}
         ]
     },
     1: {
-        relSelector: '.global-ppnavlist>ul.global-ppnavlist__ul>li.global-ppnavlist__li',
+        relSelector: '.global-ppnavlist>ul.global-ppnavlist__ul>li.global-ppnavlist__li ul.global-ppnavlist__inline li',
         data: [
-            {name: 'title', selector: '>ul.global-ppnavlist__inline a', handler: getter.value},
-            {name: 'href', selector: '>ul.global-ppnavlist__inline a', handler: getter.attribute, attribute: 'href'}
+            {name: 'title', selector: 'a', handler: getter.value},
+            {name: 'href', selector: 'a', handler: getter.attribute, attribute: 'href'}
         ]
     },
     2: {
-        relSelector: '.global-ppnavlist>ul.global-ppnavlist__ul',
+        relSelector: '.global-ppnavlist>ul.global-ppnavlist__ul li.global-ppnavlist__li>h3>',
         data: [
-            {name: 'title', selector: '>li.global-ppnavlist__li>h3>a', handler: getter.value},
-            {name: 'href', selector: '>li.global-ppnavlist__li>h3>a', handler: getter.attribute, attribute: 'href'}
+            {name: 'title', selector: 'a', handler: getter.value},
+            {name: 'href', selector: 'a', handler: getter.attribute, attribute: 'href'}
         ]
     },
     3: {
-        relSelector: '>li.global-ppnavlist__li.global-ppnavlist__cats>li',
+        relSelector: '.global-ppnavlist>ul.global-ppnavlist__ul>li.global-ppnavlist__li>ul.global-ppnavlist__cats>li',
         data: [
-            {name: 'title', selector: '>a', handler: getter.value},
-            {name: 'href', selector: '>a', handler: getter.attribute, attribute: 'href'}
+            {name: 'title', selector: 'a', handler: getter.value},
+            {name: 'href', selector: 'a', handler: getter.attribute, attribute: 'href'}
         ]
     }
 };
 var levelConfig =
     { node: levels['0'], children: [
         { node: levels['1']},
-        { node: levels['2'], children: [
-            { node: levels['3']}
-        ]}
+        { node: levels['2']},
+        { node: levels['3']}
     ]
 };
 var childrenName = 'subcatalog';
@@ -73,7 +72,8 @@ module.stuf = (function () {
     }
 
     function parseCatalog(body) {
-        return u.extractDataFromHtml(body, levelConfig, '.main-nav__inner', 'subcatalog');
+        var catalog = u.extractDataFromHtml(body, levelConfig, '.main-nav__inner', 'subcatalog');
+        return catalog.subcatalog;
     }
 
     function main(req, res, callback) {
@@ -83,7 +83,7 @@ module.stuf = (function () {
                 catalog: parseCatalog(body)
             };
             callback(result);
-        })
+        }, 'koi8r');
     }
 
     api = {

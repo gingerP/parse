@@ -2,7 +2,8 @@ var dependencies = {
     request: 'request',
     cheerio: 'cheerio',
     iconv: 'iconv',
-    express: 'express'
+    express: 'express',
+    iconvLite: 'iconv-lite'
 };
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
@@ -17,9 +18,10 @@ function getRef(ref) {
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
+        getRef('iconvLite').extendNodeEncodings();
         getRef('request')({
             url: url,
-            request: null
+            encoding: encodeFrom
         }, function (error, response, body) {
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
@@ -69,8 +71,8 @@ module.exports = {
             var ddom = null;
             var ddata = null;
             if (cfgList && cfgList.length && pack.DOMList.length) {
-                for(var cfgIndex = 0; cfgIndex < cfgList.length; cfgIndex++) {
-                    for (var childIndex = 0; childIndex < pack.length; childIndex++) {
+                for (var childIndex = 0; childIndex < pack.DOMList.length; childIndex++) {
+                    for(var cfgIndex = 0; cfgIndex < cfgList.length; cfgIndex++) {
                         ddom = pack.DOMList[childIndex];
                         ddata = pack.itemList[childIndex];
                         iterateDom(ddom, ddata, cfgList[cfgIndex]);
