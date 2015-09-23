@@ -1,5 +1,5 @@
 var dependencies = {
-    request: 'request',
+    request: '../../node_modules/express/lib/request',
     cheerio: 'cheerio',
     iconv: 'iconv',
     express: 'express'
@@ -7,7 +7,7 @@ var dependencies = {
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
         try {
-            dependencies[ref] = require(ref);
+            dependencies[ref] = require(dependencies[ref]);
         } catch(e) {
             console.info(e.message);
         }
@@ -17,7 +17,6 @@ function getRef(ref) {
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
-        require('../../node_modules/express/lib/request');
         getRef('request')({
             url: url,
             request: null
