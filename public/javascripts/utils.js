@@ -1,18 +1,22 @@
 var dependencies = {
-    request: 'request',
+    _request: 'request',
     cheerio: 'cheerio',
     iconv: 'iconv'
 };
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
-        dependencies[ref] = require(ref);
+        try {
+            dependencies[ref] = require(ref);
+        } catch(e) {
+            console.info(e.message);
+        }
     }
     return dependencies[ref];
 }
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
-        getRef('request')({
+        getRef('_request')({
             url: url,
             request: null
         }, function (error, response, body) {
