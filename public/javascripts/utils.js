@@ -1,5 +1,5 @@
 var dependencies = {
-    request: '../../node_modules/express/lib/request',
+    request: 'request',
     cheerio: 'cheerio',
     iconv: 'iconv',
     express: 'express'
