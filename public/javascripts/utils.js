@@ -1,7 +1,8 @@
 var dependencies = {
     request: 'request',
     cheerio: 'cheerio',
-    iconv: 'iconv'
+    iconv: 'iconv',
+    express: 'express'
 };
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
@@ -16,6 +17,7 @@ function getRef(ref) {
 
 module.exports = {
     loadDom: function(url, callback, encodeFrom) {
+        getRef('express');
         getRef('request')({
             url: url,
             request: null
