@@ -44,7 +44,7 @@ var SampleApp = function() {
         if (typeof sig === "string") {
            console.log('%s: Received %s - terminating sample app ...',
                        Date(Date.now()), sig);
-           process.exit(1);
+           //process.exit(1);
         }
         console.log('%s: Node server stopped.', Date(Date.now()) );
     };

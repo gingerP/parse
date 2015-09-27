@@ -1,0 +1,11 @@
+{
+  "selectors": [
+    { "type": "sibl", "sel": "li", "pos": "+1|1|-1" },
+    { "type": "up", "sel": "li", "pos": "1"},
+    { "type": "down", "sel": "li" }
+  ],
+  "data": [
+    { "name": "title", "sel": "a", "handler": "val" },
+    { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+  ]
+}

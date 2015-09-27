@@ -1,0 +1,53 @@
+{
+  "levels": {
+    "0": {
+      "path": [
+        { "type": "down", "sel": ".b-main-pgs" }
+      ],
+      "data": [
+        { "name": "title", "sel": ".b-mpgs-header h2>a", "handler": "val" },
+        { "name": "href", "sel": ".b-mpgs-header h2>a", "handler": "attr", "attribute": "href" }
+      ]
+    },
+    "1": {
+      "path": [
+        { "type": "down", "sel": ".mpgs-col-2 .b-mpgs-items .mpgs-li-best" }
+      ],
+      "data": [
+        { "name": "title", "sel": "a", "handler": "val" },
+        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+      ]
+    },
+    "2": {
+      "path": [
+        { "type": "down", "sel": ".b-main-pgs"}
+      ],
+      "data": [
+        { "name": "title", "sel": ".b-mpgs-header .b-mpgs-cat .mpgs-cat-expin", "handler": "val" }
+      ]
+    },
+    "3": {
+      "path": [
+        { "type": "sibl", "pos": "+1", "sel": "ul.global-ppnavlist__cats" },
+        { "type": "down", "sel": "li" }
+      ],
+      "data": [
+        { "name": "title", "sel": "a", "handler": "val" },
+        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+      ]
+    }
+  },
+  "levelConfig": {
+    "node": "0",
+    "children": [
+      { "node": "1" },
+      { "node": "2" ,
+        "children": [
+          { "node": "3" }
+        ]
+      }
+    ]
+  },
+  "listKey": "products",
+  "parentSel": ".main-nav__inner"
+}

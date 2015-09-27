@@ -3,7 +3,8 @@ var dependencies = {
     cheerio: 'cheerio',
     iconv: 'iconv',
     express: 'express',
-    iconvLite: 'iconv-lite'
+    iconvLite: 'iconv-lite',
+    htmlToJson: './modules/htmlToJson'
 };
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
@@ -16,7 +17,7 @@ function getRef(ref) {
     return dependencies[ref];
 }
 
-module.exports = {
+var api = {
     loadDom: function(url, callback, encodeFrom) {
         getRef('iconvLite').extendNodeEncodings();
         getRef('request')({
@@ -41,32 +42,33 @@ module.exports = {
         var htmlParser = getRef('cheerio');
         return htmlParser.load(string);
     },
-    extractDataFromHtml: function(dom, cfg, mainSelector, childrenKey) {
-        var extract = function(dom, level) {
-            var objects = doc(level.relSelector, dom);
+    extractDataFromHtml: function (dom, cfg) {
+        var Parser = getRef('htmlToJson');
+        return new Parser().get(dom, cfg);
+    },
+    _extractDataFromHtml: function(dom, cfg, mainSelector, childrenKey) {
+        var doc = this.parseHtml(dom);
+        var html = doc(mainSelector, dom);
+        var result = {};
+        if (html.length) {
+            iterateDom(html[0], result, cfg.levelConfig);
+        }
+        return result;
+    },
+    _private: {
+        _parseExtract: function(dom, level) {
+            var objects = doc(level.down, dom);
             var res = [];
             for(var index = 0; index < objects.length; index++) {
-                res.push(handleData(objects[index], level.data));
+                res.push(this._parseHandleData(objects[index], level.data));
             }
             return {
                 DOMList: objects || [],
                 itemList: res,
             };
-        };
-        var handleData = function (dom, dataCfg) {
-            var result = {};
-            var cfg = null;
-            var name = null;
-            var children = null;
-            for (var cfgIndex = 0; cfgIndex < dataCfg.length; cfgIndex++) {
-                cfg = dataCfg[cfgIndex];
-                children = doc(cfg.selector, dom);
-                result[cfg.name] = cfg.handler(children, cfg, doc);
-            }
-            return result;
-        };
-        var iterateDom = function (dom, data, levelCfg) {
-            var pack = extract(dom, levelCfg.node);
+        },
+        _parseIterateDom: function (dom, data, levelCfg) {
+            var pack = this._parseExtract(dom, levelCfg.node);
             var cfgList = levelCfg.children;
             var ddom = null;
             var ddata = null;
@@ -80,13 +82,30 @@ module.exports = {
                 }
             }
             data[childrenKey] = pack.itemList;
-        };
-        var doc = this.parseHtml(dom);
-        var html = doc(mainSelector, dom);
-        var result = {};
-        if (html.length) {
-            iterateDom(html[0], result, cfg);
+        },
+        _parseHandleData: function (dom, dataCfg) {
+            var result = {};
+            var cfg = null;
+            var name = null;
+            var children = null;
+            for (var cfgIndex = 0; cfgIndex < dataCfg.length; cfgIndex++) {
+                cfg = dataCfg[cfgIndex];
+                children = doc(cfg.selector, dom);
+                result[cfg.name] = cfg.handler(children, cfg, doc);
+            }
+            return result;
         }
-        return result;
+    },
+    hasContent: function(obj) {
+        if (typeof(obj) == 'string') {
+            return obj != null && obj != '';
+        } else if (obj != null && this.isArray(obj)) {
+            return obj.length > 0;
+        } else if (typeof(obj) != 'undefined') {
+            return obj != null;
+        }
+        return false;
     }
 };
+
+module.exports = api;
