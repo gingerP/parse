@@ -11,6 +11,7 @@ module.stuf = (function () {
 
     function parseSections(body) {
         var sections = u.extractDataFromHtml(body, sectionCfg);
+        section.push('test');
         return sections;
     }
 
