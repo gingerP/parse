@@ -19,6 +19,7 @@ function getRef(ref) {
 
 var api = {
     loadDom: function(url, callback, encodeFrom) {
+        console.time('load');
         getRef('iconvLite').extendNodeEncodings();
         getRef('request')({
             url: url,
@@ -27,11 +28,10 @@ var api = {
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {
-                console.info("utils.loadDom: " + response.statusCode);
                 res = body;
             } else {
-                console.warn("utils.loadDom: " + response.statusCode);
             }
+            console.timeEnd('load');
             if (typeof(callback) == 'function') {
               //  callback(translator.convert(res).toString());
                 callback(res);
@@ -105,6 +105,12 @@ var api = {
             return obj != null;
         }
         return false;
+    },
+    isArray: function(obj) {
+        return Object.prototype.toString.call(obj) === '[object Array]';
+    },
+    cleanStr: function(str) {
+        return this.hasContent(str)? str.trim(): '';
     }
 };
 

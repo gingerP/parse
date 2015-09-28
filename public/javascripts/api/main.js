@@ -10,9 +10,8 @@ module.stuf = (function () {
     var api = null;
 
     function parseSections(body) {
-        /*var sections = u.extractDataFromHtml(body, sectionCfg);
-        return sections;*/
-        return [];
+        var sections = u.extractDataFromHtml(body, sectionCfg);
+        return sections;
     }
 
     function parseCatalog(body) {
@@ -21,7 +20,9 @@ module.stuf = (function () {
     }
 
     function main(req, res, callback) {
+        console.time('parse');
         u.loadDom(c.OZ_HOME, function(body) {
+            console.timeEnd('parse');
             var result = {
                 sections: parseSections(body),
                 catalog: parseCatalog(body)

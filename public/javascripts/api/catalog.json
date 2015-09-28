@@ -6,7 +6,7 @@
       ],
       "data": [
         { "name": "title", "sel": ".main-nav__list__item", "handler": "val" },
-        { "name": "href", "sel": "a.main-nav__list__item", "handler": "attr", "attribute": "href" },
+        { "name": "href", "sel": "a.main-nav__list__item", "handler": "attr", "attr": "href" },
         { "name": "spec", "sel": ".main-nav__list__item.main-nav__list__item_spec", "handler": "notNull" }
       ]
     },
@@ -16,7 +16,7 @@
       ],
       "data": [
         { "name": "title", "sel": "a", "handler": "val" },
-        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+        { "name": "href", "sel": "a", "handler": "attr", "attr": "href" }
       ]
     },
     "2": {
@@ -25,7 +25,7 @@
       ],
       "data": [
         { "name": "title", "sel": "a", "handler": "val" },
-        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+        { "name": "href", "sel": "a", "handler": "attr", "attr": "href" }
       ]
     },
     "3": {
@@ -35,7 +35,7 @@
       ],
       "data": [
         { "name": "title", "sel": "a", "handler": "val" },
-        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+        { "name": "href", "sel": "a", "handler": "attr", "attr": "href" }
       ]
     }
   },

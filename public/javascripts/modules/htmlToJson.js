@@ -8,7 +8,10 @@ HtmlToJson.prototype.get = function (domString, config) {
     this.levelCfg = config.levelConfig;
     this.levels = config.levels;
     this.listKey = config.listKey || "list";
-    return this._getData(this.$(config.parentSel));
+    console.time("extract");
+    var zzz = this._getData(this.$(config.parentSel));
+    console.timeEnd("extract");
+    return zzz;
 };
 
 HtmlToJson.prototype._initParser = function (domString) {
@@ -28,9 +31,9 @@ HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
     var children = levelsCfg.children;
     var listKey = level.listKey || this.listKey;
     if (pack.DOMList.length && children && children.length) {
-        pack.DOMList.each(function(i, DOM) {
-            var data = pack.objects[i];
-            children.forEach(function (child, i) {
+        children.forEach(function (child, i) {
+            pack.DOMList.each(function(i, DOM) {
+                var data = pack.objects[i];
                 data[listKey] = data[listKey] || [];
                 data[listKey] = data[listKey].concat(inst._iterateLevels(DOM, child));
             });
@@ -47,9 +50,12 @@ HtmlToJson.prototype._handleLevel = function (dom, level) {
     var pack = null;
     if (DOMNodes && DOMNodes.length) {
         DOMNodes.each(function(i, DOM) {
-            var data = inst._handleData(DOM, level.data);
-            if (data) {
-                dataObjects.push(data);
+            var valid = inst._handleFilter(DOM, level.filter);
+            if (valid) {
+                var data = inst._handleData(DOM, level.data);
+                if (data) {
+                    dataObjects.push(data);
+                }
             }
         })
     }
@@ -75,6 +81,18 @@ HtmlToJson.prototype._handlePath = function (dom, path) {
     return incorrect? null: stepsRes.pop();
 };
 
+HtmlToJson.prototype._handleFilter = function(DOM, filters) {
+    var result = true;
+    var $ = this.$;
+    if (filters && filters.length) {
+        filters.forEach(function (filter, i) {
+            result = result && !!$(filter.sel, DOM).length;
+            return result;
+        })
+    }
+    return result;
+};
+
 HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
     var $ = this.$;
     var inst = this;
@@ -82,9 +100,12 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
     var cfg = null;
     var name = null;
     dataCfg.forEach(function (cfg, i) {
-        var children = $(cfg.sel, DOM);
+        var children = DOM;
+        if (u.hasContent(cfg.sel)) {
+            children = $(cfg.sel, DOM);
+        }
         var handler = inst._dataHandlers[cfg.handler];
-        result[cfg.name] = handler(children, cfg, $);
+        result[cfg.name] = handler(children, cfg, $, inst);
     });
     return result;
 };
@@ -162,25 +183,58 @@ HtmlToJson.prototype._pathHandlers = {
         return result;
     },
     down: function(dom, step, $) {
-        return $(step.sel, dom);
+        var sel = step.sel;
+        if (u.isArray(step.sel)) {
+            sel = step.sel.join(',');
+        }
+        return $(sel, dom);
     }
 };
 
 HtmlToJson.prototype._dataHandlers = {
     val: function(dom, cfg, $) {
-        return $(dom).text();
+        if (dom) {
+            return u.cleanStr($(dom).text());
+        }
+        return '';
     },
     attr: function(dom, cfg, $) {
         if (dom) {
-            return $(dom).attr(cfg.attribute);
+            return u.cleanStr($(dom).attr(cfg.attr));
         }
         return '';
     },
     notNull: function(dom, cfg, $) {
-        return !!dom.length;
+        if (dom) {
+            return !!dom.length;
+        }
+        return false;
     },
     htmlStr: function(dom, cfg, $) {
-        return $(dom).text();
+        if (dom) {
+            return u.cleanStr($(dom).text());
+        }
+        return '';
+    },
+    style: function(dom, cfg, $, inst) {
+        var attrVal = null;
+        var style = cfg.style;
+        var handlers = inst._styleHandlers;
+        if (dom && typeof(handlers[style]) == 'function') {
+            attrVal = $(dom).attr("style");
+            return handlers[style](attrVal);
+        }
+        return '';
+    }
+};
+
+HtmlToJson.prototype._styleHandlers = {
+    backgroundUrl: function(style) {
+        var matches = /url\('(.*)'\)/g.exec(style);
+        if (matches && matches.length > 1) {
+            return matches[1];
+        }
+        return '';
     }
 };
 

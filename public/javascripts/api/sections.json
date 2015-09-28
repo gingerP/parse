@@ -2,38 +2,39 @@
   "levels": {
     "0": {
       "path": [
-        { "type": "down", "sel": ".b-main-pgs" }
+        { "type": "down", "sel": ".b-main-pgs.h-mpgs-grid-1" }
       ],
       "data": [
-        { "name": "title", "sel": ".b-mpgs-header h2>a", "handler": "val" },
-        { "name": "href", "sel": ".b-mpgs-header h2>a", "handler": "attr", "attribute": "href" }
+        { "name": "title", "sel": ".b-mpgs-header>h2>a", "handler": "val" }
       ]
     },
     "1": {
+      "filter": [
+        { "sel": "div.in"}
+      ],
       "path": [
-        { "type": "down", "sel": ".mpgs-col-2 .b-mpgs-items .mpgs-li-best" }
+        { "type": "down", "sel": [".mpgs-col-2 .b-mpgs-items .listatic", ".mpgs-col-2 .b-mpgs-items .ligoods"] }
       ],
       "data": [
-        { "name": "title", "sel": "a", "handler": "val" },
-        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+        { "name": "title", "sel": ".in>.ph>a", "handler": "attr", "attr": "title" },
+        { "name": "href", "sel": ".in>.ph>a", "handler": "attr", "attr": "href" },
+        { "name": "image_url", "sel": ".in>.ph>a>img", "handler": "attr", "attr": "src" },
+        { "name": "author", "sel": ".in>.author>span", "handler": "val"},
+        { "name": "discount", "sel": ".in>.cost>.discount", "handler": "val"},
+        { "name": "price", "sel": ".in>.cost>a:last-child", "handler": "val"}
       ]
     },
     "2": {
+      "filter": [
+        { "sel": "a.mpg-teas" }
+      ],
       "path": [
-        { "type": "down", "sel": ".b-main-pgs"}
+        { "type": "down", "sel": ".mpgs-col-2 .b-mpgs-items .listatic" }
       ],
       "data": [
-        { "name": "title", "sel": ".b-mpgs-header .b-mpgs-cat .mpgs-cat-expin", "handler": "val" }
-      ]
-    },
-    "3": {
-      "path": [
-        { "type": "sibl", "pos": "+1", "sel": "ul.global-ppnavlist__cats" },
-        { "type": "down", "sel": "li" }
-      ],
-      "data": [
-        { "name": "title", "sel": "a", "handler": "val" },
-        { "name": "href", "sel": "a", "handler": "attr", "attribute": "href" }
+        { "name": "title", "sel": "a", "handler": "attr", "attr": "title" },
+        { "name": "image_url", "sel": "a", "handler": "style", "style": "backgroundUrl", "formatter": "backgroundUrl"},
+        { "name": "href", "sel": "a", "handler": "attr", "attr": "href" }
       ]
     }
   },
@@ -41,13 +42,9 @@
     "node": "0",
     "children": [
       { "node": "1" },
-      { "node": "2" ,
-        "children": [
-          { "node": "3" }
-        ]
-      }
+      { "node": "2" }
     ]
   },
   "listKey": "products",
-  "parentSel": ".main-nav__inner"
+  "parentSel": ".middle"
 }
