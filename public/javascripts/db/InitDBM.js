@@ -14,6 +14,7 @@ InitDBM.prototype = Object.create(DBM.prototype);
 InitDBM.prototype.constructor = InitDBM;
 
 InitDBM.prototype.validate = function() {
+    console.info('Begin validation');
     var inst = this;
     this.exec(function(db) {
         inst.validateCollections(db)
@@ -43,6 +44,7 @@ InitDBM.prototype.validateCollections = function(db) {
 };
 
 InitDBM.prototype.initConfigs = function(db) {
+    console.log('Validate init data...');
     var configDBM = new ConfigDBM();
     configDBM.insert(catalogCfg);
     configDBM.insert(sectionsCfg);
