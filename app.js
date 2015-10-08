@@ -11,10 +11,10 @@ var im = {
 var app = im.express();
 //Init DB
 console.info("Init DB");
-new im.InitDB().validate(function() {
+/*new im.InitDB().validate(function() {
     console.info("Init DB data");
-    im.env.init();
-});
+});*/
+im.env.init();
 //
 var controllerApi = require('./controller-api').init(app);
 // view engine setup

@@ -10,7 +10,7 @@ ParseDataDBM.prototype.getCollectionName = function() {
 };
 
 ParseDataDBM.prototype.update = function(data, callback) {
-    this._update({code: { $eq: data.code} }, data);
+    this._update({code: data.code}, data, callback);
 };
 
 ParseDataDBM.prototype.getEntity = function(criteria, callback) {

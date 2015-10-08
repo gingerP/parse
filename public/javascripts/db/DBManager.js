@@ -143,8 +143,6 @@ DBManager.prototype._getDBUrl = function() {
             process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
             process.env.OPENSHIFT_APP_NAME;
     }
-    console.log('sysUrl: ' + sysUrl);
-    console.log('url: ' + url);
     return sysUrl;
 };
 
