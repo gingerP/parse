@@ -14,6 +14,10 @@ ScheduleDBM.prototype.list = function(callback) {
     }
 };
 
+ScheduleDBM.prototype.insert = function(doc, callback) {
+    this._insert(doc, callback);
+};
+
 ScheduleDBM.prototype.saveEntity = function(doc, callback) {
     this._save(doc, callback);
 };
