@@ -4,7 +4,7 @@ var dependencies = {
     iconv: 'iconv',
     express: 'express',
     iconvLite: 'iconv-lite',
-    htmlToJson: './modules/htmlToJson'
+    htmlToJson: './modules/HtmlToJson'
 };
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
@@ -42,9 +42,15 @@ var api = {
         var htmlParser = getRef('cheerio');
         return htmlParser.load(string);
     },
-    extractDataFromHtml: function (dom, cfg) {
+    extractDataFromHtml: function (dom, cfg, callback) {
         var Parser = getRef('htmlToJson');
-        return new Parser().get(dom, cfg);
+        if (typeof(callback) == 'function') {
+            setTimeout(function() {
+                callback(new Parser().get(dom, cfg));
+            }, 0)
+        } else {
+            return new Parser().get(dom, cfg);
+        }
     },
     _extractDataFromHtml: function(dom, cfg, mainSelector, childrenKey) {
         var doc = this.parseHtml(dom);
@@ -111,6 +117,66 @@ var api = {
     },
     cleanStr: function(str) {
         return this.hasContent(str)? str.trim(): '';
+    },
+    linkRequestsToModule: function(routes, module, router) {
+        routes.forEach(function(rout) {
+            router.get(rout.path, (function() {
+                var rt = rout;
+                return function(req, res) {
+                    try {
+                        if (rt.async) {
+                            module[rt.method](req, res, function (data) {
+                                res.send(api.wrapResponse(data));
+                            })
+                        } else {
+                            res.send(api.wrapResponse(module[rt.method](req, res)));
+                        }
+                    } catch(e) {
+                        res.send(api.wrapResponse(null, e, res));
+                    }
+                }
+            })())
+        })
+    },
+    wrapResponse: function(data, error, response) {
+        var reqPath = null;
+        if (typeof(error) != 'undefined') {
+            reqPath  = response.req.originalUrl;
+            console.error('ERROR REQUEST ' + reqPath + ': ' + error);
+            return {
+                onError: error.message
+            }
+        } else {
+            return {
+                onSuccess: data
+            }
+        }
+    },
+    /*
+     * Recursively merge properties of two objects
+     */
+    merge: function(obj1, obj2) {
+        for (var p in obj2) {
+            try {
+                // Property in destination object set; update its value.
+                if ( obj2[p].constructor==Object ) {
+                    obj1[p] = this.merge(obj1[p], obj2[p]);
+
+                } else {
+                    obj1[p] = obj2[p];
+
+                }
+
+            } catch(e) {
+                // Property in destination object not set; create it and set its value.
+                obj1[p] = obj2[p];
+
+            }
+        }
+        return obj1;
+    },
+    getCfg: function(configName) {
+        return require('./dataConfigs/' + configName);
     }
 };
 

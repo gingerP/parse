@@ -12,7 +12,9 @@
     "morgan": "~1.6.1",
     "serve-favicon": "~2.3.0",
     "htmlparser2": "3.8.3",
-    "cheerio": "0.19.0"
+    "cheerio": "0.19.0",
+    "mongodb": "2.0.45",
+    "schedule": "0.1.0"
   },
   "scripts": {
     "vutils": "./public/javascripts/utils"

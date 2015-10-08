@@ -51,5 +51,6 @@
     ]
   },
   "listKey": "subcatalog",
-  "parentSel": ".main-nav__inner"
+  "parentSel": ".main-nav__inner",
+  "code": "catalog"
 }

@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "pass": "NnGXEIvmILdr",
+  "driver": "mongodb",
+  "host": "localhost",
+  "port": "27017",
+  "dbName": "parse"
+}
