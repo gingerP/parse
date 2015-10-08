@@ -128,12 +128,24 @@ DBManager.prototype._list = function(callback) {
 };
 
 DBManager.prototype._getDBUrl = function() {
-    return 'mongodb://'
+    var url= 'mongodb://'
         + cfg.user + ':'
         + cfg.pass + '@'
         + cfg.host + ':'
         + cfg.port + '/'
         + cfg.dbName;
+    var sysUrl = null;
+    if (process.env.OPENSHIFT_MONGODB_DB_PASSWORD) {
+        sysUrl = 'mongodb://' +
+            process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
+            process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
+            process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
+            process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
+            process.env.OPENSHIFT_APP_NAME;
+    }
+    console.log('sysUrl: ' + sysUrl);
+    console.log('url: ' + url);
+    return url;
 };
 
 module.exports = DBManager;
