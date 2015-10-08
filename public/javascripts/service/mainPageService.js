@@ -1,8 +1,5 @@
 var u = require('../utils');
 var c = require('../constants');
-var cache = require('../cache');
-var catalogCfg = require('../.././catalog.json');
-var sectionCfg = require('../.././sections.json');
 var DataDBM = require('../db/ParseDataDBManager');
 
 module.exports = (function () {
