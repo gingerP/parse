@@ -36,8 +36,8 @@ DBManager.prototype.exec = function(callback) {
     if (!this.connection) {
         bongo.connect(this._getDBUrl(), function (error, db) {
             console.timeEnd('connect');
-            console.log('NEW connection is established!');
             assert.equal(null, error);
+            console.log('NEW connection is established!');
             inst.connection = db;
             callback(inst.connection, error);
         });
