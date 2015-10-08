@@ -52,5 +52,6 @@
   },
   "listKey": "subcatalog",
   "parentSel": ".main-nav__inner",
-  "code": "catalog"
+  "code": "catalog",
+  "url": "http://oz.by/"
 }

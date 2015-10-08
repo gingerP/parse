@@ -11,7 +11,7 @@ env = (function() {
     }
 
     function init() {
-/*        var catalogSchedule = scheduleService.createNewEntity({
+        var catalogSchedule = scheduleService.createNewEntity({
             period: '2m',
             lastTimeStart: null,
             lastTimeEnd: null,
@@ -23,24 +23,24 @@ env = (function() {
             lastTimeEnd: null,
             configCode: 'sections'
         });
-        scheduleService.saveEntity(catalogSchedule, function() {
-            scheduleService.saveEntity(sectionsSchedule, function() {
+        scheduleService.update(catalogSchedule, function() {
+            scheduleService.update(sectionsSchedule, function() {
+                scheduleService.startAllSchedules(function(list) {
+                    var count = null;
+                    if (list && list.length) {
+                        count = list.length;
+                        list.forEach(function(shedule) {
+                            var executor = new ScheduleParseExecutor().init(shedule, function() {
+                                count--;
+                                if (count == 0) {
+                                    _start();
+                                }
+                            });
+                            executors.push(executor);
+                        })
+                    }
+                });
             });
-        });*/
-        scheduleService.startAllSchedules(function(list) {
-            var count = null;
-            if (list && list.length) {
-                count = list.length;
-                list.forEach(function(shedule) {
-                    var executor = new ScheduleParseExecutor().init(shedule, function() {
-                        count--;
-                        if (count == 0) {
-                            _start();
-                        }
-                    });
-                    executors.push(executor);
-                })
-            }
         });
 
     }

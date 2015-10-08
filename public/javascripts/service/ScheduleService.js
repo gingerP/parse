@@ -36,7 +36,7 @@ scheduleModule = (function() {
             return entity;
         },
         saveEntity: function(entity, callback) {
-            scheduleDBM.saveEntity(entity, callback);
+            scheduleDBM.update(entity, callback);
         },
         saveEntities: function(entities) {
             scheduleDBM.saveEntities(entities);
