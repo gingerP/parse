@@ -1,7 +1,6 @@
 var DBM = require('./DBManager');
 var ConfigDBM = require('./ParseConfigDBManager');
-var catalogCfg = require('../dataConfigs/catalog.json');
-var sectionsCfg = require('../dataConfigs/sections.json');
+var ScheduleDBM = require('./ScheduleDBM');
 function InitDBM() {
     this.collections = [
         'parse_configs',
@@ -13,12 +12,12 @@ function InitDBM() {
 InitDBM.prototype = Object.create(DBM.prototype);
 InitDBM.prototype.constructor = InitDBM;
 
-InitDBM.prototype.validate = function() {
+InitDBM.prototype.validate = function(callback) {
     console.info('Begin validation');
     var inst = this;
     this.exec(function(db) {
         inst.validateCollections(db)
-            .initConfigs(db)
+            .initData(db, callback)
     })
 };
 
@@ -43,11 +42,26 @@ InitDBM.prototype.validateCollections = function(db) {
     return this;
 };
 
-InitDBM.prototype.initConfigs = function(db) {
-    console.log('Validate init data...');
+InitDBM.prototype.initData = function(db, callback) {
+    var check = function() {
+        index--;
+        if (index == 0 && typeof(callback) == 'function') {
+            callback();
+        }
+    };
     var configDBM = new ConfigDBM();
-    configDBM.update(catalogCfg);
-    configDBM.update(sectionsCfg);
+    var scheduleDBM = new ScheduleDBM();
+    var catalogCfg = require('../../../init/catalog.json');
+    var sectionsCfg = require('../../../init/sections.json');
+    var schedules = require('../../../init/schedules.json');
+    var index = 1 + 1 + schedules.length;
+
+    console.log('Validate init data...');
+    configDBM.update(catalogCfg, check);
+    configDBM.update(sectionsCfg, check);
+    schedules.forEach(function(sched) {
+        scheduleDBM.update(sched, check);
+    });
     return this;
 };
 module.exports = InitDBM;

@@ -74,9 +74,9 @@ DBManager.prototype._getDoc = function(criteria, callback) {
     });
 };
 
-DBManager.prototype._save = function(doc, callback) {
+DBManager.prototype._save = function(doc, callback, criteria) {
     if (doc._id) {
-        this._update(doc, callback);
+        this._update(criteria, doc, callback);
     } else {
         this._insert(doc, callback);
     }

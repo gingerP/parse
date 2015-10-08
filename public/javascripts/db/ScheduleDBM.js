@@ -22,4 +22,12 @@ ScheduleDBM.prototype.saveEntities = function(docs, callback) {
     this._saveEntities(docs, callback);
 };
 
+ScheduleDBM.prototype.update = function(doc, callback) {
+    this._update({
+        configCode: {
+            $eq: doc.configCode
+        }
+    }, callback);
+};
+
 module.exports = ScheduleDBM;

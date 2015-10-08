@@ -10,8 +10,9 @@ var im = {
 }
 var app = im.express();
 //Init DB
-new im.InitDB().validate();
-im.env.init();
+new im.InitDB().validate(function() {
+    im.env.init();
+});
 //
 var controllerApi = require('./controller-api').init(app);
 // view engine setup
