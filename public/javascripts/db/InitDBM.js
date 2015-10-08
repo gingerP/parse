@@ -57,10 +57,10 @@ InitDBM.prototype.initData = function(db, callback) {
     var index = 1 + 1 + schedules.length;
 
     console.log('Validate init data...');
-    configDBM.update(catalogCfg, check);
-    configDBM.update(sectionsCfg, check);
+    configDBM.insert(catalogCfg, check);
+    configDBM.insert(sectionsCfg, check);
     schedules.forEach(function(sched) {
-        scheduleDBM.update(sched, check);
+        scheduleDBM.insert(sched, check);
     });
     return this;
 };
