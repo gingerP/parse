@@ -145,7 +145,7 @@ DBManager.prototype._getDBUrl = function() {
     }
     console.log('sysUrl: ' + sysUrl);
     console.log('url: ' + url);
-    return url;
+    return sysUrl;
 };
 
 module.exports = DBManager;
