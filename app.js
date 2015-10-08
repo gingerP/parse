@@ -10,7 +10,9 @@ var im = {
 }
 var app = im.express();
 //Init DB
+console.info("Init DB");
 new im.InitDB().validate(function() {
+    console.info("Init DB data");
     im.env.init();
 });
 //
