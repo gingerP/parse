@@ -46,8 +46,8 @@ InitDBM.prototype.validateCollections = function(db) {
 InitDBM.prototype.initConfigs = function(db) {
     console.log('Validate init data...');
     var configDBM = new ConfigDBM();
-    configDBM.insert(catalogCfg);
-    configDBM.insert(sectionsCfg);
+    configDBM.update(catalogCfg);
+    configDBM.update(sectionsCfg);
     return this;
 };
 module.exports = InitDBM;
