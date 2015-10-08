@@ -1,4 +1,4 @@
-var cfg = require('../../db');
+var cfg = require('../../openshift');
 var bongo = require('mongodb');
 var assert = require('assert');
 var messages = {
