@@ -24,9 +24,11 @@ module.stuf = (function () {
                     callback(result);
                 }
             });
+            console.time('catalog');
             service.getCatalog(function(data) {
                 result.catalog = data;
                 index--;
+                console.time('catalog');
                 if (!index) {
                     callback(result);
                 }

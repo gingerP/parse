@@ -1,0 +1,8 @@
+{
+  "user": "ozParse",
+  "pass": "ozParse",
+  "driver": "mongodb",
+  "host": "localhost",
+  "port": "27017",
+  "dbName": "local"
+}

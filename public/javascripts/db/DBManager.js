@@ -1,4 +1,4 @@
-var cfg = require('../../openshift');
+var cfg = require('../../db');
 var bongo = require('mongodb');
 var assert = require('assert');
 var messages = {
@@ -56,17 +56,14 @@ DBManager.prototype._getDoc = function(criteria, callback) {
     var collName = this.getCollectionName();
     validate.collectionName(collName);
     validate.criteria(criteria);
-    console.time('_getDoc');
     this.exec(function(db) {
-        console.timeEnd('_getDoc');
-        console.time('_getDoc_extract');
+
         var cursor = db.collection(collName).find(criteria, function(error, cursor) {
             cursor.next(function(error, doc) {
                 if (error) {
                     console.log(error);
                     callback({})
                 } else if (typeof(callback) == 'function') {
-                    console.timeEnd('_getDoc_extract');
                     callback(doc);
                 }
             })
@@ -144,6 +141,7 @@ DBManager.prototype._getDBUrl = function() {
             process.env.OPENSHIFT_APP_NAME;
     }
     return sysUrl;
+    /*return url;*/
 };
 
 module.exports = DBManager;
