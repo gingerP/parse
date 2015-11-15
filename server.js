@@ -1,8 +1,22 @@
 #!/bin/env node
 //  OpenShift sample Node application
+var prop = require('./prop.json');
 var userApp = require('./app');
 var express = require('express');
-var http = require('http');
+var fs = require('fs');
+var http = null;
+var sslOptions = null;
+if (prop.sslEnabled === true) {
+    http = require('https');
+    sslOptions = {
+        key: fs.readFileSync('/home/vinni/keys/web_parse' + '/server.key'),
+        cert: fs.readFileSync('/home/vinni/keys/web_parse' + '/server.crt'),
+        ca: fs.readFileSync('/home/vinni/keys/web_parse' + '/ca.crt')
+    }
+} else {
+    http = require('http');
+}
+
 
 
 /**
@@ -25,6 +39,7 @@ var SampleApp = function() {
         //  Set the environment variables we need.
         self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
         self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+        self.httpsPort      = process.env.OPENSHIFT_NODEJS_HTTPS_PORT || 8443;
 
         if (typeof self.ipaddress === "undefined") {
             //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
@@ -79,7 +94,11 @@ var SampleApp = function() {
      *  the handlers.
      */
     self.initializeServer = function() {
-        self.app = http.createServer(userApp);
+        if (prop.sslEnabled === true) {
+            self.app = http.createServer(sslOptions, userApp);
+        } else {
+            self.app = http.createServer(userApp);
+        }
     };
 
 
@@ -100,9 +119,10 @@ var SampleApp = function() {
      */
     self.start = function() {
         //  Start the app on the specific interface (and port).
-        self.app.listen(self.port, self.ipaddress, function() {
+        self.app.listen(prop.sslEnabled? self.httpsPort: self.port,
+            self.ipaddress, function () {
             console.log('%s: Node server started on %s:%d ...',
-                        Date(Date.now() ), self.ipaddress, self.port);
+                Date(Date.now()), self.ipaddress, prop.sslEnabled? self.httpsPort: self.port);
         });
     };
 

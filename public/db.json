@@ -1,8 +1,8 @@
 {
-  "user": "admin",
-  "pass": "NnGXEIvmILdr",
+  "user": "ozParse",
+  "pass": "ozParse",
   "driver": "mongodb",
-  "host": "127.0.0.1",
+  "host": "localhost",
   "port": "27017",
-  "dbName": "parse"
+  "dbName": "local"
 }

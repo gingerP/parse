@@ -1,0 +1,4 @@
+.dhxsidebar_base_dhx_web div.dhxsidebar_cont div.dhxsidebar_side div.dhxsidebar_side_items div.dhxsidebar_item {
+  margin: 0 !important;
+  transition: box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}

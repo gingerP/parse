@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>Oz Parse - Admin Page Login</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <link rel="stylesheet" type="text/css" href="/static/css/login.css">
+</head>
+<body>
+<div class="login">
+    <div class="login-screen">
+        <div class="app-title">
+            <h1>Login</h1>
+        </div>
+
+        <form class="login-form" action="/admin/login" method="GET">
+            <div class="control-group">
+                <input type="text" class="login-field" value="" placeholder="username" id="login-name" name="username" autofocus>
+                <label class="login-field-icon fui-user" for="login-name"></label>
+            </div>
+
+            <div class="control-group">
+                <input type="password" class="login-field" value="" placeholder="password" id="login-pass"  name="password">
+                <label class="login-field-icon fui-lock" for="login-pass"></label>
+            </div>
+            <input class="btn btn-primary btn-large btn-block" type="submit" value="Log In"/>
+            <a class="login-link" href="#">Lost your password?</a>
+        </form>
+    </div>
+</div>
+</body>
+</html>
