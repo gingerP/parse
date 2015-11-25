@@ -6,12 +6,13 @@ var express = require('express');
 var fs = require('fs');
 var http = null;
 var sslOptions = null;
+var sslPath = '/usr/share/envssl/ozparse';
 if (prop.sslEnabled === true) {
     http = require('https');
     sslOptions = {
-        key: fs.readFileSync('/home/vinni/keys/web_parse' + '/server.key'),
-        cert: fs.readFileSync('/home/vinni/keys/web_parse' + '/server.crt'),
-        ca: fs.readFileSync('/home/vinni/keys/web_parse' + '/ca.crt')
+        key: fs.readFileSync(sslPath + '/server.key'),
+        cert: fs.readFileSync(sslPath + '/server.crt')/*,
+        ca: fs.readFileSync(sslPath + '/ca.crt')*/
     }
 } else {
     http = require('http');

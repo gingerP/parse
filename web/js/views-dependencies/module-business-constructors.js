@@ -18,7 +18,7 @@ define([],
                     return {name: null, selectors: [], handler: null, attr: null, style: null, formatter: null};
                 },
                 selector: function() {
-                    return {sel: null};
+                    return {selector: null};
                 }
             };
             var entityAction = {
@@ -34,7 +34,7 @@ define([],
                     horEntity[un]._remove_ = true;
                     delete horEntity[un];
                 },
-                removeSelector: function(parentId, id) {
+                removeSelector: function(id) {
                     horEntity[id]._remove_ = true;
                     delete horEntity[id];
                 },
@@ -49,15 +49,26 @@ define([],
                     return selector;
                 },
                 handleRemovedItems: function(entity) {
+                    var num;
+                    var arrItem;
                     if (Array.isArray(entity)) {
-                        $.each(entity, function(i, item) {
-                            if (check.isRemoved(item)) {
-                                entity.splice(i, 1);
+                        num = entity.length - 1;
+                        while(num > -1) {
+                            arrItem = entity[num];
+                            if (U.isObject(arrItem)) {
+                                if (check.isRemoved(arrItem)) {
+                                    entity.splice(num, 1);
+                                } else {
+                                    entityAction.handleRemovedItems(arrItem);
+                                }
                             }
-                        })
+                            num--;
+                        }
                     } else {
                         $.each(entity, function(key, item) {
-                            entityAction.handleRemovedItems(item);
+                            if (U.isObject(item)) {
+                                entityAction.handleRemovedItems(item);
+                            }
                         })
                     }
                 }
@@ -95,8 +106,8 @@ define([],
                     addSelector: function(parentId) {
                         return entityAction.addSelector(parentId);
                     },
-                    removeSelector: function(id) {
-                        entityAction.removeSelector(id);
+                    removeSelector: function(un) {
+                        entityAction.removeSelector(un);
                         return api;
                     }
                 },

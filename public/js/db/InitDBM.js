@@ -19,7 +19,7 @@ InitDBM.prototype.validate = function(callback) {
     var inst = this;
     this.exec(function(db) {
         inst.validateCollections(db)
-            //.initData(db, callback)
+            .initData(db, callback)
     })
 };
 

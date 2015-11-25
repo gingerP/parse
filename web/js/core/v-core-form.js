@@ -18,6 +18,7 @@ FormComponent.prototype.init = function(form, controller, dataConfig) {
     this.extendFormConfig = null;
     this.dataConfig = dataConfig;
     this.containers = {};
+    this.untrackedItems = ['combo'];
     return this;
 };
 
@@ -63,7 +64,12 @@ FormComponent.prototype.fillFormData = function(entity, mappings) {
     $.each(mappings, function(i, config) {
         var input = config.input;
         var property = config.property;
-        inst.form.setItemValue(input, U.getDeepValue(entity, property) || '');
+        var type = inst.form.getItemType(input);
+        var value = U.getDeepValue(entity, property) || '';
+        inst.form.setItemValue(input, value);
+        if (inst.untrackedItems.indexOf(type) > -1) {
+            inst.runBRule(input, input, value);
+        }
     })
 };
 

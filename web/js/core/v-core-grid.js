@@ -1,4 +1,5 @@
-function GridController() {
+function GridController(dataManager) {
+    this.dataManager = dataManager;
 }
 
 GridController.prototype.init = function (mappings) {
@@ -24,6 +25,22 @@ GridController.prototype.setData = function(data) {
         inst.owner.addRow(entity);
     });
     this.owner.runPostRules(data);
+};
+
+GridController.prototype.reloadRow = function(rowId, entityId, callback, isSelect) {
+    var inst = this;
+    this.dataManager.get(entityId, function(data) {
+        var newRowId;
+        inst.owner.refreshRow(rowId, data);
+        if (isSelect) {
+            newRowId = inst.owner.getRowId(data);
+            inst.onSelectionChange(newRowId);
+        }
+        if (typeof(callback) == 'function') {
+            callback(data);
+        }
+    },
+    this.mappings);
 };
 
 GridController.prototype.getDataArray = function (entity) {
@@ -88,6 +105,18 @@ GridComponent.prototype.addRow = function(entity, select) {
     }
 };
 
+GridComponent.prototype.refreshRow = function(rowId, entity) {
+    var newRowId = this.getRowId(entity);
+    if (newRowId != rowId) {
+        this.grid.changeRowId(rowId, newRowId);
+    }
+    var rowArray = this.controller.getDataArray(entity);
+    this.grid.forEachCell(newRowId, function(cell, colIndex) {
+        cell.setValue(rowArray[colIndex]);
+    });
+    this.setOrigUserData(entity);
+};
+
 GridComponent.prototype.setOrigUserData = function(entity) {
     var rowId = this.getRowId(entity);
     this.grid.setUserData(rowId, 'orig', entity);
@@ -103,6 +132,16 @@ GridComponent.prototype.runSelectRules = function (entity) {
 };
 
 GridComponent.prototype.getRowId = function(entity) {
-    return entity.id + '';
+    var id = this.controller.dataManager.getId(entity);
+    return '_' + id;
+};
+
+GridComponent.prototype.getSelectedData = function() {
+    var result;
+    var rowId = this.grid.getSelectedRowId();
+    if (U.hasContent(rowId)) {
+        result = this.getOrigUserData(rowId);
+    }
+    return result;
 };
 

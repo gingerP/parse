@@ -26,7 +26,7 @@ ScheduleParseExecutor.prototype.fn = function(bean) {
     var inst = this;
     var url = inst.config.url;
     console.log('ScheduleParseExecutor iteration start "' + inst.schedBean.configCode + '"');
-    u.loadDom(url, function(body) {
+    u.loadDom(url, function(error, body) {
         var data = u.extractDataFromHtml(body, inst.config);
         var entity = {
             code: inst.schedBean.configCode,

@@ -4,12 +4,13 @@ HtmlToJson = function () {
 };
 
 HtmlToJson.prototype.get = function (domString, config) {
+    var parentSelector = u.hasContent(config.parentSel)? config.parentSel: 'html';
     this.$ = this._initParser(domString);
     this.levelCfg = config.levelConfig;
     this.levels = config.levels;
     this.listKey = config.listKey || "list";
     console.time("extract");
-    var zzz = this._getData(this.$(config.parentSel));
+    var zzz = this._getData(this.$(parentSelector));
     console.timeEnd("extract");
     return zzz;
 };
@@ -20,13 +21,20 @@ HtmlToJson.prototype._initParser = function (domString) {
 };
 
 HtmlToJson.prototype._getData = function (dom) {
-    return this._iterateLevels(dom, this.levelCfg);
+    var inst = this;
+    var result = [];
+    if (this.levelCfg && this.levelCfg.length) {
+        this.levelCfg.forEach(function(cfg) {
+            result.push(inst._iterateLevels(dom, cfg));
+        });
+    }
+    return result;
 };
 
 HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
     var inst = this;
     var $ = this.$;
-    var level = inst.levels[levelsCfg.node];
+    var level = inst._getLevelByCode(levelsCfg.node, inst.levels);
     var pack = inst._handleLevel(dom, level);
     var children = levelsCfg.children;
     var listKey = level.listKey || this.listKey;
@@ -69,24 +77,28 @@ HtmlToJson.prototype._handlePath = function (dom, path) {
     var inst = this;
     var stepsRes = [dom];
     var incorrect = false;
-    path.forEach(function (step, index) {
-        var parent = stepsRes[index];
-        var child = inst._pathHandlers[step.type](parent, step, inst.$);
-        if (!child || !child.length) {
-            incorrect = true;
-            return false;
-        }
-        stepsRes.push(child);
-    });
+    if (path && path.length) {
+        path.forEach(function (step, index) {
+            var parent = stepsRes[index];
+            var child = inst._pathHandlers[step.type].call(inst, parent, step, inst.$);
+            if (!child || !child.length) {
+                incorrect = true;
+                return false;
+            }
+            stepsRes.push(child);
+        });
+    }
     return incorrect? null: stepsRes.pop();
 };
 
 HtmlToJson.prototype._handleFilter = function(DOM, filters) {
     var result = true;
     var $ = this.$;
+    var inst = this;
     if (filters && filters.length) {
         filters.forEach(function (filter, i) {
-            result = result && !!$(filter.sel, DOM).length;
+            var complexSelector = inst._getComplexSelector(filter.selectors);
+            result = result && !!$(complexSelector, DOM).length;
             return result;
         })
     }
@@ -100,12 +112,17 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
     var cfg = null;
     var name = null;
     dataCfg.forEach(function (cfg, i) {
+        if (!u.hasContent(cfg.handler)) {
+            result[cfg.name] = '';
+            return;
+        }
+        var complexSelector = inst._getComplexSelector(cfg.selectors);
         var children = DOM;
-        if (u.hasContent(cfg.sel)) {
-            children = $(cfg.sel, DOM);
+        if (u.hasContent(complexSelector)) {
+            children = $(complexSelector, DOM);
         }
         var handler = inst._dataHandlers[cfg.handler];
-        result[cfg.name] = handler(children, cfg, $, inst);
+        result[cfg.name] = handler.call(inst, children, cfg, $, inst);
     });
     return result;
 };
@@ -144,6 +161,7 @@ HtmlToJson.prototype._pathHandlers = {
                 return 0;
             }
         };
+        var complexSelector = this._getComplexSelector(step.selectors);
         if (u.hasContent(step.pos)) {
             step.pos = step.pos.trim();
             direction = getDirection(step.pos);
@@ -156,38 +174,37 @@ HtmlToJson.prototype._pathHandlers = {
             if (!result.length) {
                 return null;
             }
-            if (u.hasContent(step.sel)) {
-                result = result.filter(step.sel);
+            if (u.hasContent(complexSelector)) {
+                result = result.filter(complexSelector);
             }
             return getSiblingByPosition(result, position, direction);
         } else {
-            return $(dom).siblings(step.sel);
+            return $(dom).siblings(complexSelector);
         }
     },
     up: function(dom, step, $) {
         var position = null;
         var result = null;
+        var complexSelector;
         if (u.hasContent(step.pos)) {
             position = parseInt(step.pos);
             for(var index = 0; index < position; index++) {
                 result = $(dom).parent();
             }
         }
-        if (u.hasContent(step.sel)) {
+        complexSelector = this._getComplexSelector(step.selectors);
+        if (u.hasContent(complexSelector)) {
             if (!result) {
-                result = result.parent(step.sel);
+                result = result.parent(complexSelector);
             } else {
-                result = $(dom).parent(step.sel);
+                result = $(dom).parent(complexSelector);
             }
         }
         return result;
     },
     down: function(dom, step, $) {
-        var sel = step.sel;
-        if (u.isArray(step.sel)) {
-            sel = step.sel.join(',');
-        }
-        return $(sel, dom);
+        var complexSelector = this._getComplexSelector(step.selectors);
+        return $(complexSelector, dom);
     }
 };
 
@@ -216,13 +233,13 @@ HtmlToJson.prototype._dataHandlers = {
         }
         return '';
     },
-    style: function(dom, cfg, $, inst) {
+    style: function(dom, cfg, $) {
         var attrVal = null;
         var style = cfg.style;
         var handlers = inst._styleHandlers;
         if (dom && typeof(handlers[style]) == 'function') {
             attrVal = $(dom).attr("style");
-            return handlers[style](attrVal);
+            return handlers[style].call(this, attrVal);
         }
         return '';
     }
@@ -236,6 +253,32 @@ HtmlToJson.prototype._styleHandlers = {
         }
         return '';
     }
+};
+
+HtmlToJson.prototype._getComplexSelector = function(selectors) {
+    var result = [];
+    if (selectors && selectors.length) {
+        selectors.forEach(function(selector) {
+            if (selector.selector) {
+                result.push(selector.selector);
+            }
+        });
+        result = result.join(', ');
+    }
+    return result;
+};
+
+HtmlToJson.prototype._getLevelByCode = function(code, levels) {
+    var result;
+    if (levels && levels.length) {
+        levels.forEach(function(level) {
+            if (level.code == code) {
+                result = level;
+                return;
+            }
+        });
+    }
+    return result;
 };
 
 module.exports = HtmlToJson;

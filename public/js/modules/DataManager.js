@@ -25,9 +25,13 @@ DataManager.prototype.get = function(callback) {
 DataManager.prototype._loadData = function(callback) {
     var cfg = this.cfg;
     var inst = this;
-    u.loadDom(cfg.url, function(body) {
+    u.loadDom(cfg.url, function(error, body) {
         if (typeof(callback) == 'function') {
-            u.extractDataFromHtml(body, inst.dataConfig, callback);
+            if (error) {
+                callback(error);
+            } else {
+                u.extractDataFromHtml(body, inst.dataConfig, callback);
+            }
         }
     }, cfg.encoding);
 };

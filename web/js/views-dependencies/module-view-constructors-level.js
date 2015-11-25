@@ -9,7 +9,8 @@ define([
             var horEntity = {};
             var business = Business();
             var mappings = [
-                {property: 'listKey', input: 'listKey'}
+                {property: 'listKey', input: 'listKey'},
+                {property: 'code', input: 'code'}
             ];
 
             var templateKeys = {
@@ -71,8 +72,7 @@ define([
                                     {type: 'input', name: 'name', label: 'Name'},
                                     {type: 'block', name: templateKeys.dataSelectorContainer, width: 390, blockOffset: 0, list: []},
                                     {type: 'combo', name: 'data_handler', label: 'Handler', required: true, readonly: true, options: templates._getItemHandlers()},
-                                    {type: 'block', name: templateKeys.dataHandlersAttached, width: 390, blockOffset: 0, list: []},
-                                    {type: 'input', name: 'listKey', label: 'List Key'}
+                                    {type: 'block', name: templateKeys.dataHandlersAttached, width: 390, blockOffset: 0, list: []}
                                 ]}
                             ]
                         }, [un]),
@@ -83,8 +83,8 @@ define([
                     var mappings = [
                         {property: 'name', input: 'name'},
                         {property: 'handler', input: 'data_handler'},
-                        {property: 'attribute', input: 'attr'},
-                        {property: 'style', input: 'style'},
+                        {property: 'attribute', input: 'data_attr'},
+                        {property: 'style', input: 'data_style'},
                         {property: 'formatter', input: 'formatter'}
                     ];
                     return mappings;
@@ -121,7 +121,6 @@ define([
                                 {type: 'button', name: templateKeys.deleteFilterBtn, value: '', className: 'delete-item'},
                                 {type: 'newcolumn'},
                                 {type: 'block', width: 395, list: [
-                                    {type: 'input', name: 'type', label: 'Type'},
                                     {type: 'block', name: templateKeys.filterSelectorContainer, width: 390, blockOffset: 0, list: []}
                                 ]}
                             ]
@@ -150,7 +149,7 @@ define([
                 },
                 getSelectorMappings: function() {
                     var mappings = [
-                        {property: 'sel', input: 'selector'}
+                        {property: 'selector', input: 'selector'}
                     ];
                     return mappings;
                 },
@@ -244,7 +243,9 @@ define([
                     formHandlers.deleteData(un);
                 },
                 deleteSelector: function(un) {
-                    business.action.removeSelector(un);
+                    if (un && un.length > 1) {
+                        business.action.removeSelector(un[1]);
+                    }
                     formHandlers.deleteSelector(un);
                 },
                 addDataStyle: function(form, key) {
@@ -328,9 +329,8 @@ define([
                     var blockName = getMultiName(templateKeys.dataBlock, un);
                     form.form.removeItem(blockName);
                 },
-                deleteSelector: function(form, name) {
-                    var key = extMultiKey(name);
-                    var blockName = getMultiName(templateKeys.selectorBlock, key);
+                deleteSelector: function(un) {
+                    var blockName = getMultiName(templateKeys.selectorBlock, un);
                     form.form.removeItem(blockName);
                 },
                 addDataStyle: function(form, key) {
@@ -563,7 +563,8 @@ define([
                     },
                     //DELETE SELECTOR
                     '__btn;__regexp;^delete_selector.*': function(form, name) {
-                        formHandlers.deleteSelector(form, name);
+                        var un = extMultiKey(name);
+                        action.deleteSelector(un);
                     },
                     //HANDLERS
                     '__regexp;^data_handler.*': function(form, name) {
@@ -596,10 +597,10 @@ define([
                 action.addPath();
             }
 
-            function setData(data, code) {
+            function setData(data) {
+                var code = data.code;
                 clear();
                 business.setData(data, code);
-                form.form.setItemValue('code', code);
                 form.fillFormData(data, mappings);
                 if (data.path && data.path.length) {
                     $.each(data.path, function(i, path) {
@@ -663,8 +664,8 @@ define([
                 getData: function() {
                     return updateData();
                 },
-                setData: function(levelData, code) {
-                    setData(levelData, code);
+                setData: function(levelData) {
+                    setData(levelData);
                     return api;
                 },
                 getComponent: function() {

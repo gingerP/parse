@@ -18,7 +18,7 @@ ParseConfigDBM.prototype.insert = function(config, callback) {
 };
 
 ParseConfigDBM.prototype.update = function(data, callback) {
-    this._update({code: { $eq: data.code} }, data, callback);
+    this._update({_id: this._getObjectId(data._id)}, data, callback);
 };
 
 ParseConfigDBM.prototype.getEntity = function(criteria, callback, mappings) {

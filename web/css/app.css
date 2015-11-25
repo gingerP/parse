@@ -123,3 +123,9 @@ body {
 .levels-config td.selectedTreeRow {
   overflow: visible;
 }
+.src_levels .dhx_cell_toolbar_no_borders {
+  padding-left: 0 !important;
+}
+.test-data-view .dhx_cell_cont_layout {
+  overflow: auto !important;
+}

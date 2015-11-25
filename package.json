@@ -20,7 +20,8 @@
     "passport": "0.3.0",
     "passport-local": "1.0.0",
     "serve-favicon": "~2.3.0",
-    "schedule": "0.1.0"
+    "schedule": "0.1.0",
+    "serve-static": "1.10.0"
   },
   "scripts": {
     "vutils": "./public/javascripts/utils"

@@ -85,19 +85,22 @@ define([],
         function setData(data) {
             entity = data;
             if (U.hasContent(data)) {
-                _setData(null, data);
+                $.each(data, function(i, level) {
+                    _setData(null, level);
+                });
             }
         }
 
         function getData() {
-            var result;
+            var result = [];
             var firstLevel = tree.getSubItems(root);
-            var entity;
             firstLevel = firstLevel.split(',');
             if (firstLevel.length) {
-                //first level must contain only one item
-                result = handler.getUserData(firstLevel[0]);
-                result.children = _getData(firstLevel[0]);
+                $.each(firstLevel, function(i, levelCode) {
+                    var node = handler.getUserData(levelCode);
+                    node.children = _getData(levelCode);
+                    result.push(node);
+                });
             }
             return result;
         }
@@ -105,7 +108,7 @@ define([],
         function _getData(parentCode) {
             var result = [];
             var children = tree.getSubItems(parentCode);
-            children = U.hasContent(children)? children.split(';'): [];
+            children = U.hasContent(children)? children.split(','): [];
             if (children.length) {
                 $.each(children, function(i, childCode) {
                     var child = handler.getUserData(childCode);

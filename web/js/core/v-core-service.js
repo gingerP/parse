@@ -1,4 +1,8 @@
-function DataManager(service) {
+function DataManager(service, cfg) {
+    this.cfg = {
+        idField: '_id'
+    };
+    $.extend(true, this.cfg, cfg || {});
     this.service = service;
 }
 
@@ -19,12 +23,31 @@ DataManager.prototype.prepare = function(entity) {
         })
     } else {
         keys = Object.keys(entity);
+        if (entity._isNew) {
+            delete entity[this.cfg.idField];
+        }
         $.each(keys, function(i, key) {
-            if (key.indexOf('_') == 0) {
+            if (key.indexOf('_') == 0 && key != inst.cfg.idField) {
                 delete entity[key];
             } else if (U.isObject(entity[key])) {
                 inst.prepare(entity[key]);
             }
         })
     }
+};
+
+DataManager.prototype.createNewEntity = function() {
+    return this.service._entity();
+};
+
+DataManager.prototype.getId = function(entity) {
+    return entity[this.cfg.idField];
+};
+
+DataManager.prototype.isNew = function(entity) {
+    return !!entity._isNew;
+};
+
+DataManager.prototype.exec = function(method, args) {
+    this.service[method].apply(this.service, args);
 };

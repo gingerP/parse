@@ -1,9 +1,11 @@
 define([
         '../views-dependencies/module-view-constructors-level.js',
         '../views-dependencies/module-view-constructors-levels-config.js',
-        '../service/ConstructorService.js'
+        '../views-dependencies/module-view-constructors-test-data-viewer.js',
+        '../service/ConstructorService.js',
+        '../service/LevelService.js'
     ],
-    function(LevelModule, levelsConfigModule, service) {
+    function(LevelModule, levelsConfigModule, testDataViewer, service, levelService) {
         var api;
         var layout;
         var list;
@@ -15,32 +17,56 @@ define([
         var sidebarSrc;
         var src;
         var dataManager = new DataManager(service);
-        var entity = function() {
-            var id = U.getRandomString();
-            return {_id: id, id: id, url: null, levels: {}, levelConfig: {}, listKey: null, parentSel: null, code: null, _isNew: true};
-        };
+        var levelDataManager = new DataManager(levelService);
         var action = {
             add: function() {
-                var data = entity();
+                var data = dataManager.createNewEntity();
                 list.addRow(data, true);
             },
             delete: function() {
 
             },
-            save: function() {
+            save: function(callback) {
                 var data = updateData();
-                if (data._isNew) {
-                    delete data.id;
-                }
+                var isNew = dataManager.isNew(data);
+                var id = dataManager.getId(data);
                 dataManager.prepare(data);
-                dataManager.save(data);
+                dataManager.save(data, function(_id) {
+                    var oldRowId = list.grid.getSelectedRowId();
+                    if (isNew) {
+                        id = _id;
+                    }
+                    list.controller.reloadRow(oldRowId, id, function() {
+                        if (typeof(callback) == 'function') {
+                            callback();
+                        }
+                    }, true);
+                });
             },
             reload: function() {
 
             },
             loadEntity: function(id, callback) {
                 dataManager.get(id, callback);
+            },
+            test: function() {
+                var selected = list.getSelectedData();
+                var container = testDataViewer.getContainer();
+                if (selected) {
+                    container.expand();
+                    container.progressOn();
+                    dataManager.exec('test', [selected._id, {
+                        onSuccess: function(data) {
+                            testDataViewer.setData(JSON.stringify(data));
+                            container.progressOff();
+                        },
+                        onError: function(error) {
+                            container.progressOff();
+                        }
+                    }]);
+                }
             }
+
         };
         var levelAction = {
             add: function() {
@@ -110,6 +136,7 @@ define([
         };
 
         var configFeatures = [
+            //RELOAD
             (function getReloadFeature() {
                 var feature = new GenericFeature().init({
                     type: 'button',
@@ -120,6 +147,7 @@ define([
                 feature.exec = action.reload;
                 return feature;
             })(),
+            //ADD
             (function getAddFeature() {
                 var feature = new GenericFeature().init({
                     type: 'button',
@@ -130,6 +158,7 @@ define([
                 feature.exec = action.add;
                 return feature;
             })(),
+            //DELETE
             (function getDeleteFeature() {
                 var feature = new GenericFeature().init({
                     type: 'button',
@@ -140,6 +169,7 @@ define([
                 feature.exec = action.delete;
                 return feature;
             })(),
+            //SAVE
             (function getSaveFeature() {
                 var feature = new GenericFeature().init({
                     type: 'button',
@@ -148,6 +178,19 @@ define([
                     imageDis: '/static/images/button_save.png'
                 });
                 feature.exec = action.save;
+                return feature;
+            })(),
+            //TEST
+            (function getSaveFeature() {
+                var feature = new GenericFeature().init({
+                    type: 'button',
+                    name: 'test',
+                    image: '/static/images/button_test.png',
+                    imageDis: '/static/images/button_test.png'
+                });
+                feature.exec = function() {
+                    action.test();
+                };
                 return feature;
             })()
         ];
@@ -163,7 +206,8 @@ define([
                 });
                 feature.exec = function() {
                     var module = levelAction.add();
-                    module.setData({}, U.getRandomString());
+                    var level = levelDataManager.createNewEntity();
+                    module.setData(level);
                     levelsConfigAction.add(module);
                 };
                 return feature;
@@ -213,7 +257,7 @@ define([
         ];
 
         function createLayout(sideBarCell) {
-            var layout = sideBarCell.attachLayout('3L');
+            var layout = sideBarCell.attachLayout('4H');
             layout.cells('a').hideHeader();
             layout.cells('a').hideArrow();
             layout.cells('a').setWidth(420);
@@ -222,15 +266,16 @@ define([
             layout.cells('b').hideArrow();
             layout.cells('c').hideHeader();
             layout.cells('c').hideArrow();
+            layout.cells('d').collapse();
             return layout;
         }
 
         function createList(layout) {
             var list = layout.cells("a").attachGrid();
-            var vListController = new GridController().init([
-                {from: '_id', to: 'id'},
-                {from: 'code', to: 'code'},
-                {from: 'url', to: 'url'}
+            var vListController = new GridController(dataManager).init([
+                {property: '_id', input: '_id'},
+                {property: 'code', input: 'code'},
+                {property: 'url', input: 'url'}
             ]);
             var vList = new GridComponent().init(list, vListController, [
                 {key: 'code', header: 'Code', width: 100},
@@ -254,7 +299,7 @@ define([
 
         function createDetails(layout, list) {
             var dataConfig = [
-                {property: 'id', input: 'id'},
+                {property: '_id', input: '_id'},
                 {property: 'code', input: 'code'},
                 {property: 'url', input: 'url'},
                 {property: 'parentSel', input: 'parentSel'},
@@ -264,7 +309,7 @@ define([
                 {type: 'settings', inputWidth: 200, labelWidth: 100, labelAlign: 'left'},
                 {type: 'fieldset', label: 'Page Details', width: 350, offsetLeft: 15,
                     list: [
-                        {type: 'input',    name: 'id',        label: 'Id', readonly: true},
+                        {type: 'input',    name: '_id',        label: 'Id', readonly: true},
                         {type: 'input',    name: 'code',      label: 'Code', required: true},
                         {type: 'input',    name: 'url',       label: 'Url', required: true},
                         {type: 'input',    name: 'parentSel', label: 'Parent Selector', required: true},
@@ -294,7 +339,7 @@ define([
             list.addBRules({
                 '_select_': function(list, entity) {
                     if (!entity._isNew) {
-                        var id = entity.id;
+                        var id = entity._id;
                         action.loadEntity(id, setFormData);
                     } else {
                         setFormData(entity);
@@ -310,15 +355,13 @@ define([
         }
 
         function createTabbar(layout) {
-            var tabbar = layout.cells('forms').attachTabbar({
+            return layout.cells('a').attachTabbar({
                 arrows_mode: false
             });
-            return tabbar;
         }
 
         function deleteLevels() {
             var index = levelsModules.length - 1;
-            var component = null;
             while(index > -1) {
                 levelAction.delete(levelsModules[index]);
                 index--;
@@ -326,7 +369,6 @@ define([
         }
 
         function setFormData(data) {
-            data.id = data._id;
             form.setData(data);
             setLevelsConfigData(data);
             setLevelsData(data);
@@ -342,7 +384,7 @@ define([
             if (data.levels && Object.keys(data.levels)) {
                 $.each(data.levels, function (i, level) {
                     var module = levelAction.add();
-                    module.setData(level, i);
+                    module.setData(level);
                     module.addCodeListener(levelsConfigModule.getCodeListener());
                 });
             }
@@ -375,7 +417,7 @@ define([
         }
 
         function createLevelsToolbar(layout) {
-            var toolbar = layout.cells('forms').attachToolbar();
+            var toolbar = layout.cells('a').attachToolbar();
             var vToolbar = new Toolbar().init(toolbar);
             vToolbar.addFeatures.apply(vToolbar, levelFeatures);
             return toolbar;
@@ -387,31 +429,44 @@ define([
         }
 
         function createEditor(sideBar) {
+        }
 
+        function createTestDataViewer(container) {
+            return testDataViewer.init(container);
+        }
+
+        function createLevelsLayout(sidebar) {
+            var layout = sidebar.cells('forms').attachLayout('1C');
+            layout.base.className += ' src_levels';
+            return layout;
         }
 
         function updateData() {
             var entity = form.updateData();
-            entity.levels = {};
+            entity.levels = [];
+            entity.levelConfig = [];
             $.each(levelsModules, function(i, module) {
-                var code = module.getCode();
                 var data = module.getData();
-                entity.levels[code] = data;
+                entity.levels.push(data);
             });
             entity.levelConfig = levelsConfigModule.getData();
             return entity;
         }
 
         function init(container) {
+            var levelsLayout;
             layout = createLayout(container);
             list = createList(layout);
             toolbar = createListToolbar(layout);
-            sidebarSrc = createSourceSideBar(layout);
-            levelsToolbar = createLevelsToolbar(sidebarSrc);
             form = createDetails(layout, list);
             createLevelsConfig(form);
-            tabbar = createTabbar(sidebarSrc);
+
+            sidebarSrc = createSourceSideBar(layout);
+            levelsLayout = createLevelsLayout(sidebarSrc);
+            levelsToolbar = createLevelsToolbar(levelsLayout);
+            tabbar = createTabbar(levelsLayout);
             src = createEditor(sidebarSrc);
+            createTestDataViewer(layout.cells('d'))
         }
 
         api = {

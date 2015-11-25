@@ -11,8 +11,8 @@ env = (function() {
     }
 
     function init() {
-/*
-        var catalogSchedule = scheduleService.createNewEntity({
+
+/*        var catalogSchedule = scheduleService.createNewEntity({
             period: '2m',
             lastTimeStart: null,
             lastTimeEnd: null,
@@ -26,10 +26,10 @@ env = (function() {
         });
         scheduleService.update(catalogSchedule, function() {
             scheduleService.update(sectionsSchedule, function() {
+
             });
-        });
-*/
-        scheduleService.startAllSchedules(function(list) {
+        });*/
+        /*scheduleService.startAllSchedules(function(list) {
             var count = null;
             if (list && list.length) {
                 count = list.length;
@@ -43,7 +43,7 @@ env = (function() {
                     executors.push(executor);
                 })
             }
-        });
+        });*/
 
     }
 

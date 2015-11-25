@@ -31,10 +31,11 @@ var api = {
                 res = body;
                 if (typeof(callback) == 'function') {
                     //  callback(translator.convert(res).toString());
-                    callback(res);
+                    callback(error, res);
                 }
             } else {
                 console.warn("Could NOT CONNECT to " + url);
+                callback(error);
             }
             console.timeEnd('load');
         });
@@ -47,7 +48,12 @@ var api = {
         var Parser = getRef('htmlToJson');
         if (typeof(callback) == 'function') {
             setTimeout(function() {
-                callback(new Parser().get(dom, cfg));
+                var parser = new Parser();
+                try {
+                    callback(null, parser.get(dom, cfg));
+                } catch(error) {
+                    callback(error);
+                }
             }, 0)
         } else {
             return new Parser().get(dom, cfg);
@@ -127,7 +133,11 @@ var api = {
                     try {
                         if (rt.async) {
                             module[rt.method](req, res, function (data) {
-                                res.send(api.wrapResponse(data));
+                                if (data instanceof Error) {
+                                    res.send(api.wrapResponse(null, data, res));
+                                } else {
+                                    res.send(api.wrapResponse(data, null, res));
+                                }
                             })
                         } else {
                             res.send(api.wrapResponse(module[rt.method](req, res)));
@@ -141,7 +151,7 @@ var api = {
     },
     wrapResponse: function(data, error, response) {
         var reqPath = null;
-        if (typeof(error) != 'undefined') {
+        if (error) {
             reqPath  = response.req.originalUrl;
             console.error('ERROR REQUEST ' + reqPath + ': ' + error);
             return {
@@ -213,8 +223,8 @@ var api = {
         var mapping;
         for(var index = 0; index < mappings.length; index++) {
             mapping = mappings[index];
-            value = api.getValueFromObjectByPath(object, mapping.from);
-            api.setValueToObjectByPath(value, mapping.to, result);
+            value = api.getValueFromObjectByPath(object, mapping.property);
+            api.setValueToObjectByPath(value, mapping.input, result);
         }
         return result;
     },

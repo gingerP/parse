@@ -1,7 +1,6 @@
 var cfg = require('../../db');
 var utils = require('../utils.js');
 var bongo = require('mongodb');
-var ObjectId = bongo.ObjectID;
 var assert = require('assert');
 var messages = {
     notEmpty: 'Collection name cannot be empty!',
@@ -18,7 +17,8 @@ var validate = {
         assert.notEqual(criteria, undefined, messages.criteriaNotEmpty);
     }
 };
-function DBManager() {};
+function DBManager() {
+};
 
 DBManager.prototype.init = function() {
     this.connection = null;
@@ -54,13 +54,14 @@ DBManager.prototype.update = function() {
 };
 
 DBManager.prototype._getDoc = function(criteria, callback, mappings) {
-    var inst = this;
     var collName = this.getCollectionName();
+    if (typeof(criteria) == 'number' || typeof(criteria) == 'string') {
+        criteria = {_id: new this._getObjectId(criteria)};
+    }
     validate.collectionName(collName);
     validate.criteria(criteria);
-    this.correctId(criteria);
     this.exec(function(db) {
-        var cursor = db.collection(collName).find(criteria, function(error, cursor) {
+        db.collection(collName).find(criteria, function(error, cursor) {
             cursor.next(function(error, doc) {
                 if (error) {
                     console.log("DBManager.prototype._getDoc" + error);
@@ -93,10 +94,15 @@ DBManager.prototype._update = function(criteria, doc, callback) {
     var collName = this.getCollectionName();
     validate.collectionName(collName);
     this.exec(function(db) {
-        db.collection(collName).updateOne(criteria || {_id: doc._id}, doc, { upsert: true });
-        if (typeof(callback) == 'function') {
-            callback();
-        }
+        var id = doc._id;
+        delete doc._id;
+        db.collection(collName).updateOne(criteria || {_id: id}, doc, { upsert: true, raw: true}, function(error, result) {
+            if (error) {
+                throw new Exception(error);
+            } else if (typeof(callback) == 'function') {
+                callback(result.upsertedId? result.upsertedId._id: null);
+            }
+        });
     })
 };
 
@@ -134,12 +140,6 @@ DBManager.prototype._list = function(callback, mappings) {
     })
 };
 
-DBManager.prototype.correctId = function(criteria) {
-    if (criteria.hasOwnProperty('_id')) {
-        criteria._id = new ObjectId(criteria._id);
-    }
-};
-
 DBManager.prototype._getDBUrl = function() {
     var url= 'mongodb://'
         + cfg.user + ':'
@@ -158,6 +158,10 @@ DBManager.prototype._getDBUrl = function() {
     }
     return sysUrl;*/
     return url;
+};
+
+DBManager.prototype._getObjectId = function(id) {
+    return new bongo.ObjectId(id);
 };
 
 module.exports = DBManager;

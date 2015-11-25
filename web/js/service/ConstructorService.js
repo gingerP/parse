@@ -5,7 +5,8 @@ define(['./CoreService.js'],
             save: 'constructor/save',
             delete: 'constructor/delete',
             list: 'constructor/list',
-            getEntity: 'constructor/getEntity'
+            getEntity: 'constructor/getEntity',
+            test: 'constructor/test'
         };
 
         api = {
@@ -20,6 +21,13 @@ define(['./CoreService.js'],
             },
             getEntity: function (id, callback) {
                 core.load(urls.getEntity, callback, {id: id});
+            },
+            test: function (id, handlers) {
+                core.load(urls.test, handlers, {id: id});
+            },
+            _entity: function() {
+                var id = U.getRandomString();
+                return {_isNew: true, _id: id, url: null, levels: [], levelConfig: [], listKey: null, parentSel: null, code: null};
             }
         };
         return api;

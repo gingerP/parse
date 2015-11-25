@@ -13,7 +13,7 @@ var im = {
 var app = im.express();
 //Init DB
 console.info("Init DB");
-new im.InitDB().initUsers();
+//new im.InitDB().initUsers();
 /*new im.InitDB().validate(function() {
     console.info("Init DB data");
 });*/
