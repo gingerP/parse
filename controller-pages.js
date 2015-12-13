@@ -4,7 +4,6 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var UserDBM = require('./public/js/db/UserDBM');
 var userDBM = new UserDBM();
-var serveStatic = require('serve-static');
 
 var redirectPath = '/admin';
 
@@ -23,9 +22,7 @@ var handlers = [
 ];
 
 function extendSession(req) {
-    console.log('old maxAge: ' + req.session.cookie.maxAge);
     req.session.touch();
-    console.log('new maxAge: ' + req.session.cookie.maxAge);
 }
 
 function initPassport(app) {
@@ -86,20 +83,12 @@ module.exports = {
     init: function(app) {
         initPassport(app);
         initLoginLogout(app);
-/*
-        app.use(serveStatic('/static/css', {redirect: '/web/css', extensions: ['css']}));
-        app.use(serveStatic('/static/css/bower_components', {redirect: '/bower_components', extensions: ['css']}));
-        app.use(serveStatic('/static/images', {redirect: '/web/images'}));
-        app.use(serveStatic('/static/js', {redirect: '/web/js', extensions: ['js']}));
-        app.use(serveStatic('/static/dhtmlx', {redirect: '/web/dhtmlx'}));*!/
-        app.use(serveStatic('static/js/bower_components', {redirect: 'bower_components/', extensions: ['js', 'png', 'css']}));
-
-*/
         app.use('/static/css', express.static(__dirname + '/web/css'));
         app.use('/static/css/bower_components', express.static(__dirname + '/bower_components'));
         app.use('/static/images', express.static(__dirname + '/web/images'));
-        app.use('/static/js', express.static(__dirname + '/web/js'));
+        app.use('/static/js', express.static(__dirname + '/web/min/js'));
         app.use('/static/dhtmlx', express.static(__dirname + '/web/dhtmlx'));
+        app.use('/static/ace', express.static(__dirname + '/web/ace'));
         app.use('/static/js/bower_components', express.static(__dirname + '/bower_components'));
 
 

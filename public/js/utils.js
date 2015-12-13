@@ -19,6 +19,9 @@ function getRef(ref) {
 
 var api = {
     loadDom: function(url, callback, encodeFrom) {
+        if (typeof(url) === 'string' && (url.indexOf('http://') != 0 && url.indexOf('https://') != 0)) {
+            url = 'http://' + url;
+        }
         console.time('load');
         getRef('iconvLite').extendNodeEncodings();
         getRef('request')({
@@ -115,7 +118,7 @@ var api = {
         } else if (obj != null && this.isArray(obj)) {
             return obj.length > 0;
         } else if (typeof(obj) != 'undefined') {
-            return obj != null;
+            return obj != null && Object.keys(obj).length;
         }
         return false;
     },
@@ -123,7 +126,7 @@ var api = {
         return Object.prototype.toString.call(obj) === '[object Array]';
     },
     cleanStr: function(str) {
-        return this.hasContent(str)? str.trim(): '';
+        return typeof(str) === 'string' && this.hasContent(str)? str.trim(): '';
     },
     linkRequestsToModule: function(routes, module, router, type) {
         routes.forEach(function(rout) {
@@ -146,8 +149,9 @@ var api = {
                         res.send(api.wrapResponse(null, e, res));
                     }
                 }
-            })())
-        })
+            })());
+            console.log('%s: Request "' + rout.path + '" mapped.', Date(Date.now()));
+        });
     },
     wrapResponse: function(data, error, response) {
         var reqPath = null;

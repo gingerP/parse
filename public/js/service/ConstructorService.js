@@ -22,7 +22,13 @@ function runTest(config, callback) {
                 callback(error);
                 return;
             }
-            data = u.extractDataFromHtml(body, config);
+            try {
+                data = u.extractDataFromHtml(body, config);
+            } catch (error) {
+                console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')" with error ' + error.message);
+                callback(error);
+                return;
+            }
             console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')"');
             callback(error, data);
         }
@@ -51,7 +57,8 @@ module.stuf = (function () {
             return api;
         },
         delete: function(req, res, callback) {
-            configDBM.delete(filter, callback);
+            var id = req.body.id;
+            configDBM.delete(id, callback);
             return api;
         },
         test: function(req, res, callback) {

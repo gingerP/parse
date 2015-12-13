@@ -21,6 +21,10 @@ ParseConfigDBM.prototype.update = function(data, callback) {
     this._update({_id: this._getObjectId(data._id)}, data, callback);
 };
 
+ParseConfigDBM.prototype.delete = function(id, callback) {
+    this._delete(id, callback);
+};
+
 ParseConfigDBM.prototype.getEntity = function(criteria, callback, mappings) {
     this._getDoc(criteria, callback, mappings);
 };

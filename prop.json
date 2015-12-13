@@ -1,3 +1,19 @@
 {
-  "sslEnabled": true
+  "network": {
+    "host": "0.0.0.0",
+    "http": "8080",
+    "https": "8443",
+    "ssl": {
+      "active": true,
+      "path": "/home/ubuntu/ssl"
+    }
+  },
+  "db": {
+    "user": "...",
+    "pass": "...",
+    "driver": "mongodb",
+    "host": "localhost",
+    "port": "27017",
+    "dbName": "..."
+  }
 }

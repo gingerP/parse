@@ -7,11 +7,11 @@ GridController.prototype.init = function (mappings) {
     return this;
 };
 
-GridController.prototype.onBeforeSelectionChange = function (newRow, oldRow) {
+GridController.prototype.onBeforeSelectionChange = function(newRow, oldRow) {
     return true;
 };
 
-GridController.prototype.onSelectionChange = function (rowId) {
+GridController.prototype.onSelectionChange = function(rowId) {
     var entity = this.owner.getOrigUserData(rowId);
     this.owner.runSelectRules(entity);
     return this;
@@ -78,6 +78,23 @@ GridComponent.prototype.extractCfg = function(config, key, def) {
         res.push(cfg[key] || def || '');
     });
     return res.join(',');
+};
+
+GridComponent.prototype.clear = function() {
+    this.grid.clearAll();
+    this.controller.onSelectionChange();
+    return this;
+};
+
+GridComponent.prototype.removeSelected = function() {
+    this.grid.deleteSelectedRows();
+    this.grid.clearSelection();
+    return this;
+};
+
+GridComponent.prototype.clearSelection = function() {
+    this.grid.clearSelection();
+    return this;
 };
 
 GridComponent.prototype.initEvents = function () {

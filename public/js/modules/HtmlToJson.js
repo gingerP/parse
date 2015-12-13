@@ -1,4 +1,19 @@
 var u = require('../utils');
+var assert = require('assert');
+var validate = {
+    position: function(position) {
+        if (isNaN(position * 1)) {
+            throw new Error('Invalid position "' + position + '" - must be numeric (+n , n, -n)');
+        }
+    },
+    levelCode: function(code, level) {
+        if (u.hasContent(code) && !u.hasContent(level)) {
+            throw new Error("There is no level for code '" + code + "'");
+        }
+    }
+};
+
+
 HtmlToJson = function () {
     this.parser = null;
 };
@@ -35,15 +50,19 @@ HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
     var inst = this;
     var $ = this.$;
     var level = inst._getLevelByCode(levelsCfg.node, inst.levels);
+    validate.levelCode(levelsCfg.node, level);
     var pack = inst._handleLevel(dom, level);
     var children = levelsCfg.children;
     var listKey = level.listKey || this.listKey;
     if (pack.DOMList.length && children && children.length) {
         children.forEach(function (child, i) {
-            pack.DOMList.each(function(i, DOM) {
-                var data = pack.objects[i];
-                data[listKey] = data[listKey] || [];
-                data[listKey] = data[listKey].concat(inst._iterateLevels(DOM, child));
+            var inst_ = inst;
+            pack.DOMList.each(function(index, DOM) {
+                var data = pack.objects[index];
+                if (u.hasContent(data)) {
+                    data[listKey] = data[listKey] || [];
+                    data[listKey] = data[listKey].concat(inst_._iterateLevels(DOM, child));
+                }
             });
         });
     }
@@ -53,16 +72,14 @@ HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
 HtmlToJson.prototype._handleLevel = function (dom, level) {
     var dataObjects = [];
     var inst = this;
-    var $ = this.$;
     var DOMNodes = this._handlePath(dom, level.path);
-    var pack = null;
     if (DOMNodes && DOMNodes.length) {
         DOMNodes.each(function(i, DOM) {
             var valid = inst._handleFilter(DOM, level.filter);
             if (valid) {
                 var data = inst._handleData(DOM, level.data);
-                if (data) {
-                    dataObjects.push(data);
+                if (u.hasContent(data)) {
+                    dataObjects[i] = data;
                 }
             }
         })
@@ -106,24 +123,24 @@ HtmlToJson.prototype._handleFilter = function(DOM, filters) {
 };
 
 HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
+    var result = {};
     var $ = this.$;
     var inst = this;
-    var result = {};
-    var cfg = null;
-    var name = null;
-    dataCfg.forEach(function (cfg, i) {
-        if (!u.hasContent(cfg.handler)) {
-            result[cfg.name] = '';
-            return;
-        }
-        var complexSelector = inst._getComplexSelector(cfg.selectors);
-        var children = DOM;
-        if (u.hasContent(complexSelector)) {
-            children = $(complexSelector, DOM);
-        }
-        var handler = inst._dataHandlers[cfg.handler];
-        result[cfg.name] = handler.call(inst, children, cfg, $, inst);
-    });
+    if (dataCfg && dataCfg.length) {
+        dataCfg.forEach(function (cfg, i) {
+            if (!u.hasContent(cfg.handler)) {
+                result[cfg.name] = '';
+                return;
+            }
+            var complexSelector = inst._getComplexSelector(cfg.selectors);
+            var children = DOM;
+            if (u.hasContent(complexSelector)) {
+                children = $(complexSelector, DOM);
+            }
+            var handler = inst._dataHandlers[cfg.handler];
+            result[cfg.name] = handler.call(inst, children, cfg, $, inst);
+        });
+    }
     return result;
 };
 
@@ -163,6 +180,7 @@ HtmlToJson.prototype._pathHandlers = {
         };
         var complexSelector = this._getComplexSelector(step.selectors);
         if (u.hasContent(step.pos)) {
+            validate.position(step.pos);
             step.pos = step.pos.trim();
             direction = getDirection(step.pos);
             position = parseInt(step.pos);
@@ -215,9 +233,9 @@ HtmlToJson.prototype._dataHandlers = {
         }
         return '';
     },
-    attr: function(dom, cfg, $) {
+    attribute: function(dom, cfg, $) {
         if (dom) {
-            return u.cleanStr($(dom).attr(cfg.attr));
+            return u.cleanStr($(dom).attr(cfg.attribute));
         }
         return '';
     },
@@ -236,7 +254,7 @@ HtmlToJson.prototype._dataHandlers = {
     style: function(dom, cfg, $) {
         var attrVal = null;
         var style = cfg.style;
-        var handlers = inst._styleHandlers;
+        var handlers = this._styleHandlers;
         if (dom && typeof(handlers[style]) == 'function') {
             attrVal = $(dom).attr("style");
             return handlers[style].call(this, attrVal);
@@ -278,6 +296,7 @@ HtmlToJson.prototype._getLevelByCode = function(code, levels) {
             }
         });
     }
+
     return result;
 };
 

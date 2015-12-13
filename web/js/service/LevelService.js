@@ -3,7 +3,7 @@ define(['./CoreService.js'],
         var api;
         var urls = {
             save: 'levelConfig/save',
-            delete: 'levelConfig/delete',
+            'delete': 'levelConfig/delete',
             list: 'levelConfig/list',
             getEntity: 'levelConfig/getEntity'
         };
@@ -12,7 +12,7 @@ define(['./CoreService.js'],
             save: function(data, callback) {
                 callback();
             },
-            delete: function(id, callback) {
+            'delete': function(id, callback) {
                 callback();
             },
             list: function(mappings, callback) {

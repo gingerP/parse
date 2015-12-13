@@ -36,6 +36,14 @@ DataManager.prototype.prepare = function(entity) {
     }
 };
 
+DataManager.prototype['delete'] = function(id, callback) {
+    if (U.hasContent(id)) {
+        this.service['delete'](id, callback);
+    } else if (typeof(callback) === 'function') {
+        callback();
+    }
+};
+
 DataManager.prototype.createNewEntity = function() {
     return this.service._entity();
 };

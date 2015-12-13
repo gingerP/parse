@@ -3,7 +3,7 @@ define(['./CoreService.js'],
         var api;
         var urls = {
             save: 'constructor/save',
-            delete: 'constructor/delete',
+            'delete': 'constructor/delete',
             list: 'constructor/list',
             getEntity: 'constructor/getEntity',
             test: 'constructor/test'
@@ -13,8 +13,8 @@ define(['./CoreService.js'],
             save: function(data, callback) {
                 core.load(urls.save, callback, data);
             },
-            delete: function(id, callback) {
-                core.load(urls.delete, callback, {id: id});
+            'delete': function(id, callback) {
+                core.load(urls['delete'], callback, {id: id});
             },
             list: function(mappings, callback) {
                 core.load(urls.list, callback, {mappings: mappings});

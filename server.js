@@ -1,18 +1,14 @@
-#!/bin/env node
-//  OpenShift sample Node application
 var prop = require('./prop.json');
 var userApp = require('./app');
 var express = require('express');
 var fs = require('fs');
 var http = null;
 var sslOptions = null;
-var sslPath = '/usr/share/envssl/ozparse';
-if (prop.sslEnabled === true) {
+if (prop.network.ssl.active === true) {
     http = require('https');
     sslOptions = {
-        key: fs.readFileSync(sslPath + '/server.key'),
-        cert: fs.readFileSync(sslPath + '/server.crt')/*,
-        ca: fs.readFileSync(sslPath + '/ca.crt')*/
+        key: fs.readFileSync(prop.network.ssl.path + '/server.key'),
+        cert: fs.readFileSync(prop.network.ssl.path + '/server.crt')
     }
 } else {
     http = require('http');
@@ -38,16 +34,9 @@ var SampleApp = function() {
      */
     self.setupVariables = function() {
         //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-        self.httpsPort      = process.env.OPENSHIFT_NODEJS_HTTPS_PORT || 8443;
-
-        if (typeof self.ipaddress === "undefined") {
-            //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
-            //  allows us to run/test the app locally.
-            console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
-            self.ipaddress = "127.0.0.1";
-        };
+        self.ipaddress = prop.network.host;
+        self.port      = prop.network.http;
+        self.httpsPort = prop.network.https;
     };
 
 
@@ -95,13 +84,14 @@ var SampleApp = function() {
      *  the handlers.
      */
     self.initializeServer = function() {
-        if (prop.sslEnabled === true) {
+        if (prop.network.ssl.active === true) {
             self.app = http.createServer(sslOptions, userApp);
+            console.log('%s: HTTPS server successfully created.', Date(Date.now()));
         } else {
             self.app = http.createServer(userApp);
+            console.log('%s: HTTP server successfully created.', Date(Date.now()));
         }
     };
-
 
 
     /**
@@ -120,10 +110,10 @@ var SampleApp = function() {
      */
     self.start = function() {
         //  Start the app on the specific interface (and port).
-        self.app.listen(prop.sslEnabled? self.httpsPort: self.port,
+        self.app.listen(prop.network.ssl.active? self.httpsPort: self.port,
             self.ipaddress, function () {
             console.log('%s: Node server started on %s:%d ...',
-                Date(Date.now()), self.ipaddress, prop.sslEnabled? self.httpsPort: self.port);
+                Date(Date.now()), self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
         });
     };
 

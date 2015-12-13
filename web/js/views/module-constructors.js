@@ -1,12 +1,16 @@
 define([
-        '../views-dependencies/module-view-constructors-level.js',
-        '../views-dependencies/module-view-constructors-levels-config.js',
-        '../views-dependencies/module-view-constructors-test-data-viewer.js',
+        '../views-dependencies/constructor/module-view-level.js',
+        '../views-dependencies/constructor/module-view-levels-config.js',
+        '../views-dependencies/constructor/module-view-src-editor.js',
+        '../views-dependencies/constructor/module-view-test-data-viewer.js',
         '../service/ConstructorService.js',
-        '../service/LevelService.js'
+        '../service/LevelService.js',
+        '../../ace/ace.js',
+        '/static/js/bower_components/vkBeautify/vkbeautify.js'
     ],
-    function(LevelModule, levelsConfigModule, testDataViewer, service, levelService) {
+    function(LevelModule, levelsConfigModule, srcEditor, testDataViewer, service, levelService) {
         var api;
+        var container;
         var layout;
         var list;
         var form;
@@ -15,7 +19,6 @@ define([
         var toolbar;
         var levelsToolbar;
         var sidebarSrc;
-        var src;
         var dataManager = new DataManager(service);
         var levelDataManager = new DataManager(levelService);
         var action = {
@@ -23,10 +26,23 @@ define([
                 var data = dataManager.createNewEntity();
                 list.addRow(data, true);
             },
-            delete: function() {
-
+            'delete': function() {
+                container.progressOn();
+                var data = updateData();
+                if (data) {
+                    if (data._isNew) {
+                        container.progressOff();
+                        list.removeSelected();
+                    } else if (U.hasContent(data._id)) {
+                        dataManager['delete'](data._id, function () {
+                            container.progressOff();
+                            list.removeSelected();
+                        })
+                    }
+                }
             },
             save: function(callback) {
+                container.progressOn();
                 var data = updateData();
                 var isNew = dataManager.isNew(data);
                 var id = dataManager.getId(data);
@@ -37,17 +53,22 @@ define([
                         id = _id;
                     }
                     list.controller.reloadRow(oldRowId, id, function() {
+                        container.progressOff();
                         if (typeof(callback) == 'function') {
                             callback();
                         }
                     }, true);
                 });
             },
-            reload: function() {
-
+            reload: function(callback) {
+                load(list);
             },
             loadEntity: function(id, callback) {
-                dataManager.get(id, callback);
+                container.progressOn();
+                dataManager.get(id, function(data) {
+                    container.progressOff();
+                    callback(data);
+                });
             },
             test: function() {
                 var selected = list.getSelectedData();
@@ -73,7 +94,7 @@ define([
                 var tabId = U.getRandomString();
                 var tab;
                 var levelModule;
-                tabbar.addTab(tabId, "#" + (levelsModules.length + 1) + "Level");
+                tabbar.addTab(tabId);
                 tab = tabbar.cells(tabId);
                 levelModule = LevelModule().init(tab);
                 levelModule.getComponent().containerCellId = tabId;
@@ -81,7 +102,7 @@ define([
                 levelsModules.push(levelModule);
                 return levelModule;
             },
-            delete: function(module) {
+            'delete': function(module) {
                 var tab = tabbar.getActiveTab();
                 var index = levelsModules.indexOf(module);
                 var component = null;
@@ -94,7 +115,7 @@ define([
             deleteActive: function() {
                 var module = levelAction.getActive();
                 if (module) {
-                    levelAction.delete(module);
+                    levelAction['delete'](module);
                 }
             },
             getActive: function() {
@@ -139,6 +160,7 @@ define([
             //RELOAD
             (function getReloadFeature() {
                 var feature = new GenericFeature().init({
+                    label: 'Reload',
                     type: 'button',
                     name: 'reload',
                     image: '/static/images/button_reload.png',
@@ -150,6 +172,7 @@ define([
             //ADD
             (function getAddFeature() {
                 var feature = new GenericFeature().init({
+                    label: 'Add',
                     type: 'button',
                     name: 'add',
                     image: '/static/images/button_add.png',
@@ -161,17 +184,25 @@ define([
             //DELETE
             (function getDeleteFeature() {
                 var feature = new GenericFeature().init({
+                    label: 'Delete',
                     type: 'button',
                     name: 'delete',
                     image: '/static/images/button_delete.png',
                     imageDis: '/static/images/button_delete.png'
                 });
-                feature.exec = action.delete;
+                feature.exec = function() {
+                    vv.confirm(vvMes.del, function(result) {
+                        if (result) {
+                            action['delete']();
+                        }
+                    })
+                }
                 return feature;
             })(),
             //SAVE
             (function getSaveFeature() {
                 var feature = new GenericFeature().init({
+                    label: 'Save',
                     type: 'button',
                     name: 'save',
                     image: '/static/images/button_save.png',
@@ -183,6 +214,7 @@ define([
             //TEST
             (function getSaveFeature() {
                 var feature = new GenericFeature().init({
+                    label: 'Test',
                     type: 'button',
                     name: 'test',
                     image: '/static/images/button_test.png',
@@ -199,6 +231,7 @@ define([
             // ADD LEVEL
             (function() {
                 var feature = new GenericFeature().init({
+                    label: 'Add level',
                     type: 'button',
                     name: 'addLevel',
                     image: '/static/images/button_add.png',
@@ -215,6 +248,7 @@ define([
             // DELETE LEVEL
             (function() {
                 var feature = new GenericFeature().init({
+                    label: 'Delete level',
                     type: 'button',
                     name: 'deleteLevel',
                     image: '/static/images/button_delete.png',
@@ -225,7 +259,7 @@ define([
                         var active = levelAction.getActive();
                         if (result && active) {
                             levelsConfigAction.remove(active);
-                            levelAction.delete(active);
+                            levelAction['delete'](active);
                         }
                     })
                 };
@@ -291,9 +325,15 @@ define([
         function initListBRules(list) {
         }
 
-        function load(list) {
+        function load(list, callback) {
+            container.progressOn();
             service.list(list.controller.mappings, function(data) {
+                container.progressOff();
+                list.clear();
                 list.controller.setData(data);
+                if (typeof(callback) === 'function') {
+                    callback();
+                }
             });
         }
 
@@ -338,7 +378,9 @@ define([
             });
             list.addBRules({
                 '_select_': function(list, entity) {
-                    if (!entity._isNew) {
+                    if (!U.hasContent(entity)) {
+                        setFormData(entity);
+                    } else if (!entity._isNew) {
                         var id = entity._id;
                         action.loadEntity(id, setFormData);
                     } else {
@@ -363,12 +405,13 @@ define([
         function deleteLevels() {
             var index = levelsModules.length - 1;
             while(index > -1) {
-                levelAction.delete(levelsModules[index]);
+                levelAction['delete'](levelsModules[index]);
                 index--;
             }
         }
 
         function setFormData(data) {
+            srcEditor.setValue(JSON.stringify(data));
             form.setData(data);
             setLevelsConfigData(data);
             setLevelsData(data);
@@ -428,7 +471,11 @@ define([
                 .setForm(form.form.getContainer('levels_config'));
         }
 
-        function createEditor(sideBar) {
+        function createSrcEditorLayout(sidebar) {
+            var layout = sidebar.cells('source').attachLayout('1C');
+            layout.base.className += ' src_editor';
+            layout.cells('a').hideHeader();
+            return layout;
         }
 
         function createTestDataViewer(container) {
@@ -453,8 +500,10 @@ define([
             return entity;
         }
 
-        function init(container) {
+        function init(_container) {
             var levelsLayout;
+            var srcLayout;
+            container = _container;
             layout = createLayout(container);
             list = createList(layout);
             toolbar = createListToolbar(layout);
@@ -465,8 +514,20 @@ define([
             levelsLayout = createLevelsLayout(sidebarSrc);
             levelsToolbar = createLevelsToolbar(levelsLayout);
             tabbar = createTabbar(levelsLayout);
-            src = createEditor(sidebarSrc);
-            createTestDataViewer(layout.cells('d'))
+
+            srcLayout = createSrcEditorLayout(sidebarSrc);
+            srcEditor.init(srcLayout).setDataSource(api);
+
+            createTestDataViewer(layout.cells('d'));
+            addLayoutSizeListener(srcEditor);
+        }
+
+        function addLayoutSizeListener(module) {
+            if (module && typeof(module.onSizeChange) === 'function') {
+                layout.attachEvent("onPanelResizeFinish", function(names) {
+                    module.onSizeChange(names);
+                });
+            }
         }
 
         api = {
@@ -475,6 +536,18 @@ define([
                 return api;
             },
             destruct: function() {
+                return api;
+            },
+            updateData: function(prepare) {
+                var data = updateData();
+                data = JSON.parse(JSON.stringify(data));
+                if (prepare) {
+                    dataManager.prepare(data);
+                }
+                return data;
+            },
+            setData: function(entity) {
+                setFormData(entity);
                 return api;
             }
         };

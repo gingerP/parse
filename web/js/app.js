@@ -4,7 +4,7 @@ $(document).ready(function() {
             id: 'constructors',
             title: 'Pages',
             icon: 'pages',
-            default: true
+            'default': true
         })
         .addPageLoader({
             id: 'sys-settings',
@@ -59,10 +59,10 @@ sideBarModule = (function() {
     function getDefaultView() {
         var result = null;
         $.each(views, function(i, view) {
-            if (view.default) {
+            if (view['default']) {
                 result = view;
             }
-            return !view.default;
+            return !view['default'];
         });
         return result;
     }
@@ -160,7 +160,7 @@ sideBarModule = (function() {
                     title: vars.title,
                     icon: '/static/images/' + (vars.icon || id) + '.png'
                 },
-                default: !!vars.default,
+                'default': !!vars['default'],
                 module: null
             };
             views.push(cfg);
