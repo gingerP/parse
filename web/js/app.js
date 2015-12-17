@@ -13,11 +13,16 @@ $(document).ready(function() {
         })
         .addPageLoader({
             id: 'schedules',
-            title: 'Schedules'
+            title: 'Schedules & Cache'
         })
         .addPageLoader({
             id: 'cache',
             title: 'Cache'
+        })
+        .addPageLoader({
+            id: 'api',
+            icon: 'pages',
+            title: 'Apis'
         })
         .init()
 });

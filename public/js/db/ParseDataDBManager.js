@@ -1,28 +1,18 @@
-var Parent = require('./DBManager');
+var GenericDBManager = require('./GenericDBManager').class;
+var manager;
 
-function ParseDataDBM() {};
+ParseDataDBManager = function() {};
 
-ParseDataDBM.prototype = Object.create(Parent.prototype);
-ParseDataDBM.prototype.constructor = ParseDataDBM;
+ParseDataDBManager.prototype = Object.create(GenericDBManager.prototype);
+ParseDataDBManager.prototype.constructor = ParseDataDBManager;
 
-ParseDataDBM.prototype.getCollectionName = function() {
-    return 'parse_data';
+ParseDataDBManager.prototype.getDoc = function(code) {
+    this.getByCriteria({code: code});
 };
 
-ParseDataDBM.prototype.update = function(data, callback) {
-    this._update({code: data.code}, data, callback);
+manager = new ParseDataDBManager();
+manager.setCollectionName('parse_data');
+module.exports = {
+    class: ParseDataDBManager,
+    instance: manager
 };
-
-ParseDataDBM.prototype.getEntity = function(criteria, callback) {
-    this._getDoc(criteria, callback);
-};
-
-ParseDataDBM.prototype.getDoc = function(code, callback) {
-    this._getDoc({
-        code: {
-            $eq: code
-        }
-    }, callback);
-};
-
-module.exports = ParseDataDBM;

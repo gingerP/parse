@@ -6,10 +6,9 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "angular": "1.4.x",
-    "angular-mocks": "1.4.x",
     "jquery": "~2.1.1",
-    "bootstrap": "~3.1.1",
-    "webix": "3.0.4"
+    "vkbeautify": "0.99.1",
+    "require": "2.4.20",
+    "rsvp": "3.0.19"
   }
 }

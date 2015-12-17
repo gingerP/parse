@@ -4,14 +4,23 @@ function DataManager(service, cfg) {
     };
     $.extend(true, this.cfg, cfg || {});
     this.service = service;
+    this.asPromise = false;
 }
 
 DataManager.prototype.get = function(id, callback, mappings) {
-    this.service.getEntity(id, callback, mappings);
+    this.service.get(id, callback, mappings);
 };
 
 DataManager.prototype.save = function(data, callback) {
     this.service.save(data, callback);
+};
+
+DataManager.prototype.list = function(callback, mappings) {
+    this.service.list(mappings, callback);
+};
+
+DataManager.prototype.remove = function(id, callback) {
+
 };
 
 DataManager.prototype.prepare = function(entity) {
@@ -58,4 +67,9 @@ DataManager.prototype.isNew = function(entity) {
 
 DataManager.prototype.exec = function(method, args) {
     this.service[method].apply(this.service, args);
+};
+
+DataManager.prototype.withPromise = function() {
+    this.asPromise = true;
+    return this;
 };

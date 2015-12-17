@@ -169,6 +169,7 @@ define([
                 feature.exec = action.reload;
                 return feature;
             })(),
+            {type: 'separator'},
             //ADD
             (function getAddFeature() {
                 var feature = new GenericFeature().init({
@@ -179,6 +180,18 @@ define([
                     imageDis: '/static/images/button_add.png'
                 });
                 feature.exec = action.add;
+                return feature;
+            })(),
+            //SAVE
+            (function getSaveFeature() {
+                var feature = new GenericFeature().init({
+                    label: 'Save',
+                    type: 'button',
+                    name: 'save',
+                    image: '/static/images/button_save.png',
+                    imageDis: '/static/images/button_save.png'
+                });
+                feature.exec = action.save;
                 return feature;
             })(),
             //DELETE
@@ -196,21 +209,10 @@ define([
                             action['delete']();
                         }
                     })
-                }
+                };
                 return feature;
             })(),
-            //SAVE
-            (function getSaveFeature() {
-                var feature = new GenericFeature().init({
-                    label: 'Save',
-                    type: 'button',
-                    name: 'save',
-                    image: '/static/images/button_save.png',
-                    imageDis: '/static/images/button_save.png'
-                });
-                feature.exec = action.save;
-                return feature;
-            })(),
+            {type: 'separator'},
             //TEST
             (function getSaveFeature() {
                 var feature = new GenericFeature().init({

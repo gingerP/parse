@@ -1,7 +1,7 @@
-var DBM = require('./DBManager');
-var ConfigDBM = require('./ParseConfigDBManager');
-var ScheduleDBM = require('./ScheduleDBM');
-var UserDBM = require('./UserDBM');
+var DBM = require('./GenericDBManager').class;
+var ConfigDBM = require('./ParseConfigDBManager').instance;
+var ScheduleDBM = require('./ScheduleDBManager').instance;
+var UserDBManager = require('./UserDBManager').instance;
 
 function InitDBM() {
     this.collections = [
@@ -45,13 +45,13 @@ InitDBM.prototype.validateCollections = function(db) {
 };
 
 InitDBM.prototype.initUsers = function() {
-    var userDBM = new UserDBM();
+/*    var UserDBManager = new UserDBM();
     userDBM.create('vinni', '111', function() {});
-    userDBM.create('valiart', 'HighAces', function() {});
+    userDBM.create('valiart', 'HighAces', function() {});*/
 };
 
 InitDBM.prototype.initData = function(db, callback) {
-    var check = function() {
+/*    var check = function() {
         index--;
         if (index == 0 && typeof(callback) == 'function') {
             callback();
@@ -69,7 +69,7 @@ InitDBM.prototype.initData = function(db, callback) {
     configDBM.insert(sectionsCfg, check);
     schedules.forEach(function(sched) {
         scheduleDBM.insert(sched, check);
-    });
+    });*/
     return this;
 };
 module.exports = InitDBM;

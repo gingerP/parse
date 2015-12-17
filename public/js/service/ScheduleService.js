@@ -1,58 +1,25 @@
-var ScheduleDBM = require('../db/ScheduleDBM');
 var u = require('../utils');
+var c = require('../constants');
+var scheduleDBManager = require('../db/ScheduleDBManager').instance;
+var GenericService = require('./GenericService').class;
+var service;
 
-scheduleModule = (function() {
-    var api = null;
-    var scheduleDBM = new ScheduleDBM();
+ScheduleService = function() {};
+ScheduleService.prototype = Object.create(GenericService.prototype);
+ScheduleService.prototype.constructor = ScheduleService;
+ScheduleService.prototype.start = function(id) {
 
-    function startAll(callback) {
-        scheduleDBM.list(function(list) {
-            if (typeof(callback) == 'function') {
-                callback(list);
-            }
-        });
-    }
+};
+ScheduleService.prototype.stop = function(id) {
 
-    api = {
-        init: function() {
+};
+ScheduleService.prototype.restart = function(id) {
 
-        },
-        startAllSchedules: function(callback) {
-            startAll(callback);
-        },
-        startSchedule: function(callback) {
+};
+service = new ScheduleService();
+service.setManager(scheduleDBManager);
 
-        },
-        createNewEntity: function(obj) {
-            var entity = {
-                period: null,
-                lastTimeStart: null,
-                lastTimeEnd: null,
-                configCode: null
-            };
-            if (obj) {
-                u.merge(entity, obj);
-            }
-            return entity;
-        },
-        saveEntity: function(entity, callback) {
-            scheduleDBM.update(entity, callback);
-        },
-        update: function(entity, callback) {
-            scheduleDBM.update(entity, callback);
-        },
-        saveEntities: function(entities) {
-            scheduleDBM.saveEntities(entities);
-        },
-        delete: function() {
-
-        },
-        list: function() {
-
-        }
-    };
-
-    return api;
-})();
-
-module.exports = scheduleModule;
+module.exports = {
+    class: ScheduleService,
+    instance: service
+};

@@ -1,17 +1,19 @@
 var u = require('../utils');
 var c = require('../constants');
-var ConfigDBM = require('../db/ParseConfigDBManager');
-var express = require('express');
-var router = express.Router();
-var routes = [
-    {path: '/list', method: 'list', async: true},
-    {path: '/getEntity', method: 'getEntity', async: true},
-    {path: '/save', method: 'save', async: true},
-    {path: '/delete', method: 'delete', async: true},
-    {path: '/test', method: 'test', async: true}
-];
+var configDBManager= require('../db/ParseConfigDBManager').instance;
+var GenericService = require('./GenericService').class;
+var service;
 
-function runTest(config, callback) {
+ConstructorService = function() {};
+ConstructorService.prototype = Object.create(GenericService.prototype);
+ConstructorService.prototype.constructor = ConstructorService;
+ConstructorService.prototype.test = function(id, callback) {
+    var inst = this;
+    this.manager.get(id).then(function(config) {
+        inst.testByConfig(config, callback);
+    })
+};
+ConstructorService.prototype.testByConfig = function(config, callback) {
     var url = config.url;
     console.log('START test loading and parsing for config "' + config.code + '(' + config._id + ')"');
     u.loadDom(url, function(error, body) {
@@ -30,50 +32,15 @@ function runTest(config, callback) {
                 return;
             }
             console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')"');
-            callback(error, data);
+            callback(data);
         }
     }, 'koi8r');
-}
+};
 
-module.stuf = (function () {
-    var api = null;
-    var configDBM = new ConfigDBM();
+service = new ConstructorService();
+service.setManager(configDBManager);
 
-    api = {
-        list: function(req, res, callback) {
-            var mappings = req.body.mappings;
-            configDBM.list(callback, mappings);
-            return api;
-        },
-        save: function(req, res, callback) {
-            var entity = req.body;
-            configDBM.update(entity, callback);
-            return api;
-        },
-        getEntity: function(req, res, callback) {
-            var id = req.body.id;
-            var mappings = req.body.mappings;
-            configDBM.getEntity(id, callback, mappings);
-            return api;
-        },
-        delete: function(req, res, callback) {
-            var id = req.body.id;
-            configDBM.delete(id, callback);
-            return api;
-        },
-        test: function(req, res, callback) {
-            var id = req.body.id;
-            configDBM.getEntity(id, function(config) {
-                runTest(config, function(error, parsedData) {
-                    //TODO shit
-                    callback(error? error: parsedData);
-                })
-            });
-        }
-    };
-
-    return api;
-})();
-
-module.exports = router;
-u.linkRequestsToModule(routes, module.stuf, router, 'post');
+module.exports = {
+    class: ConstructorService,
+    instance: service
+};

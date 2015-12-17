@@ -2,8 +2,7 @@ var utils = require('./public/js/utils');
 var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var UserDBM = require('./public/js/db/UserDBM');
-var userDBM = new UserDBM();
+var UserService = require('./public/js/service/UserService').instance;
 
 var redirectPath = '/admin';
 
@@ -33,7 +32,7 @@ function initPassport(app) {
         done(null, user.username);
     });
     passport.deserializeUser(function(id, done) {
-        userDBM.getUser(id, function(user) {
+        UserService.getUser(id).then(function(user) {
             done(null, user);
         });
     });
@@ -66,7 +65,7 @@ passport.use('login', new LocalStrategy({
         passReqToCallback : true
     },
     function(request, username, password, done) {
-        userDBM.doesUserExist(username, password, function(userExist) {
+        UserService.doesUserExist(username, password).then(function(userExist) {
             if (!userExist) {
                 return done(null, false, request.flash('message', 'Invalid password or username'))
             } else {
@@ -86,7 +85,7 @@ module.exports = {
         app.use('/static/css', express.static(__dirname + '/web/css'));
         app.use('/static/css/bower_components', express.static(__dirname + '/bower_components'));
         app.use('/static/images', express.static(__dirname + '/web/images'));
-        app.use('/static/js', express.static(__dirname + '/web/min/js'));
+        app.use('/static/js', express.static(__dirname + '/web/js'));
         app.use('/static/dhtmlx', express.static(__dirname + '/web/dhtmlx'));
         app.use('/static/ace', express.static(__dirname + '/web/ace'));
         app.use('/static/js/bower_components', express.static(__dirname + '/bower_components'));

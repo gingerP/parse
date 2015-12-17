@@ -27,6 +27,19 @@ GridController.prototype.setData = function(data) {
     this.owner.runPostRules(data);
 };
 
+GridController.prototype.updateUserDataField = function(rowId, colName, value) {
+    var data = this.owner.getData(rowId);
+    var property;
+    $.each(this.mappings, function(index, prop) {
+        if (prop.input === colName) {
+            property = prop.property;
+            return false;
+        }
+    });
+    U.setDeepValue(value, property, data);
+    this.owner.setData(rowId);
+};
+
 GridController.prototype.reloadRow = function(rowId, entityId, callback, isSelect) {
     var inst = this;
     this.dataManager.get(entityId, function(data) {
@@ -109,6 +122,16 @@ GridComponent.prototype.initEvents = function () {
     this.grid.attachEvent('onSelectStateChanged', function (selected) {
         thiz.controller.onSelectionChange(selected);
     });
+    this.grid.attachEvent("onEditCancel",function(rId,cInd,val){
+        return true;
+    });
+    this.grid.attachEvent("onEditCell", function(stage, rowId, columnInd, newValue, oldValue){
+        var colName = thiz.getColName(columnInd);
+        if (stage === 2) {
+            thiz.controller.updateUserDataField(rowId, colName, newValue);
+        }
+        return true;
+    });
     return this;
 };
 
@@ -136,11 +159,23 @@ GridComponent.prototype.refreshRow = function(rowId, entity) {
 
 GridComponent.prototype.setOrigUserData = function(entity) {
     var rowId = this.getRowId(entity);
+    var copy = {};
+    $.extend(true, copy, entity);
     this.grid.setUserData(rowId, 'orig', entity);
+    this.setData(copy);
 };
 
 GridComponent.prototype.getOrigUserData = function(rowId) {
     return this.grid.getUserData(rowId, 'orig');
+};
+
+GridComponent.prototype.setData = function(entity) {
+    var rowId = this.getRowId(entity);
+    this.grid.setUserData(rowId, 'dyn', entity);
+};
+
+GridComponent.prototype.getData = function(rowId) {
+    return this.grid.getUserData(rowId, 'dyn');
 };
 
 GridComponent.prototype.runSelectRules = function (entity) {
@@ -162,3 +197,17 @@ GridComponent.prototype.getSelectedData = function() {
     return result;
 };
 
+GridComponent.prototype.getColIndex = function(name) {
+    var result;
+    $.each(this.config, function(index, configItem) {
+        if (configItem.key === name) {
+            result = index;
+            return false;
+        }
+    });
+    return result;
+};
+
+GridComponent.prototype.getColName = function(index) {
+    return this.config[index]? this.config[index].key: null;
+};
