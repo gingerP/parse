@@ -80,7 +80,7 @@ var api = {
             }
             return {
                 DOMList: objects || [],
-                itemList: res,
+                itemList: res
             };
         },
         _parseIterateDom: function (dom, data, levelCfg) {
@@ -196,13 +196,16 @@ var api = {
     getValueFromObjectByPath: function(obj, path) {
         var key;
         var tmp = obj;
-        var keys = path.split('.');
-        for (var index = 0; index < keys.length; index++) {
-            key = keys[index];
-            tmp = tmp[key];
-            if (typeof(tmp) == 'undefined') {
-                tmp = null;
-                break;
+        var keys;
+        if (obj && typeof(obj) == 'object' && !Array.isArray(obj)) {
+            keys = path.split('.');
+            for (var index = 0; index < keys.length; index++) {
+                key = keys[index];
+                tmp = tmp[key];
+                if (typeof(tmp) == 'undefined') {
+                    tmp = null;
+                    break;
+                }
             }
         }
         return tmp;

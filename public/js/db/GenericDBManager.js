@@ -58,7 +58,7 @@ GenericDBManager.prototype._getDoc = function(criteria, callback, mappings) {
                     console.log('%s: An ERROR has occurred while extracted document from "%s".', Date(Date.now()), inst.getCollectionName());
                     callback({});
                 } else {
-                    console.log('%s: Document {_id: "%s"} was successfully extracted from "%s".', Date(Date.now()), doc._id, inst.getCollectionName());
+                    console.log('%s: Document {_id: "%s"} was successfully extracted from "%s".', Date(Date.now()), doc? doc._id: null, inst.getCollectionName());
                     if (mappings) {
                         callback(utils.extractFields(doc, mappings));
                     } else {
@@ -169,6 +169,14 @@ GenericDBManager.prototype.save = function(doc, mappings) {
         inst._save(doc, function(data) {
             resolve(data);
         });
+    })
+};
+GenericDBManager.prototype.saveByCriteria = function(doc, criteria, mappings) {
+    var inst = this;
+    return new Promise(function(resolve, reject) {
+        inst._save(doc, function(data) {
+            resolve(data);
+        }, criteria);
     })
 };
 GenericDBManager.prototype.get = function(id, mappings) {

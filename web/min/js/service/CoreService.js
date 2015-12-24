@@ -1,0 +1,2 @@
+define([],function(){function e(a,b){dhtmlx.alert({title:"Error",type:"alert-error",text:b.onError});if("object"==typeof a&&"function"==typeof a.onError)a.onError(b.onError)}function g(a,b,c){$.ajax({method:"POST",data:c,url:h+a,success:function(a,c,d){if(a.hasOwnProperty("onError"))e(b,a,c,d);else if(a.hasOwnProperty("onSuccess"))if("object"==typeof b){if("function"==typeof b.onSuccess)b.onSuccess(a.onSuccess)}else"function"==typeof b&&b(a.onSuccess)},error:function(a,c,d){e(b,d)}})}var f,h="/api/";
+return f={load:function(a,b,c){g(a,b,c);return f}}});

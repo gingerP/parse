@@ -16,11 +16,15 @@ DataManager.prototype.save = function(data, callback) {
 };
 
 DataManager.prototype.list = function(callback, mappings) {
-    this.service.list(mappings, callback);
+    this.service.list(callback, mappings);
 };
 
 DataManager.prototype.remove = function(id, callback) {
-
+    if (U.hasContent(id)) {
+        this.service.remove(id, callback);
+    } else if (typeof(callback) === 'function') {
+        callback();
+    }
 };
 
 DataManager.prototype.prepare = function(entity) {
@@ -45,16 +49,8 @@ DataManager.prototype.prepare = function(entity) {
     }
 };
 
-DataManager.prototype['delete'] = function(id, callback) {
-    if (U.hasContent(id)) {
-        this.service['delete'](id, callback);
-    } else if (typeof(callback) === 'function') {
-        callback();
-    }
-};
-
 DataManager.prototype.createNewEntity = function() {
-    return this.service._entity();
+    return this.service.getNew();
 };
 
 DataManager.prototype.getId = function(entity) {

@@ -10,8 +10,8 @@ define([
         var list;
         var toolbar;
         var manager = {
-            schedule: new DataManager(ScheduleService),
-            constructor: new DataManager(ConstructorService)
+            schedule: new DataManager(ScheduleService.instance),
+            constructor: new DataManager(ConstructorService.instance)
         };
         var listPromises = [
             function() {
@@ -35,14 +35,16 @@ define([
                 list.addRow(data, true);
             },
             'delete': function() {
-                container.progressOn();
-                var data = updateData();
-                if (data) {
+                var selectedRowId = list.getSingleSelected();
+                var data;
+                if (U.hasContent(selectedRowId)) {
+                    container.progressOn();
+                    data = list.getData(selectedRowId);
                     if (data._isNew) {
                         container.progressOff();
                         list.removeSelected();
                     } else if (U.hasContent(data._id)) {
-                        dataManager['delete'](data._id, function () {
+                        manager.schedule.remove(data._id, function () {
                             container.progressOff();
                             list.removeSelected();
                         })
@@ -50,12 +52,11 @@ define([
                 }
             },
             save: function(callback) {
-                var selectedRowId = list.grid.getSelectedRowId();
+                var selectedRowId = list.getSingleSelected();
                 var data;
                 var isNew;
                 var id;
-                selectedRowId = selectedRowId? selectedRowId.split(','): null;
-                if (selectedRowId && selectedRowId.length) {
+                if (U.hasContent(selectedRowId)) {
                     container.progressOn();
                     data = list.getData(selectedRowId[0]);
                     isNew = manager.schedule.isNew(data);
@@ -78,31 +79,60 @@ define([
             reload: function(callback) {
                 load(list);
             },
-            loadEntity: function(id, callback) {
-                container.progressOn();
-                dataManager.get(id, function(data) {
-                    container.progressOff();
-                    callback(data);
-                });
+            start: function(callback) {
+                var selectedRowId = list.getSingleSelected();
+                var data;
+                if (U.hasContent(selectedRowId)) {
+                    data = list.getData(selectedRowId);
+                    if (!manager.schedule.isNew(data)) {
+                        manager.schedule.exec('start', [manager.schedule.getId(data), function(status) {
+
+                        }])
+                    } else {
+
+                    }
+                }
             },
-            test: function() {
-                var selected = list.getSelectedData();
-                var container = testDataViewer.getContainer();
-                if (selected) {
-                    container.expand();
-                    container.progressOn();
-                    dataManager.exec('test', [selected._id, {
-                        onSuccess: function(data) {
-                            testDataViewer.setData(JSON.stringify(data));
-                            container.progressOff();
-                        },
-                        onError: function(error) {
-                            container.progressOff();
-                        }
-                    }]);
+            stop: function(callback) {
+                var selectedRowId = list.getSingleSelected();
+                var data;
+                if (U.hasContent(selectedRowId)) {
+                    data = list.getData(selectedRowId);
+                    if (!manager.schedule.isNew(data)) {
+                        manager.schedule.exec('stop', [manager.schedule.getId(data), function(status) {
+
+                        }])
+                    } else {
+
+                    }
+                }
+            },
+            restart: function(callback) {
+                var selectedRowId = list.getSingleSelected();
+                var data;
+                if (U.hasContent(selectedRowId)) {
+                    data = list.getData(selectedRowId);
+                    if (!manager.schedule.isNew(data)) {
+                        manager.schedule.exec('restart', [manager.schedule.getId(data), function(status) {
+
+                        }])
+                    } else {
+
+                    }
+                }
+            },
+            validateCron: function() {
+                var selectedRowId = list.getSingleSelected();
+                var data;
+                if (U.hasContent(selectedRowId)) {
+                    data = list.getData(selectedRowId);
+                    if (data.cron) {
+                        manager.schedule.exec('validateCron', [data.cron, function(status) {
+
+                        }])
+                    }
                 }
             }
-
         };
         var features = [
             //RELOAD
@@ -171,7 +201,7 @@ define([
                     imageDis: '/static/images/button_start.png'
                 });
                 feature.exec = function() {
-                    action.test();
+                    action.start();
                 };
                 return feature;
             })(),
@@ -185,7 +215,7 @@ define([
                     imageDis: '/static/images/button_stop.png'
                 });
                 feature.exec = function() {
-                    action.test();
+                    action.stop();
                 };
                 return feature;
             })(),
@@ -199,7 +229,22 @@ define([
                     imageDis: '/static/images/button_reload.png'
                 });
                 feature.exec = function() {
-                    action.test();
+                    action.restart();
+                };
+                return feature;
+            })(),
+            {type: 'separator'},
+            //VALIDATE CRON
+            (function getSaveFeature() {
+                var feature = new GenericFeature().init({
+                    label: 'Validate cron',
+                    type: 'button',
+                    name: 'restart',
+                    image: '/static/images/button_reload.png',
+                    imageDis: '/static/images/button_reload.png'
+                });
+                feature.exec = function() {
+                    action.validateCron();
                 };
                 return feature;
             })()

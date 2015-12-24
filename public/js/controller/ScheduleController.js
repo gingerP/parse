@@ -10,19 +10,23 @@ ScheduleController.prototype = Object.create(GenericController.prototype);
 ScheduleController.prototype.constructor = ScheduleController;
 ScheduleController.prototype.start = function(req, res, callback) {
     var id = req.body.id;
-    this.service.start(id).then(callback);
+    this.service.start(id).catch(callback).then(callback);
 };
 ScheduleController.prototype.stop = function(req, res, callback) {
     var id = req.body.id;
-    this.service.stop(id).then(callback);
+    this.service.stop(id).catch(callback).then(callback);
 };
 ScheduleController.prototype.restart = function(req, res, callback) {
     var id = req.body.id;
-    this.service.restart(id).then(callback);
+    this.service.restart(id).catch(callback).then(callback);
 };
 ScheduleController.prototype.startAll = function(req, res, callback) {
     var config = req.body;
     this.service.testByConfig(config).then(callback);
+};
+ScheduleController.prototype.validateCron = function(req, res, callback) {
+    var cron = req.body.cron;
+    this.service.validateCron(cron).catch(callback).then(callback);
 };
 
 controller = new ScheduleController();
@@ -34,7 +38,8 @@ utils.linkRequestsToModule([
     {path: '/delete', method: 'remove', async: true},
     {path: '/start', method: 'start', async: true},
     {path: '/stop', method: 'stop', async: true},
-    {path: '/restart', method: 'restart', async: true}
+    {path: '/restart', method: 'restart', async: true},
+    {path: '/validateCron', method: 'validateCron', async: true}
 ], controller, router, 'post');
 module.exports = {
     router: router,

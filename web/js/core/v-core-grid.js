@@ -93,6 +93,12 @@ GridComponent.prototype.extractCfg = function(config, key, def) {
     return res.join(',');
 };
 
+GridComponent.prototype.getSingleSelected = function() {
+    var result = this.grid.getSelectedRowId();
+    result = U.hasContent(result)? result.split(',')[0]: null;
+    return result;
+};
+
 GridComponent.prototype.clear = function() {
     this.grid.clearAll();
     this.controller.onSelectionChange();
@@ -102,6 +108,7 @@ GridComponent.prototype.clear = function() {
 GridComponent.prototype.removeSelected = function() {
     this.grid.deleteSelectedRows();
     this.grid.clearSelection();
+    this.controller.onSelectionChange();
     return this;
 };
 

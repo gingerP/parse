@@ -1,0 +1,2 @@
+define(["./CoreService.js"],function(c){var d={save:"constructor/save","delete":"constructor/delete",list:"constructor/list",getEntity:"constructor/getEntity",test:"constructor/test"};return{save:function(a,b){c.load(d.save,b,a)},"delete":function(a,b){c.load(d["delete"],b,{id:a})},list:function(a,b){c.load(d.list,b,{mappings:a})},getEntity:function(a,b){c.load(d.getEntity,b,{id:a})},test:function(a,b){c.load(d.test,b,{id:a})},_entity:function(){return{_isNew:!0,_id:U.getRandomString(),url:null,levels:[],
+levelConfig:[],listKey:null,parentSel:null,code:null}}}});

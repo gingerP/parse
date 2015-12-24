@@ -1,5 +1,5 @@
 var scheduleService = require('./service/ScheduleService');
-var ScheduleParseExecutor = require('./modules/ScheduleParseExecutor');
+var ScheduleParseExecutor = require('./schedule/ScheduleParseExecutor');
 env = (function() {
     var api = null;
     var executors = [];

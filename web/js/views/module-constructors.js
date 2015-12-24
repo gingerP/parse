@@ -8,7 +8,7 @@ define([
         '../../ace/ace.js',
         '/static/js/bower_components/vkBeautify/vkbeautify.js'
     ],
-    function(LevelModule, levelsConfigModule, srcEditor, testDataViewer, service, levelService) {
+    function(LevelModule, levelsConfigModule, srcEditor, testDataViewer, ConstructorService, LevelService) {
         var api;
         var container;
         var layout;
@@ -19,8 +19,8 @@ define([
         var toolbar;
         var levelsToolbar;
         var sidebarSrc;
-        var dataManager = new DataManager(service);
-        var levelDataManager = new DataManager(levelService);
+        var dataManager = new DataManager(ConstructorService.instance);
+        var levelDataManager = new DataManager(LevelService.instance);
         var action = {
             add: function() {
                 var data = dataManager.createNewEntity();
@@ -30,11 +30,11 @@ define([
                 container.progressOn();
                 var data = updateData();
                 if (data) {
-                    if (data._isNew) {
+                    if (dataManager.isNew(data)) {
                         container.progressOff();
                         list.removeSelected();
                     } else if (U.hasContent(data._id)) {
-                        dataManager['delete'](data._id, function () {
+                        dataManager.remove(data._id, function () {
                             container.progressOff();
                             list.removeSelected();
                         })
@@ -329,14 +329,14 @@ define([
 
         function load(list, callback) {
             container.progressOn();
-            service.list(list.controller.mappings, function(data) {
+            dataManager.list(function(data) {
                 container.progressOff();
                 list.clear();
                 list.controller.setData(data);
                 if (typeof(callback) === 'function') {
                     callback();
                 }
-            });
+            }, list.controller.mappings);
         }
 
         function createDetails(layout, list) {
