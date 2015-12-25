@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="OzParse">
+<head>
+    <title>OzParse - Home</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <!--<link rel="stylesheet" href="/static/css/reset.css">-->
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/dhtmlx/dhtmlx_web.css">
+    <link rel="stylesheet" href="/static/css/dhtmlx_override.css">
+    <link rel="stylesheet" href="/static/dhtmlx/dhtmlxsidebar/skins/dhtmlxsidebar_dhx_web.css">
+    <script type="text/javascript" src="/static/js/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/dhtmlx/dhtmlx_debug.js"></script>
+    <script type="text/javascript" src="/static/dhtmlx/dhtmlxsidebar/dhtmlxsidebar.js"></script>
+    <script type="text/javascript" src="/static/dhtmlx/dhtmlxcontainer.js"></script>
+    <script type="text/javascript" src="/static/js/bower_components/requirejs/require.js"></script>
+    <script type="text/javascript" src="/static/js/../min/js/v-core.js"></script>
+    <script type="text/javascript" src="/static/js/utils.js"></script>
+    <script type="text/javascript" src="/static/js/app.js"></script>
+</head>
+<body>
+</body>
+</html>

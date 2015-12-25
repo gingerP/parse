@@ -2,9 +2,11 @@ var CronJob = require('cron').CronJob;
 var CronTime = require('cron').CronTime;
 ScheduleExecutor = function() {};
 ScheduleExecutor.prototype.start = function() {
-    this.getCronInstance().start();
-    console.info('%s: Scheduler "%s" started!', Date(Date.now()), this.getName());
-    return this;
+    var inst = this;
+    return inst.loadDependencies().then(function() {
+        inst.getCronInstance().start();
+        console.info('%s: Scheduler "%s" started!', Date(Date.now()), this.getName());
+    });
 };
 ScheduleExecutor.prototype.stop = function() {
     this.getCronInstance().stop();
@@ -54,6 +56,12 @@ ScheduleExecutor.prototype.getCronInstance = function() {
         }
     }
     return this.cron;
+};
+
+ScheduleExecutor.prototype.loadDependencies = function() {
+    return new Promise(function(resolve) {
+        resolve();
+    });
 };
 
 // must be override

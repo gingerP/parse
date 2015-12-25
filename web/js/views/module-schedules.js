@@ -58,7 +58,7 @@ define([
                 var id;
                 if (U.hasContent(selectedRowId)) {
                     container.progressOn();
-                    data = list.getData(selectedRowId[0]);
+                    data = list.getData(selectedRowId);
                     isNew = manager.schedule.isNew(data);
                     id = manager.schedule.getId(data);
                     manager.schedule.prepare(data);

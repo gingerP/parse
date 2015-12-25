@@ -1,13 +1,15 @@
 var GenericScheduler = require('./GenericScheduler').class;
 var parseConfigDBManager = require('../db/ParseConfigDBManager').instance;
 var parseDataDBManager = require('../db/ParseDataDBManager').instance;
+var scheduleDBManager = require('../db/ScheduleDBManager').instance;
+var scheduleStatus = require('../model/ScheduleParseStatus.json');
 var utils = require('../utils');
 
 ScheduleParseExecutor = function() {};
 
 ScheduleParseExecutor.prototype = Object.create(GenericScheduler.prototype);
 ScheduleParseExecutor.prototype.constructor = ScheduleParseExecutor;
-ScheduleParseExecutor.prototype.init = function(schedule, config) {
+ScheduleParseExecutor.prototype.init = function(scheduleId) {
     this.schedule = schedule;
     this.scheduleConfig = config;
     this.setPeriod(this.schedule.cron);
@@ -33,6 +35,17 @@ ScheduleParseExecutor.prototype.propertyChange = function(type, data) {
     }
     return this;
 };
+
+ScheduleParseExecutor.prototype.updateStatus = function(status) {
+    if (this.scheduleConfig) {
+        this.schedule.status = status;
+
+
+    } else {
+        console.warn('UpdateStatus. There is now schedule config for schedule executor!');
+    }
+};
+
 ScheduleParseExecutor.prototype.getExecutor = function() {
     var inst = this;
     return function() {
@@ -54,8 +67,31 @@ ScheduleParseExecutor.prototype.getExecutor = function() {
         }, 'koi8r');
     };
 };
+
 ScheduleParseExecutor.prototype.getName = function() {
-    return this.scheduleConfig.config;
+    return this.schedule.config;
+};
+
+ScheduleParseExecutor.prototype.loadDependencies = function(scheduleId) {
+    var inst = this;
+    return new Promise(function(resolve, reject) {
+        scheduleDBManager.get(scheduleId).then(function (scheduleEntity) {
+            inst.schedule = scheduleEntity;
+            return parseConfigDBManager.getByCriteria({code: schedule.config});
+        }, function(rejectObject) {
+            reject(rejectObject);
+            //TODO implement
+        }).catch(function (error) {
+            throw new Error(error.getMessage());
+        }).then(function (config) {
+            inst.scheduleConfig = config;
+            resolve(true);
+        });
+    })
+};
+
+ScheduleParseExecutor.prototype.updateStatus = function() {
+
 };
 
 module.exports = {

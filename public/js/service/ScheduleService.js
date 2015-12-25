@@ -12,38 +12,20 @@ ScheduleService = function() {
 ScheduleService.prototype = Object.create(GenericService.prototype);
 ScheduleService.prototype.constructor = ScheduleService;
 ScheduleService.prototype.start = function(id) {
-    var inst = this;
-    if (!inst.tasks[id]) {
-        return new Promise(function(resolve, reject) {
-            var schedule;
-            scheduleDBManager.get(id).then(function(scheduleEntity) {
-                schedule = scheduleEntity;
-                return configDBManager.getByCriteria({code: schedule.config});
-            }).catch(function(error) {
-                throw new Error(error.getMessage());
-            }).then(function(config) {
-                try {
-                    inst.tasks[id] = new ScheduleParseExecutor().init(schedule, config).start();
-                    resolve();
-                } catch(error) {
-                    reject(error);
-                }
-            });
-        });
+    if (!this.tasks[id]) {
+        this.tasks[id] = new ScheduleParseExecutor().init(schedule, config);
+        return this.tasks[id].start();
     } else {
-        return new Promise(function(resolve, reject) {
-            inst.tasks[id].start();
-            resolve();
-        });
+        return this.tasks[id].start();
     }
 };
 ScheduleService.prototype.stop = function(id) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         if (inst.tasks[id]) {
-            this.tasks[id].stop();
+            inst.tasks[id].stop();
         }
-        resolve();
+        resolve(true);
     });
 };
 ScheduleService.prototype.restart = function(id) {
@@ -51,7 +33,7 @@ ScheduleService.prototype.restart = function(id) {
     if (inst.tasks[id]) {
         return new Promise(function(resolve, reject) {
             inst.tasks[id].restart();
-            resolve();
+            resolve(true);
         });
     } else {
         return inst.start(id);
@@ -62,7 +44,7 @@ ScheduleService.prototype.validateCron = function(cronString) {
     return new Promise(function(resolve, reject) {
         //if we get an error - cron is not valid
         new cron.CronTime(cronString);
-        resolve();
+        resolve(true);
     });
 };
 service = new ScheduleService();
