@@ -128,7 +128,10 @@ define([
                     data = list.getData(selectedRowId);
                     if (data.cron) {
                         manager.schedule.exec('validateCron', [data.cron, function(status) {
-
+                            dhtmlx.alert({
+                                type: "alert-info",
+                                text: "OK! Cron string is valid."
+                            });
                         }])
                     }
                 }

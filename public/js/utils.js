@@ -237,6 +237,9 @@ var api = {
     },
     isObject: function(obj) {
         return typeof(obj) === 'object' &&  obj !== null;
+    },
+    inherit: function() {
+
     }
 };
 

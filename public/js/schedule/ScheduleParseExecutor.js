@@ -2,7 +2,7 @@ var GenericScheduler = require('./GenericScheduler').class;
 var parseConfigDBManager = require('../db/ParseConfigDBManager').instance;
 var parseDataDBManager = require('../db/ParseDataDBManager').instance;
 var scheduleDBManager = require('../db/ScheduleDBManager').instance;
-var scheduleStatus = require('../model/ScheduleParseStatus.json');
+var scheduleStatus = require('../models/ScheduleParseStatus.json');
 var utils = require('../utils');
 
 ScheduleParseExecutor = function() {};
@@ -10,8 +10,9 @@ ScheduleParseExecutor = function() {};
 ScheduleParseExecutor.prototype = Object.create(GenericScheduler.prototype);
 ScheduleParseExecutor.prototype.constructor = ScheduleParseExecutor;
 ScheduleParseExecutor.prototype.init = function(scheduleId) {
-    this.schedule = schedule;
-    this.scheduleConfig = config;
+    this.isDependenciesReady = false;
+    this.schedule;
+    this.scheduleConfig;
     this.setPeriod(this.schedule.cron);
     return this;
 };

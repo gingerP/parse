@@ -1,3 +1,4 @@
+var utils = require('../utils');
 var CronJob = require('cron').CronJob;
 var CronTime = require('cron').CronTime;
 ScheduleExecutor = function() {};
@@ -34,12 +35,6 @@ ScheduleExecutor.prototype.getPeriod = function() {
 };
 ScheduleExecutor.prototype.setPeriod = function(period) {
     this.period = period;
-    return this;
-};
-ScheduleExecutor.prototype.addListener = function(listener) {
-    if (typeof(listener) === 'function') {
-        this.getCronInstance().addCallback(listener);
-    }
     return this;
 };
 ScheduleExecutor.prototype.getCronInstance = function() {

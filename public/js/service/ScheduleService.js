@@ -13,7 +13,7 @@ ScheduleService.prototype = Object.create(GenericService.prototype);
 ScheduleService.prototype.constructor = ScheduleService;
 ScheduleService.prototype.start = function(id) {
     if (!this.tasks[id]) {
-        this.tasks[id] = new ScheduleParseExecutor().init(schedule, config);
+        this.tasks[id] = new ScheduleParseExecutor().init(id);
         return this.tasks[id].start();
     } else {
         return this.tasks[id].start();
