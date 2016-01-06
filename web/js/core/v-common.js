@@ -39,3 +39,4 @@ vv.confirm = function(text, callback, type, title) {
         callback: callback
     });
 };
+

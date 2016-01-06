@@ -19,6 +19,7 @@ ConstructorController.prototype.testByConfig = function(req, res, callback) {
 
 controller = new ConstructorController();
 controller.setService(service);
+console.log('%s: MAPPING to "ConstructorController" controller.' , Date(Date.now()));
 utils.linkRequestsToModule([
     {path: '/list', method: 'list', async: true},
     {path: '/get', method: 'get', async: true},

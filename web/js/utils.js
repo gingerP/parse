@@ -73,6 +73,14 @@ U = {
     },
     isObject: function(obj) {
         return typeof(obj) === 'object' &&  obj !== null;
+    },
+    escapeTags: function(value) {
+        var tagsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;'
+        };
+        return typeof(value) === 'string'? value.replace(/[&<>]/g, tagsToReplace): value;
     }
 };
 

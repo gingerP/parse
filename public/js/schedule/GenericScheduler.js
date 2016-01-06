@@ -1,31 +1,40 @@
+var Observable = require('../common/Observable').class;
 var utils = require('../utils');
 var CronJob = require('cron').CronJob;
 var CronTime = require('cron').CronTime;
 ScheduleExecutor = function() {};
+ScheduleExecutor.prototype = Object.create(Observable.prototype);
+ScheduleExecutor.prototype.constructor = ScheduleExecutor;
+
 ScheduleExecutor.prototype.start = function() {
     var inst = this;
-    return inst.loadDependencies().then(function() {
+    return new Promise(function(resolve, reject) {
         inst.getCronInstance().start();
-        console.info('%s: Scheduler "%s" started!', Date(Date.now()), this.getName());
+        console.info('%s: Scheduler "%s" started!', Date(Date.now()), inst.getName());
+        resolve(true);
     });
 };
 ScheduleExecutor.prototype.stop = function() {
-    this.getCronInstance().stop();
-    console.info('%s: Scheduler "%s" stoped!', Date(Date.now()), this.getName());
-    return this;
+    var inst = this;
+    return new Promise(function(resolve, reject) {
+        inst.getCronInstance().stop();
+        console.info('%s: Scheduler "%s" stoped!', Date(Date.now()), inst.getName());
+        resolve(true);
+    });
 };
 ScheduleExecutor.prototype.restart = function() {
-    this.getCronInstance().stop();
-    this.getCronInstance().start();
-    console.info('%s: Scheduler "%s" restarted!', Date(Date.now()), this.getName());
-    return this;
+    var inst = this;
+    return this.stop().then(function() {
+        return inst.start();
+    });
 };
 ScheduleExecutor.prototype.changePeriod = function(period) {
-    this.stop();
-    this.setPeriod(period);
-    this.getCronInstance().setTime(cron.CronTime(period));
-    this.start();
-    return this;
+    var inst = this;
+    this.stop().then(function() {
+        inst.setPeriod(period);
+        inst.getCronInstance().setTime(cron.CronTime(period));
+        return inst.start();
+    });
 };
 ScheduleExecutor.prototype.getExecutor = function() {
     return function() {};
@@ -51,12 +60,6 @@ ScheduleExecutor.prototype.getCronInstance = function() {
         }
     }
     return this.cron;
-};
-
-ScheduleExecutor.prototype.loadDependencies = function() {
-    return new Promise(function(resolve) {
-        resolve();
-    });
 };
 
 // must be override

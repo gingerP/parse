@@ -6,6 +6,7 @@ var dependencies = {
     iconvLite: 'iconv-lite',
     htmlToJson: './modules/HtmlToJson'
 };
+var iconvLiteExtendNodeEncondins = false;
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
         try {
@@ -23,7 +24,10 @@ var api = {
             url = 'http://' + url;
         }
         console.time('load');
-        getRef('iconvLite').extendNodeEncodings();
+        if (!iconvLiteExtendNodeEncondins) {
+            getRef('iconvLite').extendNodeEncodings();
+            iconvLiteExtendNodeEncondins = true;
+        }
         getRef('request')({
             url: url,
             encoding: encodeFrom
@@ -210,7 +214,7 @@ var api = {
         }
         return tmp;
     },
-    setValueToObjectByPath: function(value, path, dest) {
+    setValueToObjectByPath: function(dest, path, value) {
         var keys = path.split('.');
         var key;
         dest = dest || {};
@@ -231,7 +235,7 @@ var api = {
         for(var index = 0; index < mappings.length; index++) {
             mapping = mappings[index];
             value = api.getValueFromObjectByPath(object, mapping.property);
-            api.setValueToObjectByPath(value, mapping.input, result);
+            api.setValueToObjectByPath(result, mapping.input, value);
         }
         return result;
     },
@@ -240,6 +244,20 @@ var api = {
     },
     inherit: function() {
 
+    },
+    getMappingsItemByProperty: function(mappings, property) {
+        var result;
+        var index;
+        if (mappings && mappings.length) {
+            index = mappings.length - 1;
+            while(index > -1) {
+                if (mappings[index].property === property) {
+                    result = mappings[index];
+                    index = -1;
+                }
+            }
+        }
+        return result;
     }
 };
 

@@ -9,6 +9,9 @@ define([
 	GenericService.prototype.get = function(id, callback, mappings) {
 		this._load(this.getUrl('get'), callback, {id: id, mappings: mappings});
 	};
+	GenericService.prototype.getByCriteria = function(criteria, callback, mappings) {
+		this._load(this.getUrl('getByCriteria'), callback, {criteria: criteria, mappings: mappings});
+	};
 	GenericService.prototype.remove = function(id, callback) {
 		this._load(this.getUrl('delete'), callback, {id: id});
 	};

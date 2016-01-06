@@ -18,7 +18,13 @@ var validate = {
         assert.notEqual(criteria, undefined, messages.criteriaNotEmpty);
     }
 };
+var Observable = require('../common/Observable').class;
+
 GenericDBManager = function() {};
+
+GenericDBManager.prototype = Object.create(Observable.prototype);
+GenericDBManager.prototype.constructor = GenericDBManager;
+
 GenericDBManager.prototype.init = function() {
     this.connection = null;
 };
@@ -65,36 +71,64 @@ GenericDBManager.prototype._getDoc = function(criteria, callback, mappings) {
                         callback(doc);
                     }
                 }
-            })
-        })
+            });
+        });
     });
 };
-GenericDBManager.prototype._save = function(doc, callback, criteria) {
-    if (doc._id) {
-        this._update({_id: this._getObjectId(doc._id)}, doc, callback);
+GenericDBManager.prototype._save = function(doc, callback, criteria, mappings) {
+    var id = doc._id;
+    delete doc._id;
+    if (criteria) {
+        this._correctCriteria(criteria);
+        this._update(criteria, doc, callback, mappings);
+    } else if (utils.hasContent(id)) {
+        this._update({_id: this._getObjectId(id)}, doc, callback, mappings);
     } else {
-        this._insert(doc, callback);
+        this._insert(doc, callback, mappings);
     }
 };
 GenericDBManager.prototype._saveEntities = function(doc, callback) {
     console.log('_saveEntities not implemented');
 };
-GenericDBManager.prototype._update = function(criteria, doc, callback) {
+GenericDBManager.prototype._update = function(criteria, doc, callback, mappings, upsert) {
     var inst = this;
+    upsert = utils.hasContent(upsert)? !!upsert: true;
     validate.collectionName(this.collectionName);
+    inst._correctCriteria(criteria);
     this.exec(function(db) {
         var id = doc._id;
         delete doc._id;
-        db.collection(inst.collectionName).updateOne(criteria || {_id: this._getObjectId(id)}, doc, { upsert: true, raw: true}, function(error, result) {
-            if (error) {
-                console.log('%s: An ERROR has occurred while updating document in "%s".', Date(Date.now()), inst.getCollectionName());
-                throw new Error(error);
-            } else if (typeof(callback) == 'function') {
-                console.log('%s: Document was successfully updated in "%s".', Date(Date.now()), inst.getCollectionName());
-                callback(result.upsertedId? result.upsertedId._id: null);
-            }
-        });
-    })
+        if (!mappings) {
+            db.collection(inst.collectionName).updateOne(criteria || {_id: this._getObjectId(id)}, doc, {
+                upsert: upsert,
+                raw: true
+            }, function (error, result) {
+                if (error) {
+                    console.log('%s: An ERROR has occurred while updating document in "%s".', Date(Date.now()), inst.getCollectionName());
+                    throw new Error(error);
+                } else if (typeof(callback) == 'function') {
+                    console.log('%s: Document was successfully updated in "%s".', Date(Date.now()), inst.getCollectionName());
+                    callback(result.upsertedId ? result.upsertedId._id : null);
+                }
+            });
+        } else {
+            db.collection(inst.collectionName).find(criteria, function(error, cursor) {
+                cursor.next(function (error, cursorDoc) {
+                    if (error) {
+                        console.log('%s: An ERROR has occurred while getting document from "%s" to update.', Date(Date.now()), inst.getCollectionName());
+                        callback({});
+                    } else {
+                        console.log('%s: Document {_id: "%s"} was successfully extracted from "%s".', Date(Date.now()), doc ? doc._id : null, inst.getCollectionName());
+                        inst._mergeTo(cursorDoc, doc, mappings);
+                        inst._update({_id: cursorDoc._id}, cursorDoc, function() {
+                            callback(true);
+                        });
+                    }
+                    return false;
+                });
+            });
+        }
+    });
 };
 GenericDBManager.prototype._insert = function(doc, callback) {
     var inst = this;
@@ -112,7 +146,7 @@ GenericDBManager.prototype._insert = function(doc, callback) {
                 callback(id);
             }
         });
-    })
+    });
 };
 GenericDBManager.prototype._delete = function(criteria, callback) {
     var inst = this;
@@ -154,7 +188,7 @@ GenericDBManager.prototype._list = function(callback, mappings) {
                         console.log('%s: List(num: %s) of documents was successfully extracted from "%s".', Date(Date.now()), index, inst.getCollectionName());
                         callback(res);
                     }
-                })
+                });
             } else if (typeof(callback) == 'function') {
                 console.log('%s: List(num: %s) of documents was successfully extracted from "%s".', Date(Date.now()), index, inst.getCollectionName());
                 callback(res);
@@ -162,59 +196,74 @@ GenericDBManager.prototype._list = function(callback, mappings) {
         });
     })
 };
+GenericDBManager.prototype._mergeTo = function(dest, src, mappings) {
+    if (mappings && mappings.length) {
+        mappings.forEach(function(mappingItem) {
+            var srcValue = utils.getValueFromObjectByPath(src, mappingItem.input || mappingItem.property);
+            utils.setValueToObjectByPath(dest, mappingItem.property, srcValue);
+        });
+    }
+    return dest;
+};
 /**************************/
 GenericDBManager.prototype.save = function(doc, mappings) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst._save(doc, function(data) {
+            inst.propertyChange('save', [data, doc, mappings]);
             resolve(data);
-        });
-    })
+        }, null, mappings);
+    });
 };
 GenericDBManager.prototype.saveByCriteria = function(doc, criteria, mappings) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst._save(doc, function(data) {
+            inst.propertyChange('saveByCriteria', [data, doc, criteria, mappings]);
             resolve(data);
-        }, criteria);
-    })
+        }, criteria, mappings);
+    });
 };
 GenericDBManager.prototype.get = function(id, mappings) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         var criteria = {_id: inst._getObjectId(id)};
         inst._getDoc(criteria, function(entities) {
+            inst.propertyChange('get', [entities, id, mappings]);
             resolve(entities);
         }, mappings);
-    })
+    });
 };
 GenericDBManager.prototype.getByCriteria = function(criteria, mappings) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst._getDoc(criteria, function(entities) {
+            inst.propertyChange('getByCriteria', [entities, criteria, mappings]);
             resolve(entities);
         }, mappings);
-    })
+    });
 };
 GenericDBManager.prototype.remove = function(id) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         var criteria = {_id: inst._getObjectId(id)};
         inst._delete(criteria, function(data) {
+            inst.propertyChange('remove', [data, id]);
             resolve(data);
         });
-    })
+    });
 };
 GenericDBManager.prototype.list = function(mappings) {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst._list(function(entities) {
+            inst.propertyChange('list', [{}/*filters*/, mappings]);
             resolve(entities);
         }, mappings);
     })
 };
 GenericDBManager.prototype._getDBUrl = function() {
-    var url= 'mongodb://'
+    var url = 'mongodb://'
         + cfg.user + ':'
         + cfg.pass + '@'
         + cfg.host + ':'
@@ -224,7 +273,21 @@ GenericDBManager.prototype._getDBUrl = function() {
 };
 
 GenericDBManager.prototype._getObjectId = function(id) {
-    return new bongo.ObjectId(id);
+    if (id instanceof bongo.ObjectID) {
+        return id;
+    } else {
+        return new bongo.ObjectId(id);
+    }
+};
+
+GenericDBManager.prototype._correctCriteria = function(criteria) {
+    if (!criteria) {
+        return;
+    }
+    if (criteria.hasOwnProperty('_id')) {
+        criteria._id = this._getObjectId(criteria._id);
+    }
+    return criteria;
 };
 
 module.exports = {

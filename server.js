@@ -2,16 +2,16 @@ var prop = require('./prop.json');
 var userApp = require('./app');
 var express = require('express');
 var fs = require('fs');
-var http = null;
+var server = null;
 var sslOptions = null;
 if (prop.network.ssl.active === true) {
-    http = require('https');
+    server = require('https');
     sslOptions = {
         key: fs.readFileSync(prop.network.ssl.path + '/server.key'),
         cert: fs.readFileSync(prop.network.ssl.path + '/server.crt')
     }
 } else {
-    http = require('http');
+    server = require('http');
 }
 
 
@@ -85,10 +85,10 @@ var SampleApp = function() {
      */
     self.initializeServer = function() {
         if (prop.network.ssl.active === true) {
-            self.app = http.createServer(sslOptions, userApp);
+            self.app = server.createServer(sslOptions, userApp);
             console.log('%s: HTTPS server successfully created.', Date(Date.now()));
         } else {
-            self.app = http.createServer(userApp);
+            self.app = server.createServer(userApp);
             console.log('%s: HTTP server successfully created.', Date(Date.now()));
         }
     };

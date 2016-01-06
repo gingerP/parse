@@ -1,8 +1,11 @@
 define([
         '../service/ScheduleService.js',
-        '../service/ConstructorService.js'
-    ],
-    function(ScheduleService, ConstructorService){
+        '../service/ConstructorService.js',
+        '../service/ParsedDataService.js',
+        '../views-dependencies/module-view-test-data-viewer.js',
+        '../../ace/ace.js'
+],
+    function(ScheduleService, ConstructorService, ParsedDataService, parseDataViewer){
         var api;
         var container;
         var layout;
@@ -11,7 +14,8 @@ define([
         var toolbar;
         var manager = {
             schedule: new DataManager(ScheduleService.instance),
-            constructor: new DataManager(ConstructorService.instance)
+            constructor: new DataManager(ConstructorService.instance),
+            parsedData: new DataManager(ParsedDataService.instance)
         };
         var listPromises = [
             function() {
@@ -86,7 +90,7 @@ define([
                     data = list.getData(selectedRowId);
                     if (!manager.schedule.isNew(data)) {
                         manager.schedule.exec('start', [manager.schedule.getId(data), function(status) {
-
+                            action.reloadRow(selectedRowId);
                         }])
                     } else {
 
@@ -100,7 +104,7 @@ define([
                     data = list.getData(selectedRowId);
                     if (!manager.schedule.isNew(data)) {
                         manager.schedule.exec('stop', [manager.schedule.getId(data), function(status) {
-
+                            action.reloadRow(selectedRowId);
                         }])
                     } else {
 
@@ -114,7 +118,7 @@ define([
                     data = list.getData(selectedRowId);
                     if (!manager.schedule.isNew(data)) {
                         manager.schedule.exec('restart', [manager.schedule.getId(data), function(status) {
-
+                            action.reloadRow(selectedRowId);
                         }])
                     } else {
 
@@ -135,11 +139,39 @@ define([
                         }])
                     }
                 }
+            },
+            viewData: function() {
+                var selected = list.getSelectedData();
+                var container = parseDataViewer.getContainer();
+                if (selected && !manager.schedule.isNew(selected)) {
+                    container.progressOn();
+                    manager.parsedData.getByCriteria({code: selected.config}, {
+                        onSuccess: function(data) {
+                            var currentSelected = list.getSelectedData();
+                            if (manager.schedule.getId(currentSelected) === manager.schedule.getId(selected)) {
+                                parseDataViewer.setData(JSON.stringify(data));
+                            }
+                            container.progressOff();
+                        },
+                        onError: function(error) {
+                            container.progressOff();
+                        }
+                    });
+                }
+            },
+            reloadRow: function(rowId) {
+                var data;
+                var id;
+                if (list.grid.doesRowExist(rowId)) {
+                    data = list.getData(rowId);
+                    id = manager.schedule.getId(data);
+                    list.controller.reloadRow(rowId, id, null, true);
+                }
             }
         };
         var features = [
             //RELOAD
-            (function getReloadFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Reload',
                     type: 'button',
@@ -152,7 +184,7 @@ define([
             })(),
             {type: 'separator'},
             //ADD
-            (function getAddFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Add',
                     type: 'button',
@@ -164,7 +196,7 @@ define([
                 return feature;
             })(),
             //SAVE
-            (function getSaveFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Save',
                     type: 'button',
@@ -176,7 +208,7 @@ define([
                 return feature;
             })(),
             //DELETE
-            (function getDeleteFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Delete',
                     type: 'button',
@@ -195,7 +227,7 @@ define([
             })(),
             {type: 'separator'},
             //START
-            (function getSaveFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Start',
                     type: 'button',
@@ -209,7 +241,7 @@ define([
                 return feature;
             })(),
             //STOP
-            (function getSaveFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Stop',
                     type: 'button',
@@ -223,7 +255,7 @@ define([
                 return feature;
             })(),
             //RESTART
-            (function getSaveFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Restart',
                     type: 'button',
@@ -238,11 +270,11 @@ define([
             })(),
             {type: 'separator'},
             //VALIDATE CRON
-            (function getSaveFeature() {
+            (function() {
                 var feature = new GenericFeature().init({
                     label: 'Validate cron',
                     type: 'button',
-                    name: 'restart',
+                    name: 'validate',
                     image: '/static/images/button_reload.png',
                     imageDis: '/static/images/button_reload.png'
                 });
@@ -250,13 +282,44 @@ define([
                     action.validateCron();
                 };
                 return feature;
+            })(),
+            //SHOW PARSED DATA
+            (function() {
+                var feature = new GenericFeature().init({
+                    label: 'View data',
+                    type: 'button',
+                    name: 'showParsedData',
+                    image: '/static/images/button_view.png',
+                    imageDis: '/static/images/button_view.png'
+                });
+                feature.exec = function() {
+                    var cell = parseDataViewer.getContainer();
+                    if (cell.isCollapsed()) {
+                        //data will automatically load after cell expand
+                        cell.expand();
+                    } else {
+                        action.viewData();
+                    }
+                };
+                return feature;
             })()
         ];
+        parseDataViewer = parseDataViewer.create();
+
+        function statusFormatter(value, entity) {
+            var result = value;
+            if (value === 'PERFORMED') {
+                result = '<span class="schedule_status schedule_performed">' + U.escapeTags(value) + '</span>';
+            } else if (value === 'STOPPED') {
+                result = '<span class="schedule_status schedule_stopped">' + U.escapeTags(value) + '</span>';
+            }
+            return result;
+        }
 
         function createLayout(container) {
-            var layout = container.attachLayout('1C');
+            var layout = container.attachLayout('2U');
             layout.cells('a').hideHeader();
-            //layout.cells('a').hideArrow();
+            layout.cells('b').collapse();
             return layout;
         }
 
@@ -280,8 +343,8 @@ define([
                 {key: 'code', header: 'Code', type: 'ed', width: 200},
                 {key: 'cron', header: 'Cron', type: 'ed', width: 150},
                 {key: 'config', header: 'Config', type: 'coro', width: 250},
-                {key: 'status', header: 'Status', type: 'ed', width: 150},
-                {key: 'Progress', header: 'Progress', width: 300}
+                {key: 'status', header: 'Status', width: 150, formatter: statusFormatter},
+                {key: 'progress', header: 'Progress', width: 300}
             ]);
             list.setImagePath("/static/dhtmlx/imgs");
             list.init();
@@ -306,51 +369,29 @@ define([
             });
         }
 
-
-        /*function createDetails(layout, list) {
-            var dataConfig = [
-                {property: '_id', input: '_id'},
-                {property: 'code', input: 'code'},
-                {property: 'config', input: 'config'},
-                {property: 'cron', input: 'cron'},
-                {property: 'status', input: 'status'}
-            ];
-            var formConfig = [
-                {type: 'settings', inputWidth: 200, labelWidth: 100, labelAlign: 'left'},
-                {type: 'fieldset', label: 'Schedule Details', width: 350, offsetLeft: 15,
-                    list: [
-                        {type: 'input',    name: '_id',       label: 'Id', readonly: true},
-                        {type: 'input',    name: 'code',      label: 'Code', required: true},
-                        {type: 'input',    name: 'config',    label: 'Config Code', required: true},
-                        {type: 'input',    name: 'cron',      label: 'Cron Config', required: true},
-                        {type: 'input',    name: 'Status',    label: 'Status', required: true}
-                    ]
-                }
-            ];
-            var form = layout.cells('b').attachForm(formConfig);
-            var vController = new FormController().init();
-            var vForm = new FormComponent().init(form, vController, dataConfig).initEvents();
-            initDetailsBRules(vForm, list);
-            return vForm;
-        }*/
-
-/*        function initDetailsBRules(vForm, list) {
+        function createParsedDataViewer(layout, list) {
+            var cell = layout.cells('b');
+            var setDataTimer;
+            parseDataViewer.init(cell, 'View data');
             list.addBRules({
-                '_select_': function (list, entity) {
-                    if (!U.hasContent(entity)) {
-                        setFormData(entity);
-                    } else if (!entity._isNew) {
-                        var id = entity._id;
-                        action.loadEntity(id, setFormData);
+                '_select_': function(list, selected) {
+                    if (cell.isCollapsed() || manager.schedule.isNew(selected) || !U.hasContent(selected)) {
+                        parseDataViewer.setData({});
                     } else {
-                        setFormData(entity);
+                        clearTimeout(setDataTimer);
+                        setDataTimer = setTimeout(function() {
+                            action.viewData();
+                        }, 300);
                     }
                 }
             });
-        }*/
-
-        function setFormData(data) {
-            form.setData(data);
+            layout.attachEvent('onExpand', function() {
+                if (list.hasSelected()) {
+                    action.viewData();
+                } else {
+                    parseDataViewer.setData({});
+                }
+            });
         }
 
         function init(_container) {
@@ -360,6 +401,7 @@ define([
             layout = createLayout(container);
             toolbar = createListToolbar(layout);
             list = createList(layout);
+            createParsedDataViewer(layout, list);
             load();
             /*form = createDetails(layout, list);*/
         }

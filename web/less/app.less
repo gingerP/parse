@@ -194,8 +194,48 @@ html, body {
   left: 0;
 }
 
-.dhx_toolbar_dhx_web div.dhx_toolbar_btn div.dhxtoolbar_text,
-.dhx_toolbar_dhx_web div.dhx_toolbar_arw div.arwimg {
-  line-height: 27px !important;
-  height: 27px !important;
+.dhx_toolbar_dhx_web {
+  div.dhx_toolbar_btn div.dhxtoolbar_text,
+  div.dhx_toolbar_arw div.arwimg {
+    line-height: 27px !important;
+    height: 27px !important;
+  }
+}
+
+.schedule_status,
+.api_status {
+  font-weight: bold;
+}
+.api_status.api_not_active,
+.schedule_status.schedule_stopped {
+  color: #ff3e54;
+}
+.api_status.api_active,
+.schedule_status.schedule_performed {
+  color: #18802e;
+}
+
+.dhxform_obj_dhx_web {
+  div.dhxform_img.btn2state_0 {
+    background-image: url("../dhtmlx/imgs/toggle_off.png");
+    width: 42px;
+    height: 20px;
+  }
+  div.dhxform_img.btn2state_1 {
+    background-image: url("../dhtmlx/imgs/toggle_on.png");
+    width: 42px;
+    height: 20px;
+  }
+  div.disabled {
+    div.dhxform_img.btn2state_0 {
+      background-image: url("../dhtmlx/imgs/toggle_off_dis.png");
+      width: 42px;
+      height: 20px;
+    }
+    div.dhxform_img.btn2state_1 {
+      background-image: url("../dhtmlx/imgs/toggle_on_dis.png");
+      width: 42px;
+      height: 20px;
+    }
+  }
 }

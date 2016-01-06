@@ -11,6 +11,10 @@ DataManager.prototype.get = function(id, callback, mappings) {
     this.service.get(id, callback, mappings);
 };
 
+DataManager.prototype.getByCriteria = function(criteria, callback, mappings) {
+    this.service.getByCriteria(criteria, callback, mappings);
+};
+
 DataManager.prototype.save = function(data, callback) {
     this.service.save(data, callback);
 };

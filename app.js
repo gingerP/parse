@@ -11,20 +11,8 @@ var im = {
   flash: require('connect-flash')
 };
 var app = im.express();
-//Init DB
 console.info("Init DB");
-//new im.InitDB().initUsers();
-/*new im.InitDB().validate(function() {
-    console.info("Init DB data");
-});*/
 im.env.init();
-//
-// view engine setup
-/*app.set('views', im.path.join(__dirname, 'views'));
-app.set('view engine', 'jade');*/
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(im.logger('dev'));
 app.use(im.bodyParser.json());
 app.use(im.bodyParser.urlencoded({ extended: true }));
@@ -36,17 +24,18 @@ app.use(im.session({
     },
     secret: 'woot',
     resave: false,
-    saveUninitialized: false}));
+    saveUninitialized: false}
+));
 
 var controllerApi = require('./controller-api').init(app);
 var controllerAdminApi = require('./controller-admin').init(app);
 var controllerPages = require('./controller-pages').init(app);
+var controllerExternal = require('./controller-external').init(app);
 
 //app.use(im.express.static(im.path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-            });
+app.use(function(req, res, next) {});
 
 // error handlers
 

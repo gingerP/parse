@@ -13,6 +13,11 @@ GenericController.prototype.get = function(req, res, callback) {
     var mappings = req.body.mappings;
     this.service.get(id, mappings).then(callback);
 };
+GenericController.prototype.getByCriteria = function(req, res, callback) {
+    var criteria = req.body.criteria;
+    var mappings = req.body.mappings;
+    this.service.getByCriteria(criteria, mappings).then(callback);
+};
 GenericController.prototype.remove = function(req, res, callback) {
     var id = req.body.id;
     this.service.remove(id).then(callback);

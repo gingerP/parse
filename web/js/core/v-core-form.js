@@ -66,7 +66,17 @@ FormComponent.prototype.fillFormData = function(entity, mappings) {
         var property = config.property;
         var type = inst.form.getItemType(input);
         var value = U.getDeepValue(entity, property) || '';
-        inst.form.setItemValue(input, value);
+        var item;
+        if (type !== 'combo') {
+            inst.form.setItemValue(input, value);
+        } else if (type === 'combo') {
+            item = inst.form.getCombo(input);
+            if (U.hasContent(value)) {
+                item.selectOption(item.getIndexByValue(value));
+            } else {
+                item.unSelectOption();
+            }
+        }
         if (inst.untrackedItems.indexOf(type) > -1) {
             inst.runBRule(input, input, value);
         }

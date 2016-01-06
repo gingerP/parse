@@ -2,7 +2,7 @@ define([
         '../views-dependencies/constructor/module-view-level.js',
         '../views-dependencies/constructor/module-view-levels-config.js',
         '../views-dependencies/constructor/module-view-src-editor.js',
-        '../views-dependencies/constructor/module-view-test-data-viewer.js',
+        '../views-dependencies/module-view-test-data-viewer.js',
         '../service/ConstructorService.js',
         '../service/LevelService.js',
         '../../ace/ace.js',
@@ -291,6 +291,7 @@ define([
                 return feature;
             })()
         ];
+        testDataViewer = testDataViewer.create();
 
         function createLayout(sideBarCell) {
             var layout = sideBarCell.attachLayout('4H');

@@ -12,6 +12,7 @@ var handlers = [
         '/admin/sys-settings',
         '/admin/schedules',
         '/admin/constructors',
+        '/admin/api',
         '/admin/cache'
     ],
         fn: function(req, res) {

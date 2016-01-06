@@ -9,10 +9,13 @@ ApiConstructorController = function() {};
 ApiConstructorController.prototype = Object.create(GenericController.prototype);
 ApiConstructorController.prototype.constructor = ApiConstructorController;
 ApiConstructorController.prototype.test = function(req, res, callback) {
+    var params = {};
+    this.service.test(params, callback);
 };
 
 controller = new ApiConstructorController();
 controller.setService(service);
+console.log('%s: MAPPING to "ApiConstructorController" controller.' , Date(Date.now()));
 utils.linkRequestsToModule([
     {path: '/list', method: 'list', async: true},
     {path: '/get', method: 'get', async: true},

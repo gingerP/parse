@@ -31,9 +31,11 @@ ScheduleController.prototype.validateCron = function(req, res, callback) {
 
 controller = new ScheduleController();
 controller.setService(service);
+console.log('%s: MAPPING to "ScheduleController" controller.' , Date(Date.now()));
 utils.linkRequestsToModule([
     {path: '/list', method: 'list', async: true},
     {path: '/get', method: 'get', async: true},
+    {path: '/getByCriteria', method: 'getByCriteria', async: true},
     {path: '/save', method: 'save', async: true},
     {path: '/delete', method: 'remove', async: true},
     {path: '/start', method: 'start', async: true},

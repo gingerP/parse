@@ -56,10 +56,13 @@ GridController.prototype.reloadRow = function(rowId, entityId, callback, isSelec
     this.mappings);
 };
 
-GridController.prototype.getDataArray = function (entity) {
+GridController.prototype.getDataArray = function(entity) {
     var result = [];
     $.each(this.owner.config, function(i, cfg) {
         var value = U.getDeepValue(entity, cfg.key);
+        if (typeof(cfg.formatter) === 'function') {
+            value = cfg.formatter(value, entity)
+        }
         result.push(value);
     });
     return result;
@@ -202,6 +205,11 @@ GridComponent.prototype.getSelectedData = function() {
         result = this.getOrigUserData(rowId);
     }
     return result;
+};
+
+GridComponent.prototype.hasSelected = function() {
+    var rowId = this.grid.getSelectedRowId();
+    return U.hasContent(rowId);
 };
 
 GridComponent.prototype.getColIndex = function(name) {
