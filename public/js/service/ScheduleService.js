@@ -4,8 +4,9 @@ var c = require('../constants');
 var scheduleDBManager = require('../db/ScheduleDBManager').instance;
 var configDBManager = require('../db/ParseConfigDBManager').instance;
 var GenericService = require('./GenericService').class;
-var ScheduleParseExecutor = require('../schedule/ScheduleParseExecutor').class;
+var ScheduleParseExecutor = require('../schedule/ScheduleSectionsParseExecutor').class;
 var cron = require('cron');
+var fs = require('fs');
 var service;
 
 scheduleDBManager.addListener('remove', function(removeResult, id) {
@@ -23,8 +24,10 @@ function scheduleListener() {
 ScheduleService = function() {
     this.tasks = {}
 };
+
 ScheduleService.prototype = Object.create(GenericService.prototype);
 ScheduleService.prototype.constructor = ScheduleService;
+
 ScheduleService.prototype.start = function(id) {
     var inst = this;
     if (!this.tasks[id]) {
@@ -40,6 +43,7 @@ ScheduleService.prototype.start = function(id) {
         });
     }
 };
+
 ScheduleService.prototype.stop = function(id) {
     var inst = this;
     return new Promise(function(resolve) {
@@ -53,6 +57,7 @@ ScheduleService.prototype.stop = function(id) {
         resolve(true);
     });
 };
+
 ScheduleService.prototype.restart = function(id) {
     var inst = this;
     if (inst.tasks[id]) {
@@ -69,6 +74,7 @@ ScheduleService.prototype.restart = function(id) {
         });
     }
 };
+
 ScheduleService.prototype.save = function(doc, mappings) {
     var inst = this;
     if (!utils.hasContent(doc.status) && (!mappings || utils.getMappingsItemByProperty(mappings, 'status'))) {
@@ -80,6 +86,7 @@ ScheduleService.prototype.save = function(doc, mappings) {
         })
     });
 };
+
 ScheduleService.prototype.updateStatus = function(id, status) {
     if (scheduleStatus.hasOwnProperty(status)) {
         return this.manager.save({_id: id, status: status}, [
@@ -93,12 +100,20 @@ ScheduleService.prototype.updateStatus = function(id, status) {
     }
 };
 
+ScheduleService.prototype.getScheduleExecutorsList = function() {
+    fs.readdir()
+};
+
 ScheduleService.prototype.validateCron = function(cronString) {
     return new Promise(function(resolve, reject) {
         //if we get an error - cron is not valid
         new cron.CronTime(cronString);
         resolve(true);
     });
+};
+
+ScheduleService.prototype._getScheduleExecutor = function(type) {
+
 };
 
 ScheduleService.prototype._initScheduleListeners = function(task) {

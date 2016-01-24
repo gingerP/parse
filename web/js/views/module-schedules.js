@@ -3,13 +3,14 @@ define([
         '../service/ConstructorService.js',
         '../service/ParsedDataService.js',
         '../views-dependencies/module-view-test-data-viewer.js',
+        '../views-dependencies/scheduler/module-view-config-editor.js',
         '../../ace/ace.js'
 ],
-    function(ScheduleService, ConstructorService, ParsedDataService, parseDataViewer){
+    function(ScheduleService, ConstructorService, ParsedDataService, parseDataViewer, schedulerConfigEditor){
         var api;
         var container;
         var layout;
-        var form;
+        var configEditor;
         var list;
         var toolbar;
         var manager = {
@@ -304,17 +305,29 @@ define([
                 return feature;
             })()
         ];
-        parseDataViewer = parseDataViewer.create();
+        var formatter = {
+            status: function(value, entity) {
+                var result = value;
+                if (value === 'PERFORMED') {
+                    result = '<span class="schedule_status schedule_performed">' + U.escapeTags(value) + '</span>';
+                } else if (value === 'STOPPED') {
+                    result = '<span class="schedule_status schedule_stopped">' + U.escapeTags(value) + '</span>';
+                }
+                return result;
+            },
+            type: function() {
 
-        function statusFormatter(value, entity) {
-            var result = value;
-            if (value === 'PERFORMED') {
-                result = '<span class="schedule_status schedule_performed">' + U.escapeTags(value) + '</span>';
-            } else if (value === 'STOPPED') {
-                result = '<span class="schedule_status schedule_stopped">' + U.escapeTags(value) + '</span>';
+            },
+            actions: function(value, entity) {
+                var result = '';
+                var preferencesButton;
+                if (entity.type === 'GoodsExtract') {
+                    result = '<div><a href="#" id="edit_' + entity._id + '">Edit</a></div>';
+                }
+                return result;
             }
-            return result;
-        }
+        };
+        parseDataViewer = parseDataViewer.create();
 
         function createLayout(container) {
             var layout = container.attachLayout('2U');
@@ -343,8 +356,10 @@ define([
                 {key: 'code', header: 'Code', type: 'ed', width: 200},
                 {key: 'cron', header: 'Cron', type: 'ed', width: 150},
                 {key: 'config', header: 'Config', type: 'coro', width: 250},
-                {key: 'status', header: 'Status', width: 150, formatter: statusFormatter},
-                {key: 'progress', header: 'Progress', width: 300}
+                {key: 'status', header: 'Status', width: 150, formatter: formatter.status},
+                {key: 'type', header: 'Type', width: 150, formatter: formatter.type},
+                {key: 'progress', header: 'Progress', width: 300},
+                {key: 'actions', header: 'Actions', width: 100, formatter: formatter.actions}
             ]);
             list.setImagePath("/static/dhtmlx/imgs");
             list.init();
@@ -362,11 +377,25 @@ define([
                     container.progressOff();
                     list.clear();
                     list.controller.setData(data);
+                    attachActionListeners(data);
                     if (typeof(callback) === 'function') {
                         callback();
                     }
                 }, list.controller.mappings);
             });
+        }
+
+        function attachActionListeners(data) {
+            if (data && data.length) {
+                $.each(data, function(index, entity) {
+                    var link = document.getElementById('edit_' + entity._id);
+                    if (link) {
+                        link.addEventListener('click', function () {
+                            configEditor.show(entity._id);
+                        })
+                    }
+                });
+            }
         }
 
         function createParsedDataViewer(layout, list) {
@@ -401,6 +430,7 @@ define([
             layout = createLayout(container);
             toolbar = createListToolbar(layout);
             list = createList(layout);
+            configEditor = schedulerConfigEditor.init();
             createParsedDataViewer(layout, list);
             load();
             /*form = createDetails(layout, list);*/

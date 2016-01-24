@@ -182,3 +182,10 @@ body {
   width: 42px;
   height: 20px;
 }
+.dhxform_label.dhxform_label_align_left label {
+  word-break: break-word;
+  white-space: normal;
+}
+.dhx_cell_toolbar_def_padding_less {
+  padding: 0 !important;
+}

@@ -53,8 +53,13 @@ U = {
     },
     getDeepValue: function(obj, path){
         for (var i=0, path=path.split('.'), len=path.length; i<len; i++){
-            obj = obj[path[i]];
-        };
+            if (obj) {
+                obj = obj[path[i]];
+            } else {
+                obj = null;
+                break;
+            }
+        }
         return obj;
     },
     setDeepValue: function(value, path, dest) {
