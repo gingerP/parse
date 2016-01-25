@@ -101,7 +101,12 @@ ScheduleService.prototype.updateStatus = function(id, status) {
 };
 
 ScheduleService.prototype.getScheduleExecutorsList = function() {
-    fs.readdir()
+    return new Promise(function(resolve, reject) {
+        resolve([
+            {code: "ScheduleSectionsParseExecutor", extendConfig: true},
+            {code: "ScheduleParseExecutor", extendConfig: false}
+        ]);
+    });
 };
 
 ScheduleService.prototype.validateCron = function(cronString) {

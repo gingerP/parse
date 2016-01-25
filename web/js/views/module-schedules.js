@@ -18,6 +18,7 @@ define([
             constructor: new DataManager(ConstructorService.instance),
             parsedData: new DataManager(ParsedDataService.instance)
         };
+        var schedTypes = [];
         var listPromises = [
             function() {
                 return new Promise(function (resolve, reject) {
@@ -31,6 +32,19 @@ define([
                         {property: 'code', input: 'code'},
                         {property: 'url', input: 'url'}
                     ])
+                })
+            },
+            function() {
+                return new Promise(function(resolve, reject) {
+                    var combo = list.grid.getCombo(list.getColIndex('type'));
+                    schedTypes = [];
+                    manager.schedule.exec('getScheduleTypeList', [function (data) {
+                        schedTypes = data;
+                        $.each(data, function (index, item) {
+                            combo.put(item.code, item.code);
+                        });
+                        resolve();
+                    }])
                 })
             }
         ];
@@ -315,13 +329,12 @@ define([
                 }
                 return result;
             },
-            type: function() {
-
+            type: function(value) {
+                return value? value.code: '';
             },
             actions: function(value, entity) {
                 var result = '';
-                var preferencesButton;
-                if (entity.type === 'GoodsExtract') {
+                if (entity.type.extendConfig === true) {
                     result = '<div><a href="#" id="edit_' + entity._id + '">Edit</a></div>';
                 }
                 return result;
@@ -350,14 +363,15 @@ define([
                 {property: 'code', input: 'code'},
                 {property: 'cron', input: 'cron'},
                 {property: 'config', input: 'config'},
-                {property: 'status', input: 'status'}
+                {property: 'status', input: 'status'},
+                {property: 'type', input: 'type'}
             ]);
             var vList = new GridComponent().init(list, vListController, [
                 {key: 'code', header: 'Code', type: 'ed', width: 200},
                 {key: 'cron', header: 'Cron', type: 'ed', width: 150},
                 {key: 'config', header: 'Config', type: 'coro', width: 250},
                 {key: 'status', header: 'Status', width: 150, formatter: formatter.status},
-                {key: 'type', header: 'Type', width: 150, formatter: formatter.type},
+                {key: 'type', header: 'Type', type: 'coro', width: 150, formatter: formatter.type},
                 {key: 'progress', header: 'Progress', width: 300},
                 {key: 'actions', header: 'Actions', width: 100, formatter: formatter.actions}
             ]);
@@ -368,6 +382,29 @@ define([
         }
 
         function initListBRules(list) {
+            list.addBRules({
+                '__edit_fin;type': function(list, newValue, oldValue, rowId, colId, colName) {
+                    var actionCol = list.getColIndex('actions');
+                    var schedEntity;
+                    var actionCell;
+                    var actionCellValue = '';
+                    var entity;
+                    $.each(schedTypes, function(index, item) {
+                        if (item.code === newValue) {
+                            schedEntity = item;
+                            return false;
+                        }
+                    });
+                    list.controller.updateUserDataField(rowId, colName, schedEntity);
+                    if (schedEntity) {
+                        entity = list.getData(rowId);
+                        actionCell = list.grid.cells(rowId, actionCol);
+                        actionCellValue = formatter.actions(newValue, entity);
+                        actionCell.setValue(actionCellValue);
+                        attachActionListeners([entity]);
+                    }
+                }
+            });
         }
 
         function load(callback) {

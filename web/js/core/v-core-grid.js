@@ -139,6 +139,7 @@ GridComponent.prototype.initEvents = function () {
         var colName = thiz.getColName(columnInd);
         if (stage === 2) {
             thiz.controller.updateUserDataField(rowId, colName, newValue);
+            thiz.runEditFinBRules(newValue, oldValue, rowId, columnInd, colName);
         }
         return true;
     });
@@ -225,4 +226,14 @@ GridComponent.prototype.getColIndex = function(name) {
 
 GridComponent.prototype.getColName = function(index) {
     return this.config[index]? this.config[index].key: null;
+};
+
+GridComponent.prototype.runEditFinBRules = function(newVal, oldVal, rowId, colId, colName) {
+    var keys;
+    for (var bRule in this.brules) {
+        keys = bRule.split(';');
+        if (keys.indexOf('__edit_fin') > -1 && keys.indexOf(colName) > -1) {
+            this.brules[bRule].apply(this, [this, newVal, oldVal, rowId, colId, colName]);
+        }
+    }
 };

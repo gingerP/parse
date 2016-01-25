@@ -28,6 +28,9 @@ ScheduleController.prototype.validateCron = function(req, res, callback) {
     var cron = req.body.cron;
     this.service.validateCron(cron).catch(callback).then(callback);
 };
+ScheduleController.prototype.getScheduleTypeList = function(req, res, callback) {
+    this.service.getScheduleExecutorsList().then(callback);
+};
 
 controller = new ScheduleController();
 controller.setService(service);
@@ -41,7 +44,8 @@ utils.linkRequestsToModule([
     {path: '/start', method: 'start', async: true},
     {path: '/stop', method: 'stop', async: true},
     {path: '/restart', method: 'restart', async: true},
-    {path: '/validateCron', method: 'validateCron', async: true}
+    {path: '/validateCron', method: 'validateCron', async: true},
+    {path: '/getScheduleTypeList', method: 'getScheduleTypeList', async: true}
 ], controller, router, 'post');
 module.exports = {
     router: router,
