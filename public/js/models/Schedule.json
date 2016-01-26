@@ -1,0 +1,13 @@
+{
+  "_id": null,
+  "code": null,
+  "config": null,
+  "cron": null,
+  "status": null,
+  "progress": null,
+  "extendConfig": {
+    "code": "ScheduleParseExecutor",
+    "isManualConfig": false,
+    "handlers": []
+  }
+}

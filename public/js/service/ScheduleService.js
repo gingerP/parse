@@ -8,6 +8,19 @@ var ScheduleParseExecutor = require('../schedule/ScheduleSectionsParseExecutor')
 var cron = require('cron');
 var fs = require('fs');
 var service;
+var scheduleDomain = require('../models/Schedule');
+var schedulers = [
+    {
+        code: 'ScheduleSectionsParseExecutor',
+        class: require('../schedule/ScheduleSectionsParseExecutor'),
+        extendConfig: true
+    },
+    {
+        code: 'ScheduleParseExecutor',
+        class: require('../schedule/ScheduleParseExecutor'),
+        extendConfig: false
+    }
+];
 
 scheduleDBManager.addListener('remove', function(removeResult, id) {
     if (service.tasks[id]) {
@@ -30,18 +43,22 @@ ScheduleService.prototype.constructor = ScheduleService;
 
 ScheduleService.prototype.start = function(id) {
     var inst = this;
-    if (!this.tasks[id]) {
-        this.tasks[id] = new ScheduleParseExecutor().init(id);
-        this.tasks[id].addListener('parse', scheduleListener, true);
-        inst._initScheduleListeners(this.tasks[id]);
-        return this.tasks[id].start().then(function() {
-            return inst.updateStatus(id, scheduleStatus.PERFORMED);
-        });
-    } else {
-        return this.tasks[id].start().then(function() {
-            return inst.updateStatus(id, scheduleStatus.PERFORMED);
-        });
-    }
+    return this.get(id).then(function(schedule) {
+        var executor;
+        if (!inst.tasks[id]) {
+            executor = inst._getScheduleExecutor(schedule);
+            inst.tasks[id] = new executor().init(id);
+            inst.tasks[id].addListener('parse', scheduleListener, true);
+            inst._initScheduleListeners(inst.tasks[id]);
+            return inst.tasks[id].start().then(function() {
+                return inst.updateStatus(id, scheduleStatus.PERFORMED);
+            });
+        } else {
+            return inst.tasks[id].start().then(function() {
+                return inst.updateStatus(id, scheduleStatus.PERFORMED);
+            });
+        }
+    });
 };
 
 ScheduleService.prototype.stop = function(id) {
@@ -101,11 +118,14 @@ ScheduleService.prototype.updateStatus = function(id, status) {
 };
 
 ScheduleService.prototype.getScheduleExecutorsList = function() {
+    var mappings = [
+        {property: 'code', input: 'code'},
+        {property: 'extendConfig', input: 'extendConfig'}
+    ];
     return new Promise(function(resolve, reject) {
-        resolve([
-            {code: "ScheduleSectionsParseExecutor", extendConfig: true},
-            {code: "ScheduleParseExecutor", extendConfig: false}
-        ]);
+        resolve(schedulers.map(function(item) {
+            return utils.extractFields(item, mappings)
+        }));
     });
 };
 
@@ -117,8 +137,20 @@ ScheduleService.prototype.validateCron = function(cronString) {
     });
 };
 
-ScheduleService.prototype._getScheduleExecutor = function(type) {
+ScheduleService.prototype._getScheduleExecutor = function(schedule) {
+    var index = schedulers.length;
+    while(index >= 0) {
+        if (schedulers[index].code === schedule.extendConfig.code) {
+            return schedulers[index].class;
+        }
+        index--;
+    }
+};
 
+ScheduleService.prototype.getNew = function() {
+    return new Promise(function(resolve, reject) {
+
+    });
 };
 
 ScheduleService.prototype._initScheduleListeners = function(task) {
