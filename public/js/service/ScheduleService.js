@@ -8,17 +8,14 @@ var ScheduleParseExecutor = require('../schedule/ScheduleSectionsParseExecutor')
 var cron = require('cron');
 var fs = require('fs');
 var service;
-var scheduleDomain = require('../models/Schedule');
-var schedulers = [
+var schedulersExtends = [
     {
-        code: 'ScheduleSectionsParseExecutor',
         class: require('../schedule/ScheduleSectionsParseExecutor'),
-        extendConfig: true
+        extend: require('../models/SectionsScheduleExtend.json')
     },
     {
-        code: 'ScheduleParseExecutor',
         class: require('../schedule/ScheduleParseExecutor'),
-        extendConfig: false
+        extend: require('../models/ScheduleExtend.json')
     }
 ];
 
@@ -118,13 +115,9 @@ ScheduleService.prototype.updateStatus = function(id, status) {
 };
 
 ScheduleService.prototype.getScheduleExecutorsList = function() {
-    var mappings = [
-        {property: 'code', input: 'code'},
-        {property: 'extendConfig', input: 'extendConfig'}
-    ];
     return new Promise(function(resolve, reject) {
-        resolve(schedulers.map(function(item) {
-            return utils.extractFields(item, mappings)
+        resolve(schedulersExtends.map(function(item) {
+            return item.extend;
         }));
     });
 };

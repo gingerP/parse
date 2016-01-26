@@ -19,10 +19,7 @@ define([
     };
     ScheduleService.prototype.getNew = function() {
         var id = U.getRandomString();
-        return {_isNew: true, _id: id, code: null, config: '', cron: null, status: null, progress: null, type: {code: "ScheduleParseExecutor", extendConfig: false}};
-    };
-    ScheduleService.prototype.getNewAsync = function(callback) {
-        this._load(this.getUrl('new'), callback);
+        return {_isNew: true, _id: id, code: null, config: '', cron: null, status: null, progress: null, extend: null};
     };
     ScheduleService.prototype.getUrlPrefix = function() {
         return 'schedule';

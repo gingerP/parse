@@ -1,10 +1,13 @@
 'use strict'
-define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
-    function() {
+define([
+        '../../service/ConstructorService.js',
+        '/static/js/bower_components/vkBeautify/vkbeautify.js'
+],
+    function(ConstructorService) {
         var api;
         var win;
         var toolbar;
-        var layout;
+        var list;
         var form;
         var editor;
         var jsBtnHandlerMappings = {
@@ -21,6 +24,25 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
             'js_itemConfig': 'Item Config',
             'js_authorConfig': 'Author Config'
         };
+        var manager = {
+            constructor: new DataManager(ConstructorService.instance, {idField: 'code'})
+        };
+        var listPromises = [
+            function() {
+                return new Promise(function (resolve, reject) {
+                    var combo = list.grid.getCombo(list.getColIndex('config'));
+                    manager.constructor.list(function (data) {
+                        $.each(data, function (index, item) {
+                            combo.put(item.code, item.code + ' (' + item.url + ')');
+                        });
+                        resolve();
+                    }, [
+                        {property: 'code', input: 'code'},
+                        {property: 'url', input: 'url'}
+                    ])
+                })
+            }
+        ];
         var action = {
             save: function() {
 
@@ -48,16 +70,17 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
             });
             var win = myWins.createWindow({
                 id: "itemsSchedulesEditor",
-                width:  1000,
-                height: 700,
-                center: true
+                width:  1100,
+                height: 530,
+                center: true,
+                resize: false
             });
             win.attachEvent('onClose', function() {
                 win.setModal(false);
                 win.hide();
-                editor.setLabel('Config Handler');
             });
             win.setText('Config editor');
+            win.cell.className += ' schedule-config-win';
             window.addEventListener('resize', function() {
                 win.centerOnScreen();
             });
@@ -69,12 +92,6 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
             return win;
         }
 
-        function createLayout(win) {
-            var layout = win.attachLayout('2U');
-            layout.cells('a').hideHeader();
-            layout.cells('b').collapse();
-            return layout;
-        }
 
         function createToolbar(win) {
             var toolbar = win.attachToolbar();
@@ -84,8 +101,6 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
                 toolbar.base.parentNode.parentNode.className += ' dhx_cell_toolbar_def_padding_less';
             }
             return toolbar;
-
-
         }
 
         function createForm(layout) {
@@ -98,40 +113,10 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
             ];
             var formConfig = [
                 {type: 'settings', inputWidth: 200, labelWidth: 100, labelAlign: 'left'},
-                {type: 'block', width: 'auto', list: [
-                    {type: 'combo', name: 'sectionConfig', label: 'Sections Config', readonly: true, note: {
-                        text: 'Конфиг для получения секций (элементов дерева навигации)', width: 200
-                    }},
+                {type: 'block', width: 'auto', blockOffset: 0, list: [
+                    {type: 'container', name: 'configs_container', inputWidth: 650, inputHeight: 400},
                     {type: 'newcolumn'},
-                    {type: 'button', name: 'js_sectionConfig', value: 'JS'}
-                ]},
-                {type: 'block', width: 'auto', list: [
-                    {type: 'combo',    name: 'sectionNumberConfig',       label: 'Section Number Config', required: true, note: {
-                        text: 'Конфиг для получения количества страниц элементов секции', width: 200
-                    }},
-                    {type: 'newcolumn'},
-                    {type: 'button', name: 'js_sectionNumberConfig', value: 'JS'}
-                ]},
-                {type: 'block', width: 'auto', list: [
-                    {type: 'combo',    name: 'sectionPageItemConfig',     label: 'Section Page Items Config', required: true, note: {
-                        text: 'Конфиг для получения превью целевого объекта на страницах с пагинацией', width: 200
-                    }},
-                    {type: 'newcolumn'},
-                    {type: 'button', name: 'js_sectionPageItemConfig', value: 'JS'}
-                ]},
-                {type: 'block', width: 'auto', list: [
-                    {type: 'combo',    name: 'itemConfig',                label: 'Item Config', required: true, note: {
-                        text: 'Конфиг для получения полной информации о целевом объекте', width: 200
-                    }},
-                    {type: 'newcolumn'},
-                    {type: 'button', name: 'js_itemConfig', value: 'JS'}
-                ]},
-                {type: 'block', width: 'auto', list: [
-                    {type: 'combo',    name: 'authorConfig',              label: 'Author Config', required: true, note: {
-                        text: 'Конфиг для получения полной информации об авторе целевого объекта', width: 200
-                    }},
-                    {type: 'newcolumn'},
-                    {type: 'button', name: 'js_authorConfig', value: 'JS'}
+                    {type: 'container', name: 'config_handler', inputWidth: 400, inputHeight: 400}
                 ]}
             ];
             var form = layout.attachForm(formConfig);
@@ -142,14 +127,27 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
         }
 
         function initDetailsBRules(vForm) {
-            vForm.addBRules({
-                '__btn;__regexp;js_.*': function(form, name) {
-                    var jsHandler = jsBtnHandlerMappings[name];
-                    var label = jsHandlerLabelMappings[name];
-                    var handlerScript = U.getDeepValue(form.controller.activeEntity, jsHandler);
-                    editor.show().setLabel(label).setValue(handlerScript);
-                }
-            });
+        }
+
+        function createList(container) {
+            var list = new dhtmlXGridObject(container);
+            var vListController = new GridController(manager.constructor).init([
+                {property: 'code', input: ''},
+                {property: 'config', input: 'config'}
+            ]);
+            var vList = new GridComponent().init(list, vListController, [
+                {key: 'code', header: 'Code', width: 100},
+                {key: 'config', header: 'Config', type: 'coro', width: 250},
+                {key: 'url', header: 'Url', type: 'coro', width: 250}
+            ]);
+            list.setImagePath("/static/dhtmlx/imgs");
+            list.init();
+            initListBRules(vList);
+            return vList;
+        }
+
+        function initListBRules(list) {
+
         }
 
         function createEditor(container, title) {
@@ -157,33 +155,16 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
             var editor;
             var api;
             doc.className += ' source-editor-container';
-            container.attachObject(doc);
-            container.setText(title || 'Test');
+            container.appendChild(doc);
             editor = ace.edit(doc);
             editor.getSession().setMode("ace/mode/json");
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
-            //init events
-            container.attachEvent("onPanelResizeFinish", function(names){
-                editor.resize();
-            });
             api = {
-                show: function() {
-                    layout.cells('b').expand();
-                    return api;
-                },
-                hide: function() {
-                    layout.cells('b').collapse();
-                    return api;
-                },
                 setValue: function(value) {
                     value = vkbeautify.json(value);
                     editor.setValue(value);
                     editor.clearSelection();
-                    return api;
-                },
-                setLabel: function(text) {
-                    layout.cells('b').setText(text);
                     return api;
                 },
                 getValue: function() {
@@ -191,6 +172,10 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
                 }
             };
             return api;
+        }
+
+        function preLoad(callback) {
+            Promise.all(listPromises.map(function(prom){return prom()})).then(function() {callback});
         }
 
         api = {
@@ -202,13 +187,16 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
                     win = createWindow();
                     win.show();
                     toolbar = createToolbar(win);
-                    layout = createLayout(win);
-                    form = createForm(layout.cells('a'));
-                    editor = createEditor(layout.cells('b'), 'Config Handler');
+                    form = createForm(win);
+                    list = createList(form.form.getContainer('configs_container'));
+                    editor = createEditor(form.form.getContainer('config_handler'));
+                    preLoad(function() {
+                        api.setData(data);
+                    })
                 } else {
                     win.show();
+                    api.setData(data);
                 }
-                api.setData(data);
                 win.setModal(true);
                 return api;
             },
@@ -218,7 +206,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
                 return api;
             },
             setData: function(entity) {
-                form.setData(entity.config);
+                list.controller.setData(entity.extend.handlers);
                 return api;
             }
         };

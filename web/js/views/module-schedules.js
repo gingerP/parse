@@ -36,7 +36,7 @@ define([
             },
             function() {
                 return new Promise(function(resolve, reject) {
-                    var combo = list.grid.getCombo(list.getColIndex('type'));
+                    var combo = list.grid.getCombo(list.getColIndex('extend'));
                     schedTypes = [];
                     manager.schedule.exec('getScheduleTypeList', [function (data) {
                         schedTypes = data;
@@ -329,12 +329,12 @@ define([
                 }
                 return result;
             },
-            type: function(value) {
+            extend: function(value) {
                 return value? value.code: '';
             },
             actions: function(value, entity) {
                 var result = '';
-                if (entity.type.extendConfig === true) {
+                if (entity.extend && entity.extend.isManual === true) {
                     result = '<div><a href="#" id="edit_' + entity._id + '">Edit</a></div>';
                 }
                 return result;
@@ -364,14 +364,14 @@ define([
                 {property: 'cron', input: 'cron'},
                 {property: 'config', input: 'config'},
                 {property: 'status', input: 'status'},
-                {property: 'type', input: 'type'}
+                {property: 'extend', input: 'extend'}
             ]);
             var vList = new GridComponent().init(list, vListController, [
                 {key: 'code', header: 'Code', type: 'ed', width: 200},
                 {key: 'cron', header: 'Cron', type: 'ed', width: 150},
                 {key: 'config', header: 'Config', type: 'coro', width: 250},
                 {key: 'status', header: 'Status', width: 150, formatter: formatter.status},
-                {key: 'type', header: 'Type', type: 'coro', width: 150, formatter: formatter.type},
+                {key: 'extend', header: 'extend', type: 'coro', width: 150, formatter: formatter.extend},
                 {key: 'progress', header: 'Progress', width: 300},
                 {key: 'actions', header: 'Actions', width: 100, formatter: formatter.actions}
             ]);
@@ -383,7 +383,7 @@ define([
 
         function initListBRules(list) {
             list.addBRules({
-                '__edit_fin;type': function(list, newValue, oldValue, rowId, colId, colName) {
+                '__edit_fin;extend': function(list, newValue, oldValue, rowId, colId, colName) {
                     var actionCol = list.getColIndex('actions');
                     var schedEntity;
                     var actionCell;
@@ -428,7 +428,7 @@ define([
                     var link = document.getElementById('edit_' + entity._id);
                     if (link) {
                         link.addEventListener('click', function () {
-                            configEditor.show(entity._id);
+                            configEditor.show(entity);
                         })
                     }
                 });
