@@ -73,8 +73,8 @@ define([
                     label: 'Run',
                     type: 'button',
                     name: 'run',
-                    image: '/static/images/button_start.png',
-                    imageDis: '/static/images/button_start.png'
+                    image: '/static/images/button_test.png',
+                    imageDis: '/static/images/button_test.png'
                 });
                 feature.exec = action.start;
                 return feature;
@@ -85,8 +85,8 @@ define([
                     label: 'Load config data',
                     type: 'button',
                     name: 'load',
-                    image: '/static/images/button_load.png',
-                    imageDis: '/static/images/button_load.png'
+                    image: '/static/images/button_download.png',
+                    imageDis: '/static/images/button_download.png'
                 });
                 feature.exec = action.reload;
                 return feature;
