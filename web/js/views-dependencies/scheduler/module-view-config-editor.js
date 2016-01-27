@@ -6,7 +6,10 @@ define([
     function(ConstructorService) {
         var api;
         var win;
+        var layout;
+        var testLayout;
         var toolbar;
+        var testToolbar;
         var list;
         var form;
         var editor;
@@ -63,6 +66,33 @@ define([
             })()
         ];
 
+        var testFeatures = [
+            //RUN
+            (function() {
+                var feature = new GenericFeature().init({
+                    label: 'Run',
+                    type: 'button',
+                    name: 'run',
+                    image: '/static/images/button_start.png',
+                    imageDis: '/static/images/button_start.png'
+                });
+                feature.exec = action.start;
+                return feature;
+            })(),
+            //LOAD
+            (function() {
+                var feature = new GenericFeature().init({
+                    label: 'Load config data',
+                    type: 'button',
+                    name: 'load',
+                    image: '/static/images/button_load.png',
+                    imageDis: '/static/images/button_load.png'
+                });
+                feature.exec = action.reload;
+                return feature;
+            })()
+        ];
+
         function createWindow() {
             var myWins = new dhtmlXWindows({
                 image_path: "codebase/imgs/",
@@ -72,8 +102,7 @@ define([
                 id: "itemsSchedulesEditor",
                 width:  1100,
                 height: 530,
-                center: true,
-                resize: false
+                center: true
             });
             win.attachEvent('onClose', function() {
                 win.setModal(false);
@@ -92,7 +121,13 @@ define([
             return win;
         }
 
-
+        function createLayout(win) {
+            var layout = win.attachLayout('3J');
+            layout.cells('a').hideHeader();
+            layout.cells('b').hideHeader();
+            layout.cells('c').hideHeader();
+            return layout;
+        }
         function createToolbar(win) {
             var toolbar = win.attachToolbar();
             var vToolbar = new Toolbar().init(toolbar);
@@ -130,7 +165,7 @@ define([
         }
 
         function createList(container) {
-            var list = new dhtmlXGridObject(container);
+            var list = container.attachGrid();
             var vListController = new GridController(manager.constructor).init([
                 {property: 'code', input: ''},
                 {property: 'config', input: 'config'}
@@ -150,12 +185,66 @@ define([
 
         }
 
-        function createEditor(container, title) {
+        function createTestLayout(cell) {
+            var layout = cell.attachLayout('3L');
+            layout.cells('a').hideHeader();
+            layout.cells('b').hideHeader();
+            return layout;
+        }
+
+        function createTestToolbar(layout) {
+            var toolbar = layout.cells('a').attachToolbar();
+            var vToolbar = new Toolbar().init(toolbar);
+            vToolbar.addFeatures.apply(vToolbar, testFeatures);
+            if (toolbar && toolbar.base) {
+                toolbar.base.parentNode.parentNode.className += ' dhx_cell_toolbar_def_padding_less';
+            }
+            return toolbar;
+        }
+
+        function createEditors(container) {
+            var tabbar = container.attachTabbar({
+                tabs: [
+                    {id: "pre", text: "Pre Handler"},
+                    {id: "post", text: "Post Handler", active: true}
+                ]
+            });
+            tabbar.setArrowsMode('auto');
+            createPostEditor(tabbar.cells('post'));
+            createPreEditor(tabbar.cells('pre'));
+            return tabbar;
+        }
+
+        function createPostEditor(cell) {
             var doc = document.createElement('DIV');
             var editor;
             var api;
             doc.className += ' source-editor-container';
-            container.appendChild(doc);
+            cell.cell.appendChild(doc);
+            editor = ace.edit(doc);
+            editor.getSession().setMode("ace/mode/json");
+            editor.setReadOnly(true);
+            editor.$blockScrolling = Infinity;
+            api = {
+                setValue: function(value) {
+                    value = vkbeautify.json(value);
+                    editor.setValue(value);
+                    editor.clearSelection();
+                    return api;
+                },
+                getValue: function() {
+                    return editor.getValue();
+                }
+            };
+            return api;
+        }
+
+        function createPreEditor(cell) {
+            var doc = document.createElement('DIV');
+            var editor;
+            var api;
+            doc.className += ' source-editor-container';
+            cell.cell.appendChild(doc);
             editor = ace.edit(doc);
             editor.getSession().setMode("ace/mode/json");
             editor.setReadOnly(true);
@@ -175,7 +264,9 @@ define([
         }
 
         function preLoad(callback) {
-            Promise.all(listPromises.map(function(prom){return prom()})).then(function() {callback});
+            Promise.all(listPromises.map(function(prom){
+                return prom()
+            })).then(callback);
         }
 
         api = {
@@ -187,9 +278,12 @@ define([
                     win = createWindow();
                     win.show();
                     toolbar = createToolbar(win);
-                    form = createForm(win);
-                    list = createList(form.form.getContainer('configs_container'));
-                    editor = createEditor(form.form.getContainer('config_handler'));
+                    layout = createLayout(win);
+                    form = createForm(layout.cells('a'));
+                    list = createList(layout.cells('c'));
+                    testLayout = createTestLayout(layout.cells('b'));
+                    testToolbar = createTestToolbar(testLayout);
+                    createEditors(testLayout.cells('a'));
                     preLoad(function() {
                         api.setData(data);
                     })
