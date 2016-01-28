@@ -95,7 +95,7 @@ FormComponent.prototype.takeSnapshot = function() {
 
 FormComponent.prototype.updateData = function(entity) {
     var formData = this.form.getFormData();
-    var entity = entity || this.controller.activeEntity;
+    entity = entity || this.controller.activeEntity;
     return this.fillEntity(entity, this.dataConfig, formData);
 };
 

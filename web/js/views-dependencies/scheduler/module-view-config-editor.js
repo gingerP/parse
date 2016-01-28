@@ -1,9 +1,10 @@
 'use strict'
 define([
+        '../../service/ScheduleService.js',
         '../../service/ConstructorService.js',
         '/static/js/bower_components/vkBeautify/vkbeautify.js'
 ],
-    function(ConstructorService) {
+    function(ScheduleService, ConstructorService) {
         var api;
         var win;
         var layout;
@@ -15,6 +16,8 @@ define([
         var editor;
         var postEditor;
         var preEditor;
+        var parsedDataViewer;
+        var scriptConsole;
         var jsBtnHandlerMappings = {
             'js_sectionConfig': 'sectionConfigJSHandler',
             'js_sectionNumberConfig': 'sectionNumberConfigJSHandler',
@@ -30,7 +33,8 @@ define([
             'js_authorConfig': 'Author Config'
         };
         var manager = {
-            constructor: new DataManager(ConstructorService.instance, {idField: 'code'})
+            constructor: new DataManager(ConstructorService.instance, {idField: 'code'}),
+            schedule: new DataManager(ScheduleService.instance),
         };
         var listPromises = [
             function() {
@@ -53,6 +57,17 @@ define([
                 var handlers = list.updateData();
             },
             cancel: function() {
+
+            },
+            test: function() {
+                var entity = api.getData();
+                var selected = list.getSelectedData();
+                manager.schedule.exec('test', [entity, {stepCode: selected.code}, function(result) {
+                    parsedDataViewer.setValue(result.parse);
+                    scriptConsole.setValue(result.script);
+                }])
+            },
+            loadConfig: function() {
 
             }
         };
@@ -84,16 +99,16 @@ define([
         ];
 
         var testFeatures = [
-            //RUN
+            //TEST
             (function() {
                 var feature = new GenericFeature().init({
-                    label: 'Run',
+                    label: 'Test',
                     type: 'button',
                     name: 'run',
                     image: '/static/images/button_test.png',
                     imageDis: '/static/images/button_test.png'
                 });
-                feature.exec = action.start;
+                feature.exec = action.test;
                 return feature;
             })(),
             //LOAD
@@ -105,7 +120,7 @@ define([
                     image: '/static/images/button_download.png',
                     imageDis: '/static/images/button_download.png'
                 });
-                feature.exec = action.reload;
+                feature.exec = action.loadConfig;
                 return feature;
             })()
         ];
@@ -303,6 +318,62 @@ define([
             return api;
         }
 
+        function createConsoleViewer(cell) {
+            var doc = document.createElement('DIV');
+            var editor;
+            var api;
+            doc.className += ' source-editor-container';
+            cell.cell.appendChild(doc);
+            editor = ace.edit(doc);
+            editor.getSession().setMode("ace/mode/json");
+            editor.setReadOnly(true);
+            editor.$blockScrolling = Infinity;
+            api = {
+                setValue: function(value) {
+                    value = vkbeautify.json(value);
+                    editor.setValue(value);
+                    editor.clearSelection();
+                    return api;
+                },
+                getValue: function() {
+                    return editor.getValue();
+                },
+                enable: function(state) {
+                    editor.setReadOnly(!state);
+                    return api;
+                }
+            };
+            return api;
+        }
+
+        function createParsedDataViwer(cell) {
+            var doc = document.createElement('DIV');
+            var editor;
+            var api;
+            doc.className += ' source-editor-container';
+            cell.cell.appendChild(doc);
+            editor = ace.edit(doc);
+            editor.getSession().setMode("ace/mode/json");
+            editor.setReadOnly(true);
+            editor.$blockScrolling = Infinity;
+            api = {
+                setValue: function(value) {
+                    value = vkbeautify.json(value);
+                    editor.setValue(value);
+                    editor.clearSelection();
+                    return api;
+                },
+                getValue: function() {
+                    return editor.getValue();
+                },
+                enable: function(state) {
+                    editor.setReadOnly(!state);
+                    return api;
+                }
+            };
+            return api;
+        }
+
         function preLoad(callback) {
             Promise.all(listPromises.map(function(prom){
                 return prom()
@@ -313,13 +384,15 @@ define([
             var post;
             var pre;
             var data;
+            var rowId;
             if (list.hasSelected()) {
                 post = postEditor.getValue();
                 pre = preEditor.getValue();
-                data = list.getSelectedData();
+                rowId = list.getSingleSelected();
+                data = list.getData(rowId);
                 data.post = post;
                 data.pre = pre;
-                list.updateSelectedData(data);
+                list.setData(data);
             }
         }
 
@@ -337,6 +410,8 @@ define([
                     list = createList(layout.cells('c'));
                     testLayout = createTestLayout(layout.cells('b'));
                     testToolbar = createTestToolbar(testLayout);
+                    parsedDataViewer = createConsoleViewer(testLayout.cells('c'));
+                    scriptConsole = createParsedDataViwer(testLayout.cells('b'));
                     createEditors(testLayout.cells('a'));
                     preLoad(function() {
                         api.setData(data);
@@ -353,7 +428,14 @@ define([
                 editor.setLabel('Config Handler');
                 return api;
             },
+            getData: function() {
+                var entity = form.updateData();
+                preSaveJSHandlers();
+                entity.extend.handlers = list.updateData();
+                return entity;
+            },
             setData: function(entity) {
+                form.setData(entity);
                 list.controller.setData(entity.extend.handlers);
                 return api;
             },

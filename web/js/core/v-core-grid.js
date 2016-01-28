@@ -37,7 +37,7 @@ GridController.prototype.updateUserDataField = function(rowId, colName, value) {
         }
     });
     U.setDeepValue(value, property, data);
-    this.owner.setData(rowId);
+    this.owner.setData(data);
 };
 
 GridController.prototype.reloadRow = function(rowId, entityId, callback, isSelect) {
@@ -252,4 +252,13 @@ GridComponent.prototype.runBeforeSelectBRules = function(newRow, oldRow, canChan
             this.brules[bRule].apply(this, [this, newRow, oldRow, canChange]);
         }
     }
+};
+
+GridComponent.prototype.updateData = function() {
+    var result = [];
+    var inst = this;
+    this.grid.forEachRow(function(rowId) {
+        result.push(inst.getData(rowId));
+    });
+    return result;
 };

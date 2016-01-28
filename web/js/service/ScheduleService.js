@@ -17,6 +17,9 @@ define([
     ScheduleService.prototype.validateCron = function(cron, callback) {
         this._load(this.getUrl('validateCron'), callback, {cron: cron});
     };
+    ScheduleService.prototype.test = function(schedule, extend, callback) {
+        this._load(this.getUrl('test'), callback, {schedule: schedule, extend: extend});
+    };
     ScheduleService.prototype.getNew = function() {
         var id = U.getRandomString();
         return {_isNew: true, _id: id, code: null, config: '', cron: null, status: null, progress: null, extend: null};

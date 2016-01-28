@@ -32,6 +32,14 @@ ScheduleController.prototype.getScheduleTypeList = function(req, res, callback) 
     this.service.getScheduleExecutorsList().then(callback);
 };
 
+ScheduleController.prototype.test = function(req, res, callback) {
+    var schedule = req.body.schedule;
+    var extend = req.body.extend;
+    this.service.test(schedule, extend).then(function() {
+        callback();
+    });
+};
+
 controller = new ScheduleController();
 controller.setService(service);
 console.log('%s: MAPPING to "ScheduleController" controller.' , Date(Date.now()));
@@ -45,7 +53,8 @@ utils.linkRequestsToModule([
     {path: '/stop', method: 'stop', async: true},
     {path: '/restart', method: 'restart', async: true},
     {path: '/validateCron', method: 'validateCron', async: true},
-    {path: '/getScheduleTypeList', method: 'getScheduleTypeList', async: true}
+    {path: '/getScheduleTypeList', method: 'getScheduleTypeList', async: true},
+    {path: '/test', method: 'test', async: true}
 ], controller, router, 'post');
 module.exports = {
     router: router,

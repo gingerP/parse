@@ -1,13 +1,21 @@
+var utils = require('../../utils');
 GenericStep = function() {};
 
+//TODO refactor promise chain
 GenericStep.prototype.run = function(stepDependencies) {
     var inst = this;
-    return stepDependencies.get().then(function(dependencies) {
-        return inst.pre(dependencies);
-    }).then(function(preData, dependencies) {
-        return inst.loadData(preData, dependencies);
-    }).then(function(parsedData, preData, dependencies) {
-        return inst.post(parsedData, preData, dependencies)
+    var preData;
+    var dependencies;
+    return new Promise(function(resolve) {
+        stepDependencies.get().then(function(dependencies_) {
+            dependencies = dependencies_;
+            return inst.pre(dependencies);
+        }).then(function(preData_) {
+            preData = preData_;
+            return inst.loadData(preData, dependencies);
+        }).then(function(parsedData) {
+            return inst.post(parsedData, preData, dependencies)
+        }).then(resolve);
     });
 };
 
