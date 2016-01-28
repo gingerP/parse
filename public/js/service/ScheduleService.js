@@ -10,10 +10,14 @@ var fs = require('fs');
 var service;
 var schedulersExtends = [
     {
+        name: 'ScheduleSectionsParseExecutor',
+        testClass: require('../schedule/test/ScheduleSectionsParseExecutorTest').instance,
         class: require('../schedule/ScheduleSectionsParseExecutor'),
         extend: require('../models/SectionsScheduleExtend.json')
     },
     {
+        name: 'ScheduleParseExecutor',
+        testClass: require('../schedule/test/ScheduleParseExecutorTest').instance,
         class: require('../schedule/ScheduleParseExecutor'),
         extend: require('../models/ScheduleExtend.json')
     }
@@ -44,7 +48,7 @@ ScheduleService.prototype.start = function(id) {
         var executor;
         if (!inst.tasks[id]) {
             executor = inst._getScheduleExecutor(schedule);
-            inst.tasks[id] = new executor().init(id);
+            inst.tasks[id] = new executor.class().init(id);
             inst.tasks[id].addListener('parse', scheduleListener, true);
             inst._initScheduleListeners(inst.tasks[id]);
             return inst.tasks[id].start().then(function() {
@@ -130,11 +134,21 @@ ScheduleService.prototype.validateCron = function(cronString) {
     });
 };
 
+ScheduleService.prototype.test = function(schedule, extend) {
+    var inst = this;
+    return new Promise(function(resolve, reject) {
+        var executor = inst._getScheduleExecutor(schedule);
+        if (executor) {
+            return executor.testClass.run(schedule, extend);
+        }
+    })
+};
+
 ScheduleService.prototype._getScheduleExecutor = function(schedule) {
-    var index = schedulers.length;
+    var index = schedulersExtends.length;
     while(index >= 0) {
-        if (schedulers[index].code === schedule.extendConfig.code) {
-            return schedulers[index].class;
+        if (schedulersExtends[index].name === schedule.extendConfig.code) {
+            return schedulersExtends[index];
         }
         index--;
     }

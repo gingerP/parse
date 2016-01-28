@@ -280,6 +280,17 @@ ScheduleParseExecutor.prototype.run = function() {
     });
 
 };
+/**
+ *   params:
+ *   {
+ *      prevCfg: ...,
+ *      nextCfg: ...,
+ *
+ *   }
+*/
+ScheduleParseExecutor.prototype.runTest = function(stepNumber, params) {
+
+};
 
 module.exports = {
     class: ScheduleParseExecutor
