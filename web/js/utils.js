@@ -5,7 +5,7 @@ U = {
         } else if (obj != null && this.isArray(obj)) {
             return obj.length > 0;
         } else if (typeof(obj) != 'undefined') {
-            return obj != null && Object.keys(obj).length;
+            return obj != null && !!Object.keys(obj).length;
         }
         return false;
     },

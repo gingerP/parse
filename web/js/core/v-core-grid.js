@@ -126,6 +126,7 @@ GridComponent.prototype.initEvents = function () {
     this.grid.attachEvent('onBeforeSelect', function (newRow, oldRow) {
         if (newRow == oldRow) return true;
         var canChange = thiz.controller.onBeforeSelectionChange(newRow, oldRow);
+        thiz.runBeforeSelectBRules(newRow, oldRow, canChange);
         return canChange;
     });
 
@@ -208,6 +209,11 @@ GridComponent.prototype.getSelectedData = function() {
     return result;
 };
 
+GridComponent.prototype.updateSelectedData = function(data) {
+    this.setData(data);
+    return this;
+};
+
 GridComponent.prototype.hasSelected = function() {
     var rowId = this.grid.getSelectedRowId();
     return U.hasContent(rowId);
@@ -234,6 +240,16 @@ GridComponent.prototype.runEditFinBRules = function(newVal, oldVal, rowId, colId
         keys = bRule.split(';');
         if (keys.indexOf('__edit_fin') > -1 && keys.indexOf(colName) > -1) {
             this.brules[bRule].apply(this, [this, newVal, oldVal, rowId, colId, colName]);
+        }
+    }
+};
+
+GridComponent.prototype.runBeforeSelectBRules = function(newRow, oldRow, canChange) {
+    var keys;
+    for (var bRule in this.brules) {
+        keys = bRule.split(';');
+        if (keys.indexOf('__before_select') > -1) {
+            this.brules[bRule].apply(this, [this, newRow, oldRow, canChange]);
         }
     }
 };

@@ -13,6 +13,8 @@ define([
         var list;
         var form;
         var editor;
+        var postEditor;
+        var preEditor;
         var jsBtnHandlerMappings = {
             'js_sectionConfig': 'sectionConfigJSHandler',
             'js_sectionNumberConfig': 'sectionNumberConfigJSHandler',
@@ -48,6 +50,9 @@ define([
         ];
         var action = {
             save: function() {
+                var handlers = list.updateData();
+            },
+            cancel: function() {
 
             }
         };
@@ -55,13 +60,25 @@ define([
             //SAVE
             (function() {
                 var feature = new GenericFeature().init({
-                    label: 'Ok',
+                    label: 'Save',
                     type: 'button',
                     name: 'save',
                     image: '/static/images/button_save.png',
                     imageDis: '/static/images/button_save.png'
                 });
-                feature.exec = action.reload;
+                feature.exec = action.save;
+                return feature;
+            })(),
+            //CANCEL
+            (function() {
+                var feature = new GenericFeature().init({
+                    label: 'Cancel',
+                    type: 'button',
+                    name: 'cancel',
+                    image: '/static/images/button_cancel.png',
+                    imageDis: '/static/images/button_cancel.png'
+                });
+                feature.exec = action.cancel;
                 return feature;
             })()
         ];
@@ -107,7 +124,9 @@ define([
             win.attachEvent('onClose', function() {
                 win.setModal(false);
                 win.hide();
+                api.clear();
             });
+            win.setModal(true);
             win.setText('Config editor');
             win.cell.className += ' schedule-config-win';
             window.addEventListener('resize', function() {
@@ -173,7 +192,7 @@ define([
             var vList = new GridComponent().init(list, vListController, [
                 {key: 'code', header: 'Code', width: 100},
                 {key: 'config', header: 'Config', type: 'coro', width: 250},
-                {key: 'url', header: 'Url', type: 'coro', width: 250}
+                {key: 'url', header: 'Url', type: 'ed', width: 250}
             ]);
             list.setImagePath("/static/dhtmlx/imgs");
             list.init();
@@ -182,7 +201,20 @@ define([
         }
 
         function initListBRules(list) {
-
+            list.addBRules({
+                '__before_select': function(/*grid, newRow, oldRow, canChange*/) {
+                    preSaveJSHandlers();
+                },
+                '_select_': function(grid, entity) {
+                    var hasSelected = U.hasContent(entity);
+                    if (hasSelected) {
+                        preEditor.setValue(entity.pre);
+                        postEditor.setValue(entity.post);
+                    }
+                    preEditor.enable(hasSelected);
+                    postEditor.enable(hasSelected);
+                }
+            });
         }
 
         function createTestLayout(cell) {
@@ -210,8 +242,8 @@ define([
                 ]
             });
             tabbar.setArrowsMode('auto');
-            createPostEditor(tabbar.cells('post'));
-            createPreEditor(tabbar.cells('pre'));
+            postEditor = createPostEditor(tabbar.cells('post'));
+            preEditor = createPreEditor(tabbar.cells('pre'));
             return tabbar;
         }
 
@@ -220,20 +252,24 @@ define([
             var editor;
             var api;
             doc.className += ' source-editor-container';
+            cell.setActive();
             cell.cell.appendChild(doc);
             editor = ace.edit(doc);
-            editor.getSession().setMode("ace/mode/json");
+            editor.getSession().setMode("ace/mode/javascript");
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
             api = {
                 setValue: function(value) {
-                    value = vkbeautify.json(value);
-                    editor.setValue(value);
+                    editor.setValue(U.hasContent(value)? '' + value: '');
                     editor.clearSelection();
                     return api;
                 },
                 getValue: function() {
                     return editor.getValue();
+                },
+                enable: function(state) {
+                    editor.setReadOnly(!state);
+                    return api;
                 }
             };
             return api;
@@ -244,20 +280,24 @@ define([
             var editor;
             var api;
             doc.className += ' source-editor-container';
+            cell.setActive();
             cell.cell.appendChild(doc);
             editor = ace.edit(doc);
-            editor.getSession().setMode("ace/mode/json");
+            editor.getSession().setMode("ace/mode/javascript");
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
             api = {
                 setValue: function(value) {
-                    value = vkbeautify.json(value);
-                    editor.setValue(value);
+                    editor.setValue(U.hasContent(value)? '' + value: '');
                     editor.clearSelection();
                     return api;
                 },
                 getValue: function() {
                     return editor.getValue();
+                },
+                enable: function(state) {
+                    editor.setReadOnly(!state);
+                    return api;
                 }
             };
             return api;
@@ -267,6 +307,20 @@ define([
             Promise.all(listPromises.map(function(prom){
                 return prom()
             })).then(callback);
+        }
+
+        function preSaveJSHandlers() {
+            var post;
+            var pre;
+            var data;
+            if (list.hasSelected()) {
+                post = postEditor.getValue();
+                pre = preEditor.getValue();
+                data = list.getSelectedData();
+                data.post = post;
+                data.pre = pre;
+                list.updateSelectedData(data);
+            }
         }
 
         api = {
@@ -302,6 +356,12 @@ define([
             setData: function(entity) {
                 list.controller.setData(entity.extend.handlers);
                 return api;
+            },
+            clear: function() {
+                list.clear();
+                postEditor.setValue('');
+                preEditor.setValue('');
+                form.clear();
             }
         };
         return api;
