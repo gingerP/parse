@@ -15,19 +15,21 @@ ScheduleSectionsParseExecutorTest.prototype.run = function(schedule, extend) {
     var stepCode = extend.stepCode;
     var stepIndex = this._getStepIndex(stepCode);
     var currentStepIndex = 0;
-    var step = new steps[currentStepIndex]().run(inst.getStepDependenciesCallback(schedule, stepCode));
-    currentStepIndex++;
-    while(currentStepIndex <= stepIndex) {
-        step = step.then(function() {
-            var currentIndex = currentStepIndex;
-            var stepCode = sectionsScheduleExtend.handlers[currentIndex].code;
-            return function(prevLevelResult) {
-                return new steps[currentIndex]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevLevelResult));
-            }
-        }());
+    return new Promise(function(resolve) {
+        var step = new steps[currentStepIndex]().run(inst.getStepDependenciesCallback(schedule, stepCode));
         currentStepIndex++;
-    }
-    return step;
+        while(currentStepIndex <= stepIndex) {
+            step = step.then(function() {
+                var currentIndex = currentStepIndex;
+                var stepCode = sectionsScheduleExtend.handlers[currentIndex].code;
+                return function(prevLevelResult) {
+                    return new steps[currentIndex]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevLevelResult));
+                }
+            }());
+            currentStepIndex++;
+        }
+        step.then(resolve);
+    })
 };
 
 ScheduleSectionsParseExecutorTest.prototype.getStepDependenciesCallback = function(schedule, stepCode, prevLevelResult) {
