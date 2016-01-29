@@ -14,8 +14,6 @@ if (prop.network.ssl.active === true) {
     server = require('http');
 }
 
-
-
 /**
  *  Define the sample application.
  */
@@ -91,6 +89,8 @@ var SampleApp = function() {
             self.app = server.createServer(userApp);
             console.log('%s: HTTP server successfully created.', Date(Date.now()));
         }
+        var wsServer = require('./public/js/common/WSServer').instance(self.app);
+        require('./public/js/common/WSTest').run(wsServer);
     };
 
 

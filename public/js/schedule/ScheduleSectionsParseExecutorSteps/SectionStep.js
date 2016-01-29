@@ -41,7 +41,7 @@ SectionStep.prototype.save = function(parsedData, dependencies) {
         var sandbox = {
             PARSED: parsedData,
             RESULT: null,
-            TEST: false
+            TEST: true
         };
         var context = utils.eval(handler, sandbox);
         if (context.TEST === true) {

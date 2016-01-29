@@ -16,6 +16,7 @@ Observable.prototype.addListener = function(property, listener, isAsync) {
 
 Observable.prototype.propertyChange = function(property, data) {
     var methodName;
+    data = Array.isArray(data)? data: [data];
     if (this.listeners && this.listeners[property] && this.listeners[property].length) {
         this.listeners[property].forEach(function(listener) {
             var func;

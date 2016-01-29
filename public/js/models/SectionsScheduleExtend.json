@@ -6,36 +6,41 @@
       "code": "section",
       "config": "",
       "url": "",
-      "handlerPost": "",
-      "handlerPre": ""
+      "postHandler": "",
+      "preHandler": "",
+      "saveHandler": ""
     },
     {
       "code": "sectionNumber",
       "config": "",
       "url": "",
-      "handlerPost": "",
-      "handlerPre": ""
+      "postHandler": "",
+      "preHandler": "",
+      "saveHandler": ""
     },
     {
       "code": "sectionPageItem",
       "config": "",
       "url": "",
-      "handlerPost": "",
-      "handlerPre": ""
+      "postHandler": "",
+      "preHandler": "",
+      "saveHandler": ""
     },
     {
       "code": "item",
       "config": "",
       "url": "",
-      "handlerPost": "",
-      "handlerPre": ""
+      "postHandler": "",
+      "preHandler": "",
+      "saveHandler": ""
     },
     {
       "code": "author",
       "config": "",
       "url": "",
-      "handlerPost": "",
-      "handlerPre": ""
+      "postHandler": "",
+      "preHandler": "",
+      "saveHandler": ""
     }
   ]
 }

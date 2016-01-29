@@ -261,8 +261,9 @@ var api = {
         return result;
     },
     eval: function(script, sandbox) {
-        var context = new getRef('vm').createContext(sandbox);
-        var compiledHandler = new getRef('vm').Script(script);
+        var vm = getRef('vm');
+        var context = new vm.createContext(sandbox);
+        var compiledHandler = new vm.Script(script);
         compiledHandler.runInContext(context);
         return context;
     }
