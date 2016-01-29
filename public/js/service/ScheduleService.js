@@ -139,7 +139,9 @@ ScheduleService.prototype.test = function(schedule, extend) {
     return new Promise(function(resolve, reject) {
         var executor = inst._getScheduleExecutor(schedule);
         if (executor) {
-            return new executor.testClass().run(schedule, extend);
+            new executor.testClass().run(schedule, extend).then(function(result) {
+                resolve(result);
+            });
         } else {
             resolve(true);
         }

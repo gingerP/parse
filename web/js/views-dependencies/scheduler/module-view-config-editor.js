@@ -63,8 +63,7 @@ define([
                 var entity = api.getData();
                 var selected = list.getSelectedData();
                 manager.schedule.exec('test', [entity, {stepCode: selected.code}, function(result) {
-                    parsedDataViewer.setValue(result.parse);
-                    scriptConsole.setValue(result.script);
+                    parsedDataViewer.setValue(result);
                 }])
             },
             loadConfig: function() {
@@ -223,8 +222,8 @@ define([
                 '_select_': function(grid, entity) {
                     var hasSelected = U.hasContent(entity);
                     if (hasSelected) {
-                        preEditor.setValue(entity.pre);
-                        postEditor.setValue(entity.post);
+                        preEditor.setValue(entity.handlerPre);
+                        postEditor.setValue(entity.handlerPost);
                     }
                     preEditor.enable(hasSelected);
                     postEditor.enable(hasSelected);
@@ -233,9 +232,8 @@ define([
         }
 
         function createTestLayout(cell) {
-            var layout = cell.attachLayout('3L');
+            var layout = cell.attachLayout('2U');
             layout.cells('a').hideHeader();
-            layout.cells('b').hideHeader();
             return layout;
         }
 
@@ -323,7 +321,7 @@ define([
             var editor;
             var api;
             doc.className += ' source-editor-container';
-            cell.cell.appendChild(doc);
+            cell.appendObject(doc);
             editor = ace.edit(doc);
             editor.getSession().setMode("ace/mode/json");
             editor.setReadOnly(true);
@@ -331,7 +329,7 @@ define([
             api = {
                 setValue: function(value) {
                     value = vkbeautify.json(value);
-                    editor.setValue(value);
+                    editor.setValue(value || {});
                     editor.clearSelection();
                     return api;
                 },
@@ -351,15 +349,25 @@ define([
             var editor;
             var api;
             doc.className += ' source-editor-container';
-            cell.cell.appendChild(doc);
+            cell.appendObject(doc);
+            cell.setText('Console');
             editor = ace.edit(doc);
             editor.getSession().setMode("ace/mode/json");
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
+            win.attachEvent("onMinimize", function() {
+                editor.resize();
+            });
+            win.attachEvent("onMaximize", function() {
+                editor.resize();
+            });
+            cell.attachEvent("onResizeFinish", function() {
+                editor.resize();
+            });
             api = {
                 setValue: function(value) {
                     value = vkbeautify.json(value);
-                    editor.setValue(value);
+                    editor.setValue(value || {});
                     editor.clearSelection();
                     return api;
                 },
@@ -390,8 +398,8 @@ define([
                 pre = preEditor.getValue();
                 rowId = list.getSingleSelected();
                 data = list.getData(rowId);
-                data.post = post;
-                data.pre = pre;
+                data.handlerPost = post;
+                data.handlerPre = pre;
                 list.setData(data);
             }
         }
@@ -410,8 +418,7 @@ define([
                     list = createList(layout.cells('c'));
                     testLayout = createTestLayout(layout.cells('b'));
                     testToolbar = createTestToolbar(testLayout);
-                    parsedDataViewer = createConsoleViewer(testLayout.cells('c'));
-                    scriptConsole = createParsedDataViwer(testLayout.cells('b'));
+                    parsedDataViewer = createParsedDataViwer(testLayout.cells('b'));
                     createEditors(testLayout.cells('a'));
                     preLoad(function() {
                         api.setData(data);
@@ -441,9 +448,12 @@ define([
             },
             clear: function() {
                 list.clear();
-                postEditor.setValue('');
-                preEditor.setValue('');
-                form.clear();
+                postEditor.setValue();
+                preEditor.setValue();
+                parsedDataViewer.setValue();
+            },
+            addScheduleListener: function(listener) {
+
             }
         };
         return api;

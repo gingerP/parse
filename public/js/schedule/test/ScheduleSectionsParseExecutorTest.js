@@ -28,7 +28,9 @@ ScheduleSectionsParseExecutorTest.prototype.run = function(schedule, extend) {
             }());
             currentStepIndex++;
         }
-        step.then(resolve);
+        step.then(function(result) {
+            resolve(result);
+        });
     })
 };
 

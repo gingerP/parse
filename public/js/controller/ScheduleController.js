@@ -35,8 +35,8 @@ ScheduleController.prototype.getScheduleTypeList = function(req, res, callback) 
 ScheduleController.prototype.test = function(req, res, callback) {
     var schedule = req.body.schedule;
     var extend = req.body.extend;
-    this.service.test(schedule, extend).then(function() {
-        callback();
+    this.service.test(schedule, extend).then(function(result) {
+        callback(result);
     });
 };
 

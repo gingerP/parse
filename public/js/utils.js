@@ -4,7 +4,8 @@ var dependencies = {
     iconv: 'iconv',
     express: 'express',
     iconvLite: 'iconv-lite',
-    htmlToJson: './modules/HtmlToJson'
+    htmlToJson: './modules/HtmlToJson',
+    vm: 'vm'
 };
 var iconvLiteExtendNodeEncondins = false;
 function getRef(ref) {
@@ -258,6 +259,12 @@ var api = {
             }
         }
         return result;
+    },
+    eval: function(script, sandbox) {
+        var context = new getRef('vm').createContext(sandbox);
+        var compiledHandler = new getRef('vm').Script(script);
+        compiledHandler.runInContext(context);
+        return context;
     }
 };
 

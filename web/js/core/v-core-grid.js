@@ -12,7 +12,7 @@ GridController.prototype.onBeforeSelectionChange = function(newRow, oldRow) {
 };
 
 GridController.prototype.onSelectionChange = function(rowId) {
-    var entity = this.owner.getOrigUserData(rowId);
+    var entity = this.owner.getData(rowId);
     this.owner.runSelectRules(entity);
     return this;
 };

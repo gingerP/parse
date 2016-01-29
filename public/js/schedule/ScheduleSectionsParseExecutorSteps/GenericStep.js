@@ -1,5 +1,7 @@
 var utils = require('../../utils');
-GenericStep = function() {};
+GenericStep = function() {
+    this.dbManager;
+};
 
 //TODO refactor promise chain
 GenericStep.prototype.run = function(stepDependencies) {
@@ -14,8 +16,11 @@ GenericStep.prototype.run = function(stepDependencies) {
             preData = preData_;
             return inst.loadData(preData, dependencies);
         }).then(function(parsedData) {
+            inst.save(parsedData, dependencies);
             return inst.post(parsedData, preData, dependencies)
-        }).then(resolve);
+        }).then(function(result) {
+            resolve(result);
+        });
     });
 };
 
@@ -51,6 +56,22 @@ GenericStep.prototype.post = function(parsedData, preData, dependencies) {
         var result = {};
         resolve(result);
     })
+};
+
+//to override
+GenericStep.prototype.save = function(data, dependencies) {
+    return new Promise(function(resolve) {
+        resolve();
+    });
+};
+
+GenericStep.prototype.saveAsCollection = function(list) {
+
+};
+
+GenericStep.prototype.setDBManager = function(dbManager) {
+    this.dbManager = dbManager;
+    return this;
 };
 
 module.exports = {
