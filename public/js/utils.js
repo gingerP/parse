@@ -264,8 +264,16 @@ var api = {
         var vm = getRef('vm');
         var context = new vm.createContext(sandbox);
         var compiledHandler = new vm.Script(script);
-        compiledHandler.runInContext(context);
+        try {
+            compiledHandler.runInContext(context);
+        } catch (e) {
+            console.warn(e);
+            context.ERROR_EVAL = e.message;
+        }
         return context;
+    },
+    getRandomString: function() {
+        return Math.random().toString(36).substring(7);
     }
 };
 

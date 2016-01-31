@@ -4,6 +4,14 @@ var parseDataDBManager = require('../db/ParseDataDBManager').instance;
 var scheduleDBManager = require('../db/ScheduleDBManager').instance;
 var scheduleStatus = require('../models/ScheduleParseStatus.json');
 var utils = require('../utils');
+/*var steps = [
+    require('../ScheduleSectionsParseExecutorSteps/SectionStep').class,
+    require('../ScheduleSectionsParseExecutorSteps/SectionNumberStep').class,
+    require('../ScheduleSectionsParseExecutorSteps/SectionPageItemStep').class,
+    require('../ScheduleSectionsParseExecutorSteps/ItemStep').class,
+    require('../ScheduleSectionsParseExecutorSteps/AuthorStep').class
+];
+var sectionsScheduleExtend = require('../../models/SectionsScheduleExtend.json');*/
 
 ScheduleParseExecutor = function() {};
 
@@ -23,27 +31,6 @@ ScheduleParseExecutor.prototype.init = function(scheduleId) {
     this.parseConfig;
     return this;
 };
-
-/*
-ScheduleParseExecutor.prototype.start = function() {
-    var inst = this;
-    return new Promise(function(resolve, reject) {
-        if (!inst.schedule) {
-            return inst.loadDependencies(inst._scheduleId).then(function() {
-                inst.getCronInstance().start();
-                inst.getExecutor()();
-                console.info('%s: Scheduler "%s" started!', Date(Date.now()), inst.getName());
-                resolve(true);
-            })
-        } else {
-            inst.getCronInstance().start();
-            inst.getExecutor()();
-            console.info('%s: Scheduler "%s" started!', Date(Date.now()), inst.getName());
-            resolve(true);
-        }
-    });
-};
-*/
 
 ScheduleParseExecutor.prototype.start = function() {
     var inst = this;
@@ -71,7 +58,8 @@ ScheduleParseExecutor.prototype.updateStatus = function(status) {
 ScheduleParseExecutor.prototype.getExecutor = function() {
     var inst = this;
     return function() {
-        inst.propertyChange(inst.listenerPoints.pageLoadStart);
+        inst.run();
+        /*inst.propertyChange(inst.listenerPoints.pageLoadStart);
         utils.loadDom(inst.parseConfig.url, function(error, body) {
             var entity;
             var data;
@@ -92,7 +80,7 @@ ScheduleParseExecutor.prototype.getExecutor = function() {
             } catch(error) {
                 console.error();
             }
-        }, 'koi8r');
+        }, 'koi8r');*/
     };
 };
 
@@ -122,37 +110,75 @@ ScheduleParseExecutor.prototype.loadDependencies = function(scheduleId) {
     })
 };
 
-ScheduleParseExecutor.prototype._getConfig = function(code) {
+ScheduleParseExecutor.prototype.run = function(schedule, extend) {
     var inst = this;
+    var destIndex = this._getStepIndex(extend.stepCode);
+    destIndex = utils.hasContent(destIndex)? destIndex: 0;
     return new Promise(function(resolve) {
-        if (inst.configs && inst.configs[code]) {
-            resolve(inst.configs[code]);
-        } else {
-            parseConfigDBManager.getByCriteria({code: code}).then(function(config) {
-                inst.configs[code] = config;
-                resolve(config);
-            })
-        }
-    });
-};
-
-ScheduleParseExecutor.prototype._loadDataByConfig = function(configCode, url) {
-    var inst = this;
-    return new Promise(function(resolve, reject) {
-        inst._getConfig(configCode).then(function(config) {
-            utils.loadDom(url, function(error, body) {
-                try {
-                    resolve(utils.extractDataFromHtml(body, config));
-                } catch(error) {
-                    console.error();
-                    reject(null);
-                }
-            }, 'koi8r');
-        });
+        inst._run(schedule, 0, null, destIndex);
+        resolve();
     })
 };
 
+ScheduleParseExecutor.prototype._run = function(schedule, index, prevStepRes, destIndex) {
+    var stepCode;
+    var inst = this;
+    if (index >= steps.length) {
+        return;
+    }
+    stepCode = this._getHandlerByIndex(index, schedule);
+    if (stepCode) {
+        stepCode = stepCode.code;
+        (Array.isArray(prevStepRes)
+            ? prevStepRes
+            : [prevStepRes])
+            .forEach(function (prevResult) {
+                new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
+                    if (index < destIndex) {
+                        inst._run(schedule, index + 1, result);
+                    }
+                });
+            });
+    }
+};
 
+//TODO refactoring
+ScheduleParseExecutor.prototype._getHandler = function(stepCode, schedule) {
+    var index = 0;
+    while(index  < schedule.extend.handlers.length) {
+        if (schedule.extend.handlers[index].code === stepCode) {
+            return schedule.extend.handlers[index];
+        }
+        index++;
+    }
+};
+
+//TODO refactoring
+ScheduleParseExecutor.prototype._getHandlerByIndex = function(index, schedule) {
+    return schedule.extend && schedule.extend.handlers && schedule.extend.handlers.length > index? schedule.extend.handlers[index]: null;
+};
+
+//TODO refactoring
+ScheduleParseExecutor.prototype._getConfigCode = function(stepCode, schedule) {
+    var index = 0;
+    while(index  < schedule.extend.handlers.length) {
+        if (schedule.extend.handlers[index].code === stepCode) {
+            return schedule.extend.handlers[index].config;
+        }
+        index++;
+    }
+};
+
+//TODO refactoring
+ScheduleParseExecutor.prototype._getStepIndex = function(stepCode) {
+    var index = 0;
+    while (index < sectionsScheduleExtend.handlers.length) {
+        if (sectionsScheduleExtend.handlers[index].code === stepCode) {
+            return index;
+        }
+        index++;
+    }
+};
 
 module.exports = {
     class: ScheduleParseExecutor

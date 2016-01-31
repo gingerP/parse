@@ -1,8 +1,6 @@
 var GenericStep = require('./GenericStep').class;
 var utils = require('../../utils');
 var dbManager = require('../../db/NavigationTreeDBManager').instance;
-const vm = require('vm');
-const util = require('util');
 
 SectionStep = function() {
     this.setDBManager(dbManager);

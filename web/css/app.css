@@ -189,3 +189,20 @@ body {
 .dhx_cell_toolbar_def_padding_less {
   padding: 0 !important;
 }
+.grid-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: background-color 300ms;
+  display: block;
+}
+.button-settings {
+  background-color: #65bb67;
+  background-image: url("../images/button_settings.png");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.button-settings:hover {
+  background-color: #295e2b;
+}

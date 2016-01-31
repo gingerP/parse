@@ -11,9 +11,14 @@ SectionPageItemStep.prototype.constructor = SectionPageItemStep;
 SectionPageItemStep.prototype.pre = function(dependencies) {
     var inst = this;
     return new Promise(function(resolve) {
-        var url = utils.hasContent(dependencies.handler.url)? dependencies.handler.url: dependencies.config.url;
+        var handler = dependencies.handler.preHandler;
+        var sandbox = {
+            DEPS: dependencies,
+            URL: null
+        };
+        utils.eval(handler, sandbox);
         resolve({
-            url: url
+            url: sandbox.URL
         }, dependencies);
     });
 };

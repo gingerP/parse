@@ -17,6 +17,7 @@ define([
         var postEditor;
         var preEditor;
         var parsedDataViewer;
+        var scheduleListener;
         var scriptConsole;
         var jsBtnHandlerMappings = {
             'js_sectionConfig': 'sectionConfigJSHandler',
@@ -54,17 +55,22 @@ define([
         ];
         var action = {
             save: function() {
-                var handlers = list.updateData();
+                var entity = api.getData();
+                if (scheduleListener) {
+                    scheduleListener.updateSchedule(entity);
+                }
             },
             cancel: function() {
-
+                api.hide();
             },
             test: function() {
                 var entity = api.getData();
                 var selected = list.getSelectedData();
-                manager.schedule.exec('test', [entity, {stepCode: selected.code}, function(result) {
-                    parsedDataViewer.setValue(result);
-                }])
+                if (selected) {
+                    manager.schedule.exec('test', [entity, {stepCode: selected.code, maxIteration: 1}, function (result) {
+                        parsedDataViewer.setValue(result);
+                    }]);
+                }
             },
             loadConfig: function() {
 
@@ -222,8 +228,8 @@ define([
                 '_select_': function(grid, entity) {
                     var hasSelected = U.hasContent(entity);
                     if (hasSelected) {
-                        preEditor.setValue(entity.handlerPre);
-                        postEditor.setValue(entity.handlerPost);
+                        preEditor.setValue(entity.preHandler);
+                        postEditor.setValue(entity.postHandler);
                     }
                     preEditor.enable(hasSelected);
                     postEditor.enable(hasSelected);
@@ -329,7 +335,7 @@ define([
             api = {
                 setValue: function(value) {
                     value = vkbeautify.json(value);
-                    editor.setValue(value || {});
+                    editor.setValue(value || "{}");
                     editor.clearSelection();
                     return api;
                 },
@@ -367,7 +373,7 @@ define([
             api = {
                 setValue: function(value) {
                     value = vkbeautify.json(value);
-                    editor.setValue(value || {});
+                    editor.setValue(value || "{}");
                     editor.clearSelection();
                     return api;
                 },
@@ -398,8 +404,8 @@ define([
                 pre = preEditor.getValue();
                 rowId = list.getSingleSelected();
                 data = list.getData(rowId);
-                data.handlerPost = post;
-                data.handlerPre = pre;
+                data.postHandler = post;
+                data.preHandler = pre;
                 list.setData(data);
             }
         }
@@ -421,18 +427,19 @@ define([
                     parsedDataViewer = createParsedDataViwer(testLayout.cells('b'));
                     createEditors(testLayout.cells('a'));
                     preLoad(function() {
+                        api.clear();
                         api.setData(data);
                     })
                 } else {
                     win.show();
+                    api.clear();
                     api.setData(data);
                 }
                 win.setModal(true);
                 return api;
             },
             hide: function() {
-                win.hide();
-                editor.setLabel('Config Handler');
+                win.close();
                 return api;
             },
             getData: function() {
@@ -453,7 +460,8 @@ define([
                 parsedDataViewer.setValue();
             },
             addScheduleListener: function(listener) {
-
+                scheduleListener = listener;
+                return api;
             }
         };
         return api;

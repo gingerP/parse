@@ -1,7 +1,5 @@
 var GenericStep = require('./GenericStep').class;
 var utils = require('../../utils');
-const vm = require('vm');
-const util = require('util');
 
 SectionNumberStep = function() {};
 
@@ -10,11 +8,21 @@ SectionNumberStep.prototype.constructor = SectionNumberStep;
 
 SectionNumberStep.prototype.pre = function(dependencies) {
     var inst = this;
-    return new Promise(function(resolve) {
-        var url = utils.hasContent(dependencies.handler.url)? dependencies.handler.url: dependencies.config.url;
-        resolve({
-            url: url
-        }, dependencies);
+    return new Promise(function(resolve, reject) {
+        var handler = dependencies.handler.preHandler;
+        var sandbox = {
+            DEPS: dependencies,
+            URL: null
+        };
+        utils.eval(handler, sandbox);
+        if (!utils.hasContent(sandbox.URL)) {
+            console.error('Url for sectionNumber is not defined.');
+            reject('Url for sectionNumber is not defined.');
+        } else {
+            resolve({
+                url: sandbox.URL
+            }, dependencies);
+        }
     });
 };
 

@@ -88,6 +88,7 @@ define([
                         }
                         list.controller.reloadRow(oldRowId, id, function () {
                             container.progressOff();
+                            attachActionListeners([data]);
                             if (typeof(callback) == 'function') {
                                 callback();
                             }
@@ -334,8 +335,8 @@ define([
             },
             actions: function(value, entity) {
                 var result = '';
-                if (entity.extend && entity.extend.isManual === true) {
-                    result = '<div><a href="#" id="edit_' + entity._id + '">Edit</a></div>';
+                if (entity.extend && (entity.extend.isManual === "true" || entity.extend.isManual === true)) {
+                    result = '<div><a href="#" id="edit_' + entity._id + '" class="grid-button button-settings" alt="Edit"></a></div>';
                 }
                 return result;
             }
@@ -385,13 +386,13 @@ define([
             list.addBRules({
                 '__edit_fin;extend': function(list, newValue, oldValue, rowId, colId, colName) {
                     var actionCol = list.getColIndex('actions');
-                    var schedEntity;
+                    var schedEntity = {};
                     var actionCell;
                     var actionCellValue = '';
                     var entity;
                     $.each(schedTypes, function(index, item) {
                         if (item.code === newValue) {
-                            schedEntity = item;
+                            $.extend(true, schedEntity, item);
                             return false;
                         }
                     });
@@ -460,6 +461,13 @@ define([
             });
         }
 
+        function updateSchedule(schedule) {
+            var rowId = list.getRowId(schedule);
+            if (list.grid.doesRowExist(rowId)) {
+                list.setData(schedule);
+            }
+        }
+
         function init(_container) {
             var levelsLayout;
             var srcLayout;
@@ -468,6 +476,7 @@ define([
             toolbar = createListToolbar(layout);
             list = createList(layout);
             configEditor = schedulerConfigEditor.init();
+            configEditor.addScheduleListener(api);
             createParsedDataViewer(layout, list);
             load();
             /*form = createDetails(layout, list);*/
@@ -480,6 +489,10 @@ define([
             },
             destruct: function() {
 
+            },
+            updateSchedule: function(schedule) {
+                updateSchedule(schedule);
+                return api;
             }
         };
         return api;
