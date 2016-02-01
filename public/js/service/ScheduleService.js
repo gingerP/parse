@@ -141,7 +141,7 @@ ScheduleService.prototype.test = function(schedule, extend) {
         if (executor) {
             new executor.testClass().run(schedule, extend).then(function(result) {
                 resolve(result);
-            });
+            }, reject);
         } else {
             resolve(true);
         }

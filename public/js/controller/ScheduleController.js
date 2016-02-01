@@ -37,6 +37,8 @@ ScheduleController.prototype.test = function(req, res, callback) {
     var extend = req.body.extend;
     this.service.test(schedule, extend).then(function(result) {
         callback(result);
+    }, function(errorMessage) {
+        callback(new Error(errorMessage));
     });
 };
 

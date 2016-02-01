@@ -12,6 +12,7 @@ SectionNumberStep.prototype.pre = function(dependencies) {
         var handler = dependencies.handler.preHandler;
         var sandbox = {
             DEPS: dependencies,
+            PREV_RESULT: dependencies.PREV_RESULT,
             URL: null
         };
         utils.eval(handler, sandbox);

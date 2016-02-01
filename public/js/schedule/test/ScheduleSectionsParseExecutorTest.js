@@ -68,9 +68,13 @@ ScheduleSectionsParseExecutorTest.prototype.run = function(schedule, extend) {
         console.warn('Using default max iteration "1" for testing purpose.');
         maxIteration = 1;
     }
-    return new Promise(function(resolve) {
-        inst._run(schedule, 0, null, destIndex, maxIteration, function(result) {
-            resolve(result);
+    return new Promise(function(resolve, reject) {
+        inst._run(schedule, 0, null, destIndex, maxIteration, function(result, errorMessage) {
+            if (!errorMessage) {
+                resolve(result);
+            } else {
+                reject(errorMessage);
+            }
         });
     })
 };
@@ -90,8 +94,9 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
     stepCode = this._getHandlerByIndex(index, schedule);
     if (stepCode) {
         stepCode = stepCode.code;
+/*
         prev.forEach(function(prevResult, resItemIndex) {
-            if (resItemIndex <= maxIteration) {
+            if (resItemIndex < maxIteration) {
                 new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
                     if (index == destIndex && !resItemIndex) {
                         setTimeout(function() {
@@ -104,10 +109,35 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
                     }
                 }, function(message) {
                     ws().propertyChange('parse_error', message);
+                    callback(null, message);
                     //TODO
                 });
             }
         });
+*/      var resItemIndex = 0;
+        var requestInterval = setInterval(function() {
+            var prevResult = prev[resItemIndex];
+            if (resItemIndex > 0 && !prevResult || resItemIndex >= maxIteration) {
+                clearInterval(requestInterval);
+                return;
+            }
+            new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
+                if (index == destIndex && !resItemIndex) {
+                    setTimeout(function() {
+                        console.log('!!!!!!!!!!!!!!!!!!');
+                        callback(result);
+                    }, 0);
+                }
+                if (index < destIndex) {
+                    inst._run(schedule, index + 1, result, destIndex, maxIteration, callback);
+                }
+            }, function(message) {
+                ws().propertyChange('parse_error', message);
+                callback(null, message);
+                //TODO
+            });
+            resItemIndex++;
+        }, 250)
     }
 };
 
@@ -119,7 +149,7 @@ ScheduleSectionsParseExecutorTest.prototype.getStepDependenciesCallback = functi
             var result = {
                 schedule: schedule,
                 config: null,
-                prevLevelResult: prevLevelResult,
+                PREV_RESULT: prevLevelResult,
                 handler: inst._getHandler(stepCode, schedule)
             };
             if (configCode) {

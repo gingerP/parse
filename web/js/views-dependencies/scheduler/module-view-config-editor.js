@@ -67,7 +67,7 @@ define([
                 var entity = api.getData();
                 var selected = list.getSelectedData();
                 if (selected) {
-                    manager.schedule.exec('test', [entity, {stepCode: selected.code, maxIteration: 1}, function (result) {
+                    manager.schedule.exec('test', [entity, {stepCode: selected.code, maxIteration: 10}, function (result) {
                         parsedDataViewer.setValue(result);
                     }]);
                 }

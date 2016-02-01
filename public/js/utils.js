@@ -29,9 +29,14 @@ var api = {
             getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
-        getRef('request')({
+        console.log('Download: ' + url);
+        getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
-            encoding: encodeFrom
+            encoding: encodeFrom,
+            headers: {
+                "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36",
+                "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            }
         }, function (error, response, body) {
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
