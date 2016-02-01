@@ -16,6 +16,12 @@ var schedulersExtends = [
         extend: require('../models/SectionsScheduleExtend.json')
     },
     {
+        name: 'ScheduleSectionsParseExecutor',
+        testClass: require('../schedule/test/ScheduleSectionsParseExecutorTest').class,
+        class: require('../schedule/ScheduleSectionsParseExecutor').class,
+        extend: require('../models/SectionsScheduleExtend.json')
+    },
+    {
         name: 'ScheduleParseExecutor',
         testClass: require('../schedule/test/ScheduleParseExecutorTest').class,
         class: require('../schedule/ScheduleParseExecutor').class,

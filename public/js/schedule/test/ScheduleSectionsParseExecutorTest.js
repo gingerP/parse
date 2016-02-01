@@ -9,13 +9,17 @@ var steps = [
 var utils = require('../../utils');
 var sectionsScheduleExtend = require('../../models/SectionsScheduleExtend.json');
 var ws_;
+var queue = require('../../common/GenericQueue').instance;
 function ws() {
     if (!ws_) {
         ws_ = require('../../common/WSServer').instance();
     }
     return ws_;
 }
-ScheduleSectionsParseExecutorTest = function() {};
+ScheduleSectionsParseExecutorTest = function() {
+    this.queue = queue;
+    this.queue.start();
+};
 
 //TODO older version
 /*
