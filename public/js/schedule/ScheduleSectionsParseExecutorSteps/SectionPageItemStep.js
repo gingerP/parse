@@ -14,6 +14,7 @@ SectionPageItemStep.prototype.pre = function(dependencies) {
         var handler = dependencies.handler.preHandler;
         var sandbox = {
             DEPS: dependencies,
+            PREV_RESULT: dependencies.PREV_RESULT,
             URL: null
         };
         utils.eval(handler, sandbox);
@@ -29,6 +30,8 @@ SectionPageItemStep.prototype.post = function(parsedData, preData, dependencies)
         var post = dependencies.handler.post;
         var sandbox = {
             PARSED: parsedData,
+            DEPS: dependencies,
+            TEST: true,
             RESULT: null
         };
         var context = utils.eval(post, sandbox);

@@ -33,6 +33,8 @@ SectionNumberStep.prototype.post = function(parsedData, preData, dependencies) {
         var handler = dependencies.handler.postHandler;
         var sandbox = {
             PARSED: parsedData,
+            DEPS: dependencies,
+            TEST: true,
             RESULT: null
         };
         var context = utils.eval(handler, sandbox);

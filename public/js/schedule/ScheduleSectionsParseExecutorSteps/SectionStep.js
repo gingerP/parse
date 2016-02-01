@@ -39,6 +39,7 @@ SectionStep.prototype.save = function(parsedData, dependencies) {
         var sandbox = {
             PARSED: parsedData,
             RESULT: null,
+            DEPS: dependencies,
             TEST: true
         };
         var context = utils.eval(handler, sandbox);

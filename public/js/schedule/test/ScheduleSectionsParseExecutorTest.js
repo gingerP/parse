@@ -121,8 +121,9 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
                 clearInterval(requestInterval);
                 return;
             }
+            var iterIndex = resItemIndex;
             new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
-                if (index == destIndex && !resItemIndex) {
+                if (index == destIndex && !iterIndex) {
                     setTimeout(function() {
                         console.log('!!!!!!!!!!!!!!!!!!');
                         callback(result);
@@ -137,7 +138,7 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
                 //TODO
             });
             resItemIndex++;
-        }, 250)
+        }, 300)
     }
 };
 
