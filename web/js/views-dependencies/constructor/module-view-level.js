@@ -24,6 +24,7 @@ define([
                 dataStyle: 'data_style',
                 dataAttr: 'data_attr',
                 dataHandlersAttached: 'data_handlers_attached',
+                dataFormatterButton: 'data_formatter',
 
                 pathBlock: 'path_block',
                 addPathBtn: 'add_path_item',
@@ -74,7 +75,11 @@ define([
                                 {type: 'button', name: templateKeys.deleteDataBtn, value: '', className: 'delete-item-min'},
                                 {type: 'newcolumn'},
                                 {type: 'block', width: 395, list: [
-                                    {type: 'input', name: 'name', label: 'Name'},
+                                    {type: 'block', width: 395, list: [
+                                        {type: 'input', name: 'name', label: 'Name'},
+                                        {type: 'newcolumn'},
+                                        {type: 'button', name: templateKeys.dataFormatterButton, value: 'Fm', className: 'formatter-item-min'}
+                                    ]},
                                     {type: 'block', name: templateKeys.dataSelectorContainer, width: 390, blockOffset: 0, list: []},
                                     {type: 'combo', name: 'data_handler', label: 'Handler', required: true, readonly: true, options: templates._getItemHandlers()},
                                     {type: 'block', name: templateKeys.dataHandlersAttached, width: 390, blockOffset: 0, list: []}

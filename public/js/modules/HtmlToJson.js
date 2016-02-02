@@ -1,4 +1,4 @@
-var u = require('../utils');
+var utils = require('../utils');
 var assert = require('assert');
 var validate = {
     position: function(position) {
@@ -7,7 +7,7 @@ var validate = {
         }
     },
     levelCode: function(code, level) {
-        if (u.hasContent(code) && !u.hasContent(level)) {
+        if (utils.hasContent(code) && !utils.hasContent(level)) {
             throw new Error("There is no level for code '" + code + "'");
         }
     }
@@ -19,7 +19,7 @@ HtmlToJson = function () {
 };
 
 HtmlToJson.prototype.get = function (domString, config) {
-    var parentSelector = u.hasContent(config.parentSel)? config.parentSel: 'html';
+    var parentSelector = utils.hasContent(config.parentSel)? config.parentSel: 'html';
     this.$ = this._initParser(domString);
     this.levelCfg = config.levelConfig;
     this.levels = config.levels;
@@ -53,15 +53,15 @@ HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
     validate.levelCode(levelsCfg.node, level);
     var pack = inst._handleLevel(dom, level);
     var children = levelsCfg.children;
-    var listKey = level.listKey || this.listKey;
     if (pack.DOMList.length && children && children.length) {
-        children.forEach(function (child, i) {
+        children.forEach(function (child, index) {
             var inst_ = inst;
             pack.DOMList.each(function(index, DOM) {
+                var childKey = inst._getLevelListKey(child, inst.levels) || utils.getRandomString();
                 var data = pack.objects[index];
-                if (u.hasContent(data)) {
-                    data[listKey] = data[listKey] || [];
-                    data[listKey] = data[listKey].concat(inst_._iterateLevels(DOM, child));
+                if (utils.hasContent(data)) {
+                    data[childKey] = data[childKey] || [];
+                    data[childKey] = data[childKey].concat(inst_._iterateLevels(DOM, child));
                 }
             });
         });
@@ -78,7 +78,7 @@ HtmlToJson.prototype._handleLevel = function (dom, level) {
             var valid = inst._handleFilter(DOM, level.filter);
             if (valid) {
                 var data = inst._handleData(DOM, level.data);
-                if (u.hasContent(data)) {
+                if (utils.hasContent(data)) {
                     dataObjects[i] = data;
                 }
             }
@@ -128,13 +128,13 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
     var inst = this;
     if (dataCfg && dataCfg.length) {
         dataCfg.forEach(function (cfg, i) {
-            if (!u.hasContent(cfg.handler)) {
+            if (!utils.hasContent(cfg.handler)) {
                 result[cfg.name] = '';
                 return;
             }
             var complexSelector = inst._getComplexSelector(cfg.selectors);
             var children = DOM;
-            if (u.hasContent(complexSelector)) {
+            if (utils.hasContent(complexSelector)) {
                 children = $(complexSelector, DOM);
             }
             var handler = inst._dataHandlers[cfg.handler];
@@ -179,7 +179,7 @@ HtmlToJson.prototype._pathHandlers = {
             }
         };
         var complexSelector = this._getComplexSelector(step.selectors);
-        if (u.hasContent(step.pos)) {
+        if (utils.hasContent(step.pos)) {
             validate.position(step.pos);
             step.pos = step.pos.trim();
             direction = getDirection(step.pos);
@@ -192,7 +192,7 @@ HtmlToJson.prototype._pathHandlers = {
             if (!result.length) {
                 return null;
             }
-            if (u.hasContent(complexSelector)) {
+            if (utils.hasContent(complexSelector)) {
                 result = result.filter(complexSelector);
             }
             return getSiblingByPosition(result, position, direction);
@@ -204,14 +204,14 @@ HtmlToJson.prototype._pathHandlers = {
         var position = null;
         var result = null;
         var complexSelector;
-        if (u.hasContent(step.pos)) {
+        if (utils.hasContent(step.pos)) {
             position = parseInt(step.pos);
             for(var index = 0; index < position; index++) {
                 result = $(dom).parent();
             }
         }
         complexSelector = this._getComplexSelector(step.selectors);
-        if (u.hasContent(complexSelector)) {
+        if (utils.hasContent(complexSelector)) {
             if (!result) {
                 result = result.parent(complexSelector);
             } else {
@@ -229,13 +229,13 @@ HtmlToJson.prototype._pathHandlers = {
 HtmlToJson.prototype._dataHandlers = {
     val: function(dom, cfg, $) {
         if (dom) {
-            return u.cleanStr($(dom).text());
+            return utils.cleanStr($(dom).text());
         }
         return '';
     },
     attribute: function(dom, cfg, $) {
         if (dom) {
-            return u.cleanStr($(dom).attr(cfg.attribute));
+            return utils.cleanStr($(dom).attr(cfg.attribute));
         }
         return '';
     },
@@ -247,7 +247,7 @@ HtmlToJson.prototype._dataHandlers = {
     },
     htmlStr: function(dom, cfg, $) {
         if (dom) {
-            return u.cleanStr($(dom).text());
+            return utils.cleanStr($(dom).text());
         }
         return '';
     },
@@ -298,6 +298,11 @@ HtmlToJson.prototype._getLevelByCode = function(code, levels) {
     }
 
     return result;
+};
+
+HtmlToJson.prototype._getLevelListKey = function(child, levels) {
+    var level = this._getLevelByCode(child.node, levels);
+    return level? level.listKey: null;
 };
 
 module.exports = HtmlToJson;

@@ -18,6 +18,9 @@ SitemapParser.prototype.readFromResources = function() {
     queue.start(300);
     configDBManager.getByCriteria({code: inst.configCode}).then(function (config) {
         inst.config = config;
+        if (!config) {
+            console.warn('Config with code "%s" DIDN\'T found.', inst.configCode);
+        }
         while(index < argz.length) {
             inst.loadSitemap(argz[index]).then(function(listItems) {
                 if (listItems && listItems.length) {
@@ -33,7 +36,6 @@ SitemapParser.prototype.readFromResources = function() {
     })
 };
 
-//х*******ня
 SitemapParser.prototype.loadSitemap = function(file) {
     var parser = new xml2js.Parser();
     console.time('Reading sitemap file "' + file + '"');
