@@ -15,7 +15,7 @@ define([],
                     return {type: null, pos: null, selectors: []};
                 },
                 data: function() {
-                    return {name: null, selectors: [], handler: null, attribute: null, style: null, formatter: null};
+                    return {name: null, selectors: [], handler: null, attribute: null, style: null, formatter: null, userFormatter: null};
                 },
                 selector: function() {
                     return {selector: null};

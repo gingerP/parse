@@ -5,6 +5,7 @@ define([
         return function() {
             var api = null;
             var form = null;
+            var formatterEditor;
             var container;
             var business = Business();
             var mappings = [
@@ -25,6 +26,7 @@ define([
                 dataAttr: 'data_attr',
                 dataHandlersAttached: 'data_handlers_attached',
                 dataFormatterButton: 'data_formatter',
+                dataFormatterButtonPrefix: 'btn_id_',
 
                 pathBlock: 'path_block',
                 addPathBtn: 'add_path_item',
@@ -72,13 +74,14 @@ define([
                         cfg: fillUniq({
                             type: 'block', name: templateKeys.dataBlock, inputWidth: 'auto', className: 'level-block data-block', blockOffset: 10,
                             list: [
+                                {type: 'input', name: 'user_formatter', label: '', hidden: true},
                                 {type: 'button', name: templateKeys.deleteDataBtn, value: '', className: 'delete-item-min'},
                                 {type: 'newcolumn'},
                                 {type: 'block', width: 395, list: [
                                     {type: 'block', width: 395, list: [
                                         {type: 'input', name: 'name', label: 'Name'},
                                         {type: 'newcolumn'},
-                                        {type: 'button', name: templateKeys.dataFormatterButton, value: 'Fm', className: 'formatter-item-min'}
+                                        {type: 'button', name: templateKeys.dataFormatterButton, value: 'Fm', className: 'formatter-item-min ' + templateKeys.dataFormatterButtonPrefix + un}
                                     ]},
                                     {type: 'block', name: templateKeys.dataSelectorContainer, width: 390, blockOffset: 0, list: []},
                                     {type: 'combo', name: 'data_handler', label: 'Handler', required: true, readonly: true, options: templates._getItemHandlers()},
@@ -95,7 +98,8 @@ define([
                         {property: 'handler', input: 'data_handler'},
                         {property: 'attribute', input: 'data_attr'},
                         {property: 'style', input: 'data_style'},
-                        {property: 'formatter', input: 'formatter'}
+                        {property: 'formatter', input: 'formatter'},
+                        {property: 'userFormatter', input: 'user_formatter'}
                     ];
                     return mappings;
                 },
@@ -492,6 +496,16 @@ define([
                 })
             }
 
+            function getJsFormatter(id) {
+                var userFormatter = createMultiName('user_formatter', id);
+                return form.form.getItemValue(userFormatter);
+            }
+
+            function updateJsFormatter(id, content) {
+                var userFormatter = createMultiName('user_formatter', id);
+                return form.form.setItemValue(userFormatter, content);
+            }
+
             function initForm(container, index) {
                 var formConfig = [
                     {type: 'settings', inputWidth: 300, labelWidth: 60, labelAlign: 'left'},
@@ -599,8 +613,92 @@ define([
                     },
                     '__regexp;^path_handler.*': function(form, name) {
 
+                    },
+                    '__regexp;__btn;^data_formatter.*': function(form, name) {
+                        var keys = extMultiKey(name);
+                        var btnSel;
+                        var btn;
+                        if (keys && keys.length) {
+                            btnSel = templateKeys.dataFormatterButtonPrefix + keys[0];
+                            btn = document.querySelector('.' + btnSel + ' .dhxform_btn');
+                            if (btn) {
+                                formatterEditor.show(btn, keys);
+                            }
+                        }
                     }
                 });
+            }
+
+            function initFormatterEditor() {
+                var popup = new dhtmlXPopup();
+                var editor;
+                var un;
+
+                popup.attachEvent('onHide', function() {
+                    updateJsFormatter(un, editor.getValue());
+                    un = null;
+                });
+
+                function getPosition(dest) {
+                    var x = window.dhx4.absLeft(dest);
+                    var y = window.dhx4.absTop(dest);
+                    var width = dest.offsetWidth;
+                    var height = dest.offsetHeight;
+                    return [x, y, width, height];
+                }
+
+                function initEditor(popup) {
+                    var doc = document.createElement('DIV');
+                    var title = document.createElement('DIV');
+                    var container = document.createElement('DIV');
+                    var editor;
+                    title.innerHTML = "Data Formattter";
+                    title.className += ' data-formatter-title';
+                    doc.className += ' data-formatter-container';
+                    container.className += ' data-formatter-editor';
+                    doc.appendChild(title);
+                    doc.appendChild(container);
+                    popup.attachObject(doc);
+                    editor = ace.edit(container);
+                    editor.getSession().setMode("ace/mode/javascript");
+                    editor.setReadOnly(false);
+                    editor.$blockScrolling = Infinity;
+                    return {
+                        setValue: function(value) {
+                            editor.setValue(U.hasContent(value)? '' + value: '');
+                            editor.clearSelection();
+                            return api;
+                        },
+                        getValue: function() {
+                            return editor.getValue();
+                        },
+                        enable: function(state) {
+                            editor.setReadOnly(!state);
+                            return api;
+                        }
+                    }
+                }
+
+                return {
+                    show: function(domNode, un_) {
+                        var pos;
+                        if (domNode) {
+                            if (!editor) {
+                                editor = initEditor(popup);
+                            }
+                            un = un_;
+                            pos = getPosition(domNode);
+                            popup.show.apply(popup, pos);
+                            this.setValue(getJsFormatter(un));
+                        }
+                    },
+                    setValue: function(value) {
+                        editor.setValue(value);
+                    },
+                    clear: function() {
+                        editor.setValue('');
+                    }
+                }
             }
 
             function initDefaultState(form) {
@@ -665,6 +763,7 @@ define([
                 init: function(_container, index, withDefaultState) {
                     container = _container;
                     form = initForm(container, index);
+                    formatterEditor = initFormatterEditor();
                     if (withDefaultState) {
                         initDefaultState(form);
                     }

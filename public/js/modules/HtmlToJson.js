@@ -128,6 +128,7 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
     var inst = this;
     if (dataCfg && dataCfg.length) {
         dataCfg.forEach(function (cfg, i) {
+            var context;
             if (!utils.hasContent(cfg.handler)) {
                 result[cfg.name] = '';
                 return;
@@ -139,6 +140,13 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
             }
             var handler = inst._dataHandlers[cfg.handler];
             result[cfg.name] = handler.call(inst, children, cfg, $, inst);
+            if (utils.hasContent(cfg.userFormatter)) {
+                context = {
+                    RESULT: result[cfg.name] || ''
+                };
+                utils.eval(cfg.userFormatter, context);
+                result[cfg.name] = context.RESULT;
+            }
         });
     }
     return result;
