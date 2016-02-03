@@ -39,6 +39,7 @@ var api = {
             }
         }, function (error, response, body) {
             console.timeEnd('load');
+            console.log('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {
@@ -279,6 +280,22 @@ var api = {
     },
     getRandomString: function() {
         return Math.random().toString(36).substring(7);
+    },
+    getStringByteSize: function(string, params) {
+        var fileSizeInBytes = 0;
+        params = params || {};
+        if (string) {
+            var i = -1;
+            var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+            fileSizeInBytes = Buffer.byteLength(string, params.encod || 'koi8r');
+            do {
+                fileSizeInBytes = fileSizeInBytes / 1024;
+                i++;
+            } while (fileSizeInBytes > 1024);
+
+            return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+        }
+        return "0 bytes";
     }
 };
 

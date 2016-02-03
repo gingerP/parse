@@ -13,6 +13,23 @@ var validate = {
     }
 };
 
+function removeSpaces(string) {
+    if (typeof(string) === 'string') {
+        return string.replace(/\s/g, '');
+    }
+    return string;
+}
+
+function normalizeUrl(url, host) {
+    if (url) {
+        url = url.trim();
+        if (url.indexOf("http://") < 0) {
+
+        }
+
+    }
+    return url;
+}
 
 HtmlToJson = function () {
     this.parser = null;
@@ -161,7 +178,7 @@ HtmlToJson.prototype._handleData = function(DOM, dataCfg) {
                 context = {
                     RESULT: result[cfg.name] || ''
                 };
-                utils.eval(cfg.userFormatter, context);
+                utils.eval(cfg.userFormatter, inst._getEvalPredefinedContext(context));
                 result[cfg.name] = context.RESULT;
             }
         });
@@ -333,6 +350,16 @@ HtmlToJson.prototype._getLevelListKey = function(child, levels) {
 HtmlToJson.prototype._getLevelType = function(child, levels) {
     var level = this._getLevelByCode(child.node, levels);
     return level? level.type: 'array';
+};
+
+HtmlToJson.prototype._getEvalPredefinedContext = function(context) {
+    var predefined = {
+        fn: {
+            removeSpaces: removeSpaces/*,
+            normalizeUrl: normalizeUrl*/
+        }
+    };
+    return Object.assign(context, predefined);
 };
 
 module.exports = HtmlToJson;
