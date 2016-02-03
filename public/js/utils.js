@@ -38,6 +38,7 @@ var api = {
                 "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
             }
         }, function (error, response, body) {
+            console.timeEnd('load');
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {
@@ -50,7 +51,6 @@ var api = {
                 console.warn("Could NOT CONNECT to " + url);
                 callback(error);
             }
-            console.timeEnd('load');
         });
     },
     parseHtml: function(string) {

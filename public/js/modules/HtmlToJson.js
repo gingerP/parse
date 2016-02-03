@@ -56,12 +56,23 @@ HtmlToJson.prototype._iterateLevels = function (dom, levelsCfg) {
     if (pack.DOMList.length && children && children.length) {
         children.forEach(function (child, index) {
             var inst_ = inst;
+            var type = inst._getLevelType(child, inst.levels);
             pack.DOMList.each(function(index, DOM) {
                 var childKey = inst._getLevelListKey(child, inst.levels) || utils.getRandomString();
                 var data = pack.objects[index];
-                if (utils.hasContent(data)) {
-                    data[childKey] = data[childKey] || [];
-                    data[childKey] = data[childKey].concat(inst_._iterateLevels(DOM, child));
+                if (type === 'object') {
+                    if (utils.hasContent(data)) {
+                        data[childKey] = data[childKey] || [];
+                        data[childKey] = data[childKey].concat(inst_._iterateLevels(DOM, child));
+                        data[childKey] = data[childKey] && data[childKey].length? data[childKey][0]: {};
+                    }
+                    return false;
+                } else if (type === 'array' || !utils.hasContent(type)) {
+                    if (utils.hasContent(data)) {
+                        data[childKey] = data[childKey] || [];
+                        data[childKey] = data[childKey].concat(inst_._iterateLevels(DOM, child));
+                    }
+                    return true;
                 }
             });
         });
@@ -73,6 +84,7 @@ HtmlToJson.prototype._handleLevel = function (dom, level) {
     var dataObjects = [];
     var inst = this;
     var DOMNodes = this._handlePath(dom, level.path);
+    var type = level.type;
     if (DOMNodes && DOMNodes.length) {
         DOMNodes.each(function(i, DOM) {
             var valid = inst._handleFilter(DOM, level.filter);
@@ -81,6 +93,11 @@ HtmlToJson.prototype._handleLevel = function (dom, level) {
                 if (utils.hasContent(data)) {
                     dataObjects[i] = data;
                 }
+            }
+            if (type === 'object') {
+                return false;
+            } else if (type === 'array' || !utils.hasContent(type)) {
+                return true;
             }
         })
     }
@@ -311,6 +328,11 @@ HtmlToJson.prototype._getLevelByCode = function(code, levels) {
 HtmlToJson.prototype._getLevelListKey = function(child, levels) {
     var level = this._getLevelByCode(child.node, levels);
     return level? level.listKey: null;
+};
+
+HtmlToJson.prototype._getLevelType = function(child, levels) {
+    var level = this._getLevelByCode(child.node, levels);
+    return level? level.type: 'array';
 };
 
 module.exports = HtmlToJson;

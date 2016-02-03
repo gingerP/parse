@@ -10,7 +10,8 @@ define([
             var business = Business();
             var mappings = [
                 {property: 'listKey', input: 'listKey'},
-                {property: 'code', input: 'code'}
+                {property: 'code', input: 'code'},
+                {property: 'type', input: 'type'}
             ];
 
             var templateKeys = {
@@ -66,7 +67,8 @@ define([
                 getLevelMappings: function() {
                   return [
                       {property: 'code', input: 'code'},
-                      {property: 'listKey', input: 'listKey'}
+                      {property: 'listKey', input: 'listKey'},
+                      {property: 'type', input: 'type'}
                   ]
                 },
                 getDataItem: function(un) {
@@ -512,6 +514,13 @@ define([
                     {type: 'block', width: 'auto', blockOffset: 8, list: [
                         {type: 'input', name: 'code', label: 'Code', validate: validateCode},
                         {type: 'input', name: 'listKey', label: 'List key'},
+                        {type: "block", width: 900, blockOffset: 0, list:[
+                            {type: "label", label: "Type", labelWidth: 60},
+                            {type: 'newcolumn'},
+                            {type: "radio", name: "type", value: 'array', label: "As Array", checked: true},
+                            {type: 'newcolumn', offset: 50},
+                            {type: "radio", name: "type", value: 'object', label: "As Object"}
+                        ]},
                         {type: 'fieldset', label: 'Pathes', offsetLeft: 0, width: 'auto', className: 'top-border', list: [
                             {type: 'button', name: templateKeys.addPathBtn, value: '', className: 'add-item', offsetTop: 16},
                             {type: 'newcolumn'},

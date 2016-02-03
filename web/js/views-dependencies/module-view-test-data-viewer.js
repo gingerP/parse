@@ -18,9 +18,14 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
                     editor.setReadOnly(true);
                     editor.$blockScrolling = Infinity;
                     //init events
-                    container.attachEvent("onPanelResizeFinish", function(names){
-                        editor.resize();
-                    });
+                    if (container.layout) {
+                        container.layout.attachEvent("onResizeFinish", function(names){
+                            editor.resize();
+                        });
+                        container.layout.attachEvent("onPanelResizeFinish", function(names){
+                            editor.resize();
+                        });
+                    }
                     return {
                         setValue: function(value) {
                             value = vkbeautify.json(value);
