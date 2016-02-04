@@ -17,6 +17,7 @@ GenericQueue.prototype.start = function(interval) {
             }
         }
     }, interval || 300);
+    return this;
 };
 
 GenericQueue.prototype._start = function(task) {
