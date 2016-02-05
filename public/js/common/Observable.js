@@ -16,6 +16,7 @@ Observable.prototype.addListener = function(property, listener, isAsync) {
 
 Observable.prototype.propertyChange = function(property, data) {
     var methodName;
+    var inst = this;
     data = Array.isArray(data)? data: [data];
     if (this.listeners && this.listeners[property] && this.listeners[property].length) {
         this.listeners[property].forEach(function(listener) {
@@ -35,12 +36,18 @@ Observable.prototype.propertyChange = function(property, data) {
             }
             if (listener.async) {
                 setTimeout(function() {
-                    func.apply(context, data);
+                    inst.__runListener(func, context, data, property);
                 }, 0);
             } else {
-                func.apply(context, data);
+                inst.__runListener(func, context, data, property);
             }
         })
+    }
+};
+
+Observable.prototype.__runListener = function(func, context, data, property) {
+    if (typeof(func) == 'function') {
+        func.apply(context, data);
     }
 };
 

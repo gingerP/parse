@@ -20,7 +20,7 @@ ItemStep.prototype.pre = function(dependencies) {
 
 ItemStep.prototype.post = function(parsedData, preData, dependencies) {
     return new Promise(function(resolve) {
-        resolve();
+        resolve(parsedData);
     });
 };
 

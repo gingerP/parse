@@ -62,6 +62,7 @@ WSClient.prototype._initEvents = function() {
             inst.connection.on('message', function(message) {
                 if (message.type === 'utf8') {
                     console.log("Received: '" + message.utf8Data + "'");
+                    inst.propertyChange('parser-client');
                 }
             });
         });

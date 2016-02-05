@@ -56,12 +56,21 @@ DistributedParserClient.prototype.initListening = function() {
             step = inst._initStep(data.step);
             if (step) {
                 data.urls.forEach(function(url, index) {
-                    return function() {
-                        return new inst.step().run(inst.getStepDependenciesCallback(data.config, url));
-                    };
+                    inst.queue.add(function() {
+                        return new inst.step().run(inst.getStepDependenciesCallback(data.config, url)).then(function(data) {
+                            inst.propertyChange('outcome', [url, data]);
+                        }, function(result) {
+                            //TODO
+                            console.warn('Task rejected.');
+                        });
+                    })
                 });
             }
         }
+    });
+
+    this.addListener('outcome', function(url, data) {
+        inst.sendData({url: url, data: data});
     });
 };
 

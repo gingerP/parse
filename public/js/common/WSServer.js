@@ -2,6 +2,8 @@ var server;
 var Observable = require('../common/Observable').class;
 var WebSocketServer = require('websocket').server;
 var utils = require('../utils');
+var listenerToOut = '__toOut';
+var listenerToIn = '__toIn';
 
 function WSServer(http) {
     this.http = http;
@@ -41,18 +43,11 @@ WSServer.prototype._initEvents = function() {
             return;
         }
         var connection = request.accept('echo-protocol', request.origin);
+        var topic = inst.evaluateTopic(request.resource);
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' connected.');
-        inst.addConnection(inst.evaluateTopic(request.resource), connection);
+        inst.addConnection(topic, connection);
         connection.on('message', function (message) {
-            console.info();
-            if (message.type === 'utf8') {
-                console.log('Received Message: ' + message.utf8Data);
-                connection.sendUTF(message.utf8Data);
-            }
-            else if (message.type === 'binary') {
-                console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-                connection.sendBytes(message.binaryData);
-            }
+
         });
         connection.on('close', function (reasonCode, description) {
             inst.removeConnection(this);
@@ -84,6 +79,7 @@ WSServer.prototype.evaluateTopic = function(original) {
 };
 
 WSServer.prototype.addConnection = function(topic, connection) {
+    var connectionWraper;
     if (!topic) {
         console.warn('Invalid topic for websocket connection: "&s"', topic);
         return;
@@ -91,11 +87,15 @@ WSServer.prototype.addConnection = function(topic, connection) {
     this.connections[topic] = this.connections[topic] || [];
     if (this.connections[topic].indexOf(connection) < 0) {
         this.connections[topic].push(connection);
-        this.addListener(topic, function(data) {
-            connection.sendUTF(data);
-        })
+        connectionWraper = this.createConnectionWrapper(connection, topic);
+        this.addListener(topic + listenerToOut, connectionWraper);
+        this.propertyChange('new_connection', connectionWraper);
     }
     return this;
+};
+
+WSServer.prototype.getListeners = function(topic) {
+    return this.listeners[topic];
 };
 
 WSServer.prototype.removeConnection = function(connection) {
@@ -107,6 +107,27 @@ WSServer.prototype.removeConnection = function(connection) {
         }
     }
     return this;
+};
+
+WSServer.prototype.createConnectionWrapper = function(connection, topic) {
+    var api;
+    var topicEvent = 'on' + topic.slice(0, 1).toUpperCase() + topic.slice(1, topic.length - 1) + 'Change';
+    api = {
+        getTopic: function() {
+            return topic;
+        },
+        getId: function() {
+
+        },
+        sendData: function(data) {
+            connection.sendData(JSON.stringify(data));
+            return api;
+        }
+    };
+    api[topicEvent] = function(data) {
+        api.sendData(data);
+    };
+    return api;
 };
 
 module.exports = {
