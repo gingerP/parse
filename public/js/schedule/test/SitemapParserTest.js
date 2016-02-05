@@ -4,7 +4,7 @@ var fs = require('fs');
 var itemStep = require('../ScheduleSectionsParseExecutorSteps/ItemStepSM').class;
 var xml2js = require('xml2js');
 var instance;
-var maxIterate = 100;
+var maxIterate = Infinity;
 
 SitemapParser = function(configCode) {
     this.configCode = configCode;

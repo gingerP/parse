@@ -1,3 +1,4 @@
+var log = require("winston");
 var dependencies = {
     request: 'request',
     cheerio: 'cheerio',
@@ -8,6 +9,8 @@ var dependencies = {
     vm: 'vm'
 };
 var iconvLiteExtendNodeEncondins = false;
+log.add(log.transports.File, { filename: './utils.log' });
+
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
         try {
@@ -29,7 +32,7 @@ var api = {
             getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
-        console.log('Download: ' + url);
+        log.log('Download: ' + url);
         getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
             encoding: encodeFrom,
@@ -39,7 +42,7 @@ var api = {
             }
         }, function (error, response, body) {
             console.timeEnd('load');
-            console.log('Html body size: ' + api.getStringByteSize(body));
+            log.log('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {
@@ -49,7 +52,7 @@ var api = {
                     callback(error, res);
                 }
             } else {
-                console.warn("Could NOT CONNECT to " + url);
+                log.warn("Could NOT CONNECT to " + url);
                 callback(error);
             }
         });

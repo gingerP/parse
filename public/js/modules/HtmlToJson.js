@@ -21,12 +21,20 @@ function removeSpaces(string) {
 }
 
 function normalizeUrl(url, host) {
+    var result = [];
     if (url) {
         url = url.trim();
-        if (url.indexOf("http://") < 0) {
-
+        if (url.indexOf("http://") != 0) {
+            result.push("http://");
+            if (host && url.indexOf(host) < 0) {
+                result.push(host);
+            }
+            if (url.indexOf('/') != 0) {
+                result.push('/');
+            }
         }
-
+        result.push(url);
+        url = result.join('');
     }
     return url;
 }
@@ -355,8 +363,8 @@ HtmlToJson.prototype._getLevelType = function(child, levels) {
 HtmlToJson.prototype._getEvalPredefinedContext = function(context) {
     var predefined = {
         fn: {
-            removeSpaces: removeSpaces/*,
-            normalizeUrl: normalizeUrl*/
+            removeSpaces: removeSpaces,
+            normalizeUrl: normalizeUrl
         }
     };
     return Object.assign(context, predefined);
