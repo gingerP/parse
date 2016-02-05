@@ -20,7 +20,8 @@ WSServer.prototype.init = function() {
         // facilities built into the protocol and the browser.  You should
         // *always* verify the connection's origin and decide whether or not
         // to accept it.
-        autoAcceptConnections: false
+        autoAcceptConnections: false,
+        rejectUnauthorized: false
     });
     this._initEvents();
     return this;
@@ -39,8 +40,8 @@ WSServer.prototype._initEvents = function() {
             console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
             return;
         }
-
         var connection = request.accept('echo-protocol', request.origin);
+        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' connected.');
         inst.addConnection(inst.evaluateTopic(request.resource), connection);
         connection.on('message', function (message) {
             console.info();

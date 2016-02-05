@@ -1,6 +1,6 @@
 var prop = require('./prop.json');
 var userApp = require('./app');
-var express = require('express');
+var express = getApp();
 var fs = require('fs');
 var server = null;
 var sslOptions = null;
@@ -8,10 +8,26 @@ if (prop.network.ssl.active === true) {
     server = require('https');
     sslOptions = {
         key: fs.readFileSync(prop.network.ssl.path + '/server.key'),
-        cert: fs.readFileSync(prop.network.ssl.path + '/server.crt')
+        cert: fs.readFileSync(prop.network.ssl.path + '/server.crt'),
+        rejectUnauthorized: false
     }
 } else {
     server = require('http');
+}
+
+function getApp() {
+    var app;
+    process.argv.forEach(function (val, index, array) {
+        var appScript;
+        if (val.indexOf('app=') == 0) {
+            appScript = val.split('app=');
+            app = require(appScript[1]);
+        }
+    });
+    if (!app) {
+        var app = require('./app');
+    }
+    return app;
 }
 
 /**

@@ -1,32 +1,38 @@
 var utils = require('../utils');
-var SockJS = require('sockjs');
+var WebSocketClient = require('websocket').client;
 var Observable = require('../common/Observable').class;
 
+
 WSClient = function(url) {
-    this.url = url;
-    this.sock;
 };
 
 WSClient.prototype = Object.create(Observable.prototype);
 WSClient.prototype.constructor = WSClient;
 
+WSClient.prototype.initClient = function() {
+    this.client = new WebSocketClient({tlsOptions: {rejectUnauthorized: false}});
+    return this;
+};
+
 WSClient.prototype.connect = function(url) {
     this.url = url || this.url;
-    this.sock = new SockJS(this.url);
+    this.client.connect(this.url, 'echo-protocol');
     this._initEvents();
     return this;
 };
 
 WSClient.prototype.disconnect = function() {
-    this.sock.close();
+    if (this.connection) {
+        this.connection.abort();
+    }
     return this;
 };
 
 WSClient.prototype.sendData = function(data) {
     var humanSize;
     var stringifyData;
-    if (this.sock) {
-        this.sock.send(data);
+    if (this.client) {
+        this.client.send(data);
         stringifyData = JSON.stringify(data);
         humanSize = utils.getStringByteSize(stringifyData);
         console.log('%s: Message was send to "%s", size: %s. Data: %s',
@@ -39,21 +45,26 @@ WSClient.prototype.sendData = function(data) {
 
 WSClient.prototype._initEvents = function() {
     var inst = this;
-    if (this.sock) {
-        this.sock.onopen = function() {
-            console.log('%s: Successfully connected to %s.', Date(Date.now()), this.url);
-        };
-        this.sock.onmessage = function(e) {
-            console.log('%s: Take message from %s. Message: %s',
-                Date(Date.now()),
-                inst.url,
-                JSON.stringify(e.data)
-            );
-            inst.propertyChange("income", e.data);
-        };
-        this.sock.onclose = function() {
-            console.log('%s: Connection with %s was closed.', Date(Date.now()), this.url);
-        };
+    if (this.client) {
+        this.client.on('connectFailed', function(error) {
+            console.log('Connect Error: ' + error.toString());
+        });
+
+        this.client.on('connect', function(connection) {
+            inst.connection = connection;
+            console.log('WebSocket Client Connected');
+            inst.connection.on('error', function(error) {
+                console.log("Connection Error: " + error.toString());
+            });
+            inst.connection.on('close', function() {
+                console.log('echo-protocol Connection Closed');
+            });
+            inst.connection.on('message', function(message) {
+                if (message.type === 'utf8') {
+                    console.log("Received: '" + message.utf8Data + "'");
+                }
+            });
+        });
     }
     return this;
 };
