@@ -63,7 +63,7 @@ DistributedLoadingQueue.prototype.addTasksToClient = function(tasks, client) {
     tasks = Array.isArray(tasks)? tasks: [tasks];
     tasks.forEach(function(task) {
         tasksPerConfigs[task.code] = tasksPerConfigs[task.code] || {
-                step: 'GenericStep',
+                step: 'ItemStepSM',
                 configCode: task.code,
                 config: task.config,
                 urls: []

@@ -6,6 +6,7 @@ DistributedParserClient = function(url) {
     this.url = url;
     this.queue = new LoadQueue().start();
     this.step;
+    this.initListening();
 };
 
 DistributedParserClient.prototype = Object.create(WSClient.prototype);

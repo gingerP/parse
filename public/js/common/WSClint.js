@@ -31,9 +31,9 @@ WSClient.prototype.disconnect = function() {
 WSClient.prototype.sendData = function(data) {
     var humanSize;
     var stringifyData;
-    if (this.client) {
-        this.client.send(data);
+    if (this.connection) {
         stringifyData = JSON.stringify(data);
+        this.connection.sendUTF(stringifyData);
         humanSize = utils.getStringByteSize(stringifyData);
         console.log('%s: Message was send to "%s", size: %s. Data: %s',
             Date(Date.now()),
@@ -62,7 +62,7 @@ WSClient.prototype._initEvents = function() {
             inst.connection.on('message', function(message) {
                 if (message.type === 'utf8') {
                     console.log("Received: '" + message.utf8Data + "'");
-                    inst.propertyChange('parser-client', JSON.parse(message.utf8Data));
+                    inst.propertyChange('income', JSON.parse(message.utf8Data));
                 }
             });
         });

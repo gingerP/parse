@@ -63,7 +63,6 @@ SitemapParser.prototype.loadSitemap = function(file) {
 };
 
 SitemapParser.prototype.getQueueTask = function(item, config, configCode) {
-    var inst = this;
     return {
         url: item.loc,
         lastmod: item.lastmod,
