@@ -55,9 +55,11 @@ WSClient.prototype._initEvents = function() {
             console.log('WebSocket Client Connected');
             inst.connection.on('error', function(error) {
                 console.log("Connection Error: " + error.toString());
+                inst.retryToConnect();
             });
             inst.connection.on('close', function() {
                 console.log('echo-protocol Connection Closed');
+                inst.retryToConnect();
             });
             inst.connection.on('message', function(message) {
                 if (message.type === 'utf8') {
@@ -68,6 +70,10 @@ WSClient.prototype._initEvents = function() {
         });
     }
     return this;
+};
+
+WSClient.prototype.retryToConnect = function() {
+
 };
 
 module.exports = {
