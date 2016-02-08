@@ -120,7 +120,7 @@ WSServer.prototype.createConnectionWrapper = function(connection, topic) {
 
         },
         sendData: function(data) {
-            connection.sendData(JSON.stringify(data));
+            connection.sendUTF(JSON.stringify(data));
             return api;
         }
     };

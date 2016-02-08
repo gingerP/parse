@@ -1,21 +1,21 @@
 var configDBManager= require('../../db/ParseConfigDBManager').instance;
-var queue = require('../../common/GenericQueue').instance;
 var fs = require('fs');
 var itemStep = require('../ScheduleSectionsParseExecutorSteps/ItemStepSM').class;
 var xml2js = require('xml2js');
 var instance;
-var maxIterate = 100;
+var maxIterate = 1000;
 
-SitemapParser = function(configCode) {
+SitemapParser = function(configCode, http) {
     this.configCode = configCode;
     this.config;
+    this.queue = require('../../common/DistributedLoadingQueue').instance(http);
 };
 
 SitemapParser.prototype.readFromResources = function() {
     var index = 0;
     var inst = this;
     var argz = arguments;
-    queue.start(300);
+    this.queue.start(300);
     configDBManager.getByCriteria({code: inst.configCode}).then(function (config) {
         inst.config = config;
         if (!config) {
@@ -26,7 +26,7 @@ SitemapParser.prototype.readFromResources = function() {
                 if (listItems && listItems.length) {
                     listItems.forEach(function(item, index) {
                         if (index < maxIterate) {
-                            queue.add(inst.getQueueTask(item));
+                            inst.queue.add(inst.getQueueTask(item, inst.config, inst.configCode));
                         }
                     })
                 }
@@ -48,7 +48,7 @@ SitemapParser.prototype.loadSitemap = function(file) {
                 console.time('Correcting xml');
                 result = result.urlset.url.map(function(item) {
                     return {
-                        loc: item.loc[0] || '',
+                        loc: (item.loc[0] || '').replace('oz.by', '127.0.0.1:11111'),
                         changefreq: item.changefreq[0] || '',
                         lastmod: item.lastmod[0] || '',
                         priority: item.priority[0] || ''
@@ -62,11 +62,14 @@ SitemapParser.prototype.loadSitemap = function(file) {
     });
 };
 
-SitemapParser.prototype.getQueueTask = function(item) {
+SitemapParser.prototype.getQueueTask = function(item, config, configCode) {
     var inst = this;
-    return function() {
-        return new itemStep().run(inst.getDeps(item));
-    };
+    return {
+        url: item.loc,
+        lastmod: item.lastmod,
+        config: config,
+        code: configCode
+    }
 };
 
 //TODO
@@ -82,9 +85,12 @@ SitemapParser.prototype.getDeps = function(item) {
     }
 };
 
-
-instance = new SitemapParser('item');
 module.exports = {
     class: SitemapParser,
-    instance: instance
+    instance: function(configCode, http) {
+        if (!instance) {
+            instance = new SitemapParser(configCode, http);
+        }
+        return instance;
+    }
 };

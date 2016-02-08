@@ -1,6 +1,7 @@
-var wsServer = require('../common/WSServer').instance();
+var wsServer;
 var clientTasksLimit = 100;
 var manageOrphanTasksInterval = 3000; //ms
+var instance;
 DistributedLoadingQueue = function() {
     this.clients = [];
     this.orphanTasks = [];
@@ -74,6 +75,19 @@ DistributedLoadingQueue.prototype.addTasksToClient = function(tasks, client) {
         });
     });
     for (var key in tasksPerConfigs) {
-        client.sendData(tasksPerConfigs[key]);
+        client.client.sendData(tasksPerConfigs[key]);
+    }
+};
+
+DistributedLoadingQueue.prototype.start = function() {};
+
+module.exports = {
+    class: DistributedLoadingQueue,
+    instance: function(http) {
+        if (!instance && !wsServer) {
+            wsServer = require('../common/WSServer').instance(http.server);
+            instance = new DistributedLoadingQueue();
+        }
+        return instance;
     }
 };
