@@ -279,6 +279,7 @@ var api = {
             console.warn(e);
             context.ERROR_EVAL = e.message;
         }
+        compiledHandler = null;
         return context;
     },
     getRandomString: function() {

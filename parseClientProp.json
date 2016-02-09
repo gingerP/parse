@@ -1,0 +1,19 @@
+{
+  "network": {
+    "host": "127.0.0.1",
+    "http": "88080",
+    "https": "88443",
+    "ssl": {
+      "active": true,
+      "path": "/ssl"
+    }
+  },
+  "db": {
+    "user": "",
+    "pass": "",
+    "driver": "",
+    "host": "",
+    "port": "",
+    "dbName": ""
+  }
+}

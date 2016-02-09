@@ -17,11 +17,13 @@ GenericQueue.prototype.start = function(interval) {
             }
         }
     }, interval || 300);
+    return this;
 };
 
 GenericQueue.prototype._start = function(task) {
     var inst = this;
     task().then(function() {
+        //TODO
     },
     function(message) {
         console.warn("There is an error while executing sitemap task. The task will be added to the queue again.");

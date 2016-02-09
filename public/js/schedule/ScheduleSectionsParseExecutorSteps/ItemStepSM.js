@@ -13,14 +13,14 @@ ItemStep.prototype.pre = function(dependencies) {
     var inst = this;
     return new Promise(function(resolve) {
         resolve({
-            url: dependencies.loc
+            url: dependencies.handler.url
         }, dependencies);
     });
 };
 
 ItemStep.prototype.post = function(parsedData, preData, dependencies) {
     return new Promise(function(resolve) {
-        resolve();
+        resolve(parsedData);
     });
 };
 
@@ -31,7 +31,7 @@ ItemStep.prototype.save = function(parsedData, dependencies) {
         if (!toSave) {
             resolve();
         } else {
-            toSave.url = dependencies.loc;
+            toSave.url = dependencies.handler.url;
         }
         inst.dbManager.save(toSave).then(resolve);
     });
@@ -39,7 +39,7 @@ ItemStep.prototype.save = function(parsedData, dependencies) {
 
 GenericStep.prototype.loadData = function(preData, dependencies) {
     var config = dependencies.config;
-    var url = preData.url;
+    var url = dependencies.handler.url;
     var inst = this;
     return new Promise(function(resolve, reject) {
         try {

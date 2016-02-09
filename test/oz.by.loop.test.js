@@ -1,34 +1,8 @@
-var prop = require('./prop.json');
-var userApp = require('./app');
-var express = getApp();
 var fs = require('fs');
 var server = null;
 var sslOptions = null;
-if (prop.network.ssl.active === true) {
-    server = require('https');
-    sslOptions = {
-        key: fs.readFileSync(prop.network.ssl.path + '/server.key'),
-        cert: fs.readFileSync(prop.network.ssl.path + '/server.crt'),
-        rejectUnauthorized: false
-    }
-} else {
-    server = require('http');
-}
-
-function getApp() {
-    var app;
-    process.argv.forEach(function (val, index, array) {
-        var appScript;
-        if (val.indexOf('app=') == 0) {
-            appScript = val.split('app=');
-            app = require(appScript[1]);
-        }
-    });
-    if (!app) {
-        var app = require('./app');
-    }
-    return app;
-}
+var userApp = iniExpress();
+var server = require('http');
 
 /**
  *  Define the sample application.
@@ -44,26 +18,15 @@ var SampleApp = function() {
     /*  ================================================================  */
 
     /**
-     *  Set up server IP address and port # using env variables/defaults.
-     */
-    self.setupVariables = function() {
-        //  Set the environment variables we need.
-        self.ipaddress = prop.network.host;
-        self.port      = prop.network.http;
-        self.httpsPort = prop.network.https;
-    };
-
-
-    /**
      *  terminator === the termination handler
      *  Terminate server on receipt of the specified signal.
      *  @param {string} sig  Signal to terminate on.
      */
     self.terminator = function(sig){
         if (typeof sig === "string") {
-           console.log('%s: Received %s - terminating sample app ...',
-                       Date(Date.now()), sig);
-           //process.exit(1);
+            console.log('%s: Received %s - terminating sample app ...',
+                Date(Date.now()), sig);
+            //process.exit(1);
         }
         console.log('%s: Node server stopped.', Date(Date.now()) );
     };
@@ -78,7 +41,7 @@ var SampleApp = function() {
 
         // Removed 'SIGPIPE' from the list - bugz 852598.
         ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-         'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+            'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
         ].forEach(function(element, index, array) {
             process.on(element, function() { self.terminator(element); });
         });
@@ -98,15 +61,8 @@ var SampleApp = function() {
      *  the handlers.
      */
     self.initializeServer = function() {
-        if (prop.network.ssl.active === true) {
-            self.app = server.createServer(sslOptions, userApp);
-            console.log('%s: HTTPS server successfully created.', Date(Date.now()));
-        } else {
-            self.app = server.createServer(userApp);
-            console.log('%s: HTTP server successfully created.', Date(Date.now()));
-        }
-        var wsServer = require('./public/js/common/WSServer').instance(self.app);
-        require('./public/js/common/WSTest').run(wsServer);
+        self.app = server.createServer(userApp);
+        console.log('%s: HTTP server successfully created.', Date(Date.now()));
     };
 
 
@@ -114,7 +70,6 @@ var SampleApp = function() {
      *  Initializes the sample application.
      */
     self.initialize = function() {
-        self.setupVariables();
         self.setupTerminationHandlers();
 
         // Create the express server and routes.
@@ -126,15 +81,43 @@ var SampleApp = function() {
      */
     self.start = function() {
         //  Start the app on the specific interface (and port).
-        self.app.listen(prop.network.ssl.active? self.httpsPort: self.port,
-            self.ipaddress, function () {
-            console.log('%s: Node server started on %s:%d ...',
-                Date(Date.now()), self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
-        });
+        self.app.listen(11111, '0.0.0.0', function () {
+                console.log('%s: Node server started on %s:%d ...',
+                    Date(Date.now()), '0.0.0.0', 11111);
+            });
     };
 
 };   /*  Sample Application.  */
 
+function iniExpress() {
+    var im = {
+        session: require('express-session'),
+        express: require('express'),
+        path: require('path'),
+        favicon: require('serve-favicon'),
+        logger: require('morgan'),
+        cookieParser: require('cookie-parser'),
+        bodyParser: require('body-parser'),
+        flash: require('connect-flash')
+    };
+    var app = im.express();
+    app.use(im.bodyParser.json());
+    app.use(im.bodyParser.urlencoded({ extended: true }));
+    app.use(im.flash());
+    app.use(im.session({
+        cookie: {
+            maxAge: null,
+            secure: true
+        },
+        secret: 'woot',
+        resave: false,
+        saveUninitialized: false}
+    ));
+    app.get('/*', function(req, res) {
+        res.sendFile(__dirname + '/oz.by.html');
+    });
+    return app;
+}
 
 
 /**

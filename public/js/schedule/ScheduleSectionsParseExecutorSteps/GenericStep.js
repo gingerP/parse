@@ -84,7 +84,7 @@ GenericStep.prototype.post = function(parsedData, preData, dependencies) {
 //to override
 GenericStep.prototype.save = function(data, dependencies) {
     return new Promise(function(resolve) {
-        resolve();
+        resolve(data);
     });
 };
 
