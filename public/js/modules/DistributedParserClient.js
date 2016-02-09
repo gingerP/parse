@@ -1,4 +1,4 @@
-var WSClient = require('../common/WSClint').class;
+var WSClient = require('../common/WSClient').class;
 var stepDir = '../schedule/ScheduleSectionsParseExecutorSteps';
 var LoadQueue = require('../common/GenericQueue').class;
 
@@ -44,7 +44,7 @@ DistributedParserClient.prototype.getStepDependenciesCallback = function(config,
 
 DistributedParserClient.prototype.initListening = function() {
     var inst = this;
-    this.addListener('income', function(data) {
+    this.addListener('income_parse_params', function(message) {
         /*
          * data: {
          *   step: 'item',
@@ -53,28 +53,26 @@ DistributedParserClient.prototype.initListening = function() {
          * }
          * */
         var step;
+        var data = message.data;
         if (data.step && data.urls && data.config) {
             step = inst._initStep(data.step);
             if (step) {
                 data.urls.forEach(function(url, index) {
                     inst.queue.add(function() {
-                        return new inst.step().run(inst.getStepDependenciesCallback(data.config, url)).then(function(data) {
-                            inst.propertyChange('outcome', [url, data]);
-                        }, function(result) {
-                            //TODO
-                            console.warn('Task rejected.');
-                        });
+                        return new inst.step().run(inst.getStepDependenciesCallback(data.config, url)).then(
+                            function(data) {
+                                inst.sendData(data, 'parsed_data', {url: url});
+                            }, function(result) {
+                                //TODO
+                                console.warn('Task rejected.');
+                            }
+                        );
                     })
                 });
             }
         }
     });
-
-    this.addListener('outcome', function(url, data) {
-        inst.sendData({url: url, data: data});
-    });
 };
-
 
 module.exports = {
     class: DistributedParserClient

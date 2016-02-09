@@ -45,12 +45,19 @@ WSServer.prototype._initEvents = function() {
         var connection = request.accept('echo-protocol', request.origin);
         var topic = inst.evaluateTopic(request.resource);
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' connected.');
-        inst.addConnection(topic, connection);
+        inst.addConnection(topic, connection, request.key);
         connection.on('message', function (message) {
-
+            var data;
+            if (message.type == 'utf8') {
+                data = inst.extractMessage(message.utf8Data);
+                inst.propertyChange('income_' + data.type, [
+                    data,
+                    connection
+                ]);
+            }
         });
         connection.on('close', function (reasonCode, description) {
-            inst.removeConnection(this);
+            inst.removeConnection(this, {code: reasonCode, description: description});
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
         });
     });
@@ -78,7 +85,7 @@ WSServer.prototype.evaluateTopic = function(original) {
     return result;
 };
 
-WSServer.prototype.addConnection = function(topic, connection) {
+WSServer.prototype.addConnection = function(topic, connection, id) {
     var connectionWraper;
     if (!topic) {
         console.warn('Invalid topic for websocket connection: "&s"', topic);
@@ -87,7 +94,7 @@ WSServer.prototype.addConnection = function(topic, connection) {
     this.connections[topic] = this.connections[topic] || [];
     if (this.connections[topic].indexOf(connection) < 0) {
         this.connections[topic].push(connection);
-        connectionWraper = this.createConnectionWrapper(connection, topic);
+        connectionWraper = this.createConnectionWrapper(connection, topic, id);
         this.addListener(topic + listenerToOut, connectionWraper);
         this.propertyChange('new_connection', connectionWraper);
     }
@@ -98,18 +105,20 @@ WSServer.prototype.getListeners = function(topic) {
     return this.listeners[topic];
 };
 
-WSServer.prototype.removeConnection = function(connection) {
+WSServer.prototype.removeConnection = function(connection, reason) {
     var index;
     for(var topic in this.connections) {
         index = this.connections[topic].indexOf(connection);
         if (index > -1) {
             this.connections[topic].splice(index, 1);
+            this.propertyChange('remove_connection', [connection, reason]);
         }
     }
     return this;
 };
 
-WSServer.prototype.createConnectionWrapper = function(connection, topic) {
+WSServer.prototype.createConnectionWrapper = function(connection, topic, id) {
+    var inst = this;
     var api;
     var topicEvent = 'on' + topic.slice(0, 1).toUpperCase() + topic.slice(1, topic.length - 1) + 'Change';
     api = {
@@ -117,17 +126,32 @@ WSServer.prototype.createConnectionWrapper = function(connection, topic) {
             return topic;
         },
         getId: function() {
-
+            return id;
         },
-        sendData: function(data) {
-            connection.sendUTF(JSON.stringify(data));
+        sendData: function(data, type) {
+            connection.sendUTF(inst.prepareMessage(data, type));
             return api;
+        },
+        equalConnection: function(con) {
+            return connection == con;
         }
     };
     api[topicEvent] = function(data) {
-        api.sendData(data);
+        connection.sendUTF(inst.prepareMessage(data, 'global_' + topic));
     };
     return api;
+};
+
+WSServer.prototype.prepareMessage = function(data, type, extend) {
+    return JSON.stringify({
+        type: type,
+        data: data,
+        extend: extend || {}
+    });
+};
+
+WSServer.prototype.extractMessage = function(data) {
+    return JSON.parse(data);
 };
 
 module.exports = {

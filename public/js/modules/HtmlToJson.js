@@ -45,14 +45,16 @@ HtmlToJson = function () {
 
 HtmlToJson.prototype.get = function (domString, config) {
     var parentSelector = utils.hasContent(config.parentSel)? config.parentSel: 'html';
+    var result;
     this.$ = this._initParser(domString);
     this.levelCfg = config.levelConfig;
     this.levels = config.levels;
     this.listKey = config.listKey || "list";
     console.time("extract");
-    var zzz = this._getData(this.$(parentSelector));
+    result = this._getData(this.$(parentSelector));
+    result = this._postHandle(result, config);
     console.timeEnd("extract");
-    return zzz;
+    return result;
 };
 
 HtmlToJson.prototype._initParser = function (domString) {
@@ -368,6 +370,41 @@ HtmlToJson.prototype._getEvalPredefinedContext = function(context) {
         }
     };
     return Object.assign(context, predefined);
+};
+
+HtmlToJson.prototype._postHandle = function(parsedData, config) {
+    var context;
+    var postHandler = this._getRootHandler('post', config);
+    if (postHandler) {
+        context = {
+            DATA: parsedData
+        };
+        utils.eval(postHandler, context);
+        parsedData = context.DATA;
+        context = null;
+    }
+    return parsedData;
+};
+
+HtmlToJson.prototype._getRootHandler = function(name, config) {
+    var result;
+    if (config.handlers && config.handlers.length) {
+        config.handlers.every(function(handler) {
+            if (handler.name == name) {
+                result = handler.content;
+                return false;
+            }
+            return true;
+        })
+    }
+    return result;
+};
+
+HtmlToJson.prototype.destruct = function() {
+    this.$ = null;
+    this.levelCfg = null;
+    this.levels = null;
+    this.listKey = null;
 };
 
 module.exports = HtmlToJson;

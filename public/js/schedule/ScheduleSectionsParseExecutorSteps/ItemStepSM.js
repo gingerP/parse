@@ -2,14 +2,14 @@ var GenericStep = require('./GenericStep').class;
 var utils = require('../../utils');
 var dbManager = require('../../db/GoodsDBManager').instance;
 
-ItemStep = function() {
+ItemStepSM = function() {
     this.setDBManager(dbManager);
 };
 
-ItemStep.prototype = Object.create(GenericStep.prototype);
-ItemStep.prototype.constructor = ItemStep;
+ItemStepSM.prototype = Object.create(GenericStep.prototype);
+ItemStepSM.prototype.constructor = ItemStepSM;
 
-ItemStep.prototype.pre = function(dependencies) {
+ItemStepSM.prototype.pre = function(dependencies) {
     var inst = this;
     return new Promise(function(resolve) {
         resolve({
@@ -18,13 +18,13 @@ ItemStep.prototype.pre = function(dependencies) {
     });
 };
 
-ItemStep.prototype.post = function(parsedData, preData, dependencies) {
+ItemStepSM.prototype.post = function(parsedData, preData, dependencies) {
     return new Promise(function(resolve) {
         resolve(parsedData);
     });
 };
 
-ItemStep.prototype.save = function(parsedData, dependencies) {
+ItemStepSM.prototype.save = function(parsedData, dependencies) {
     var inst = this;
     return new Promise(function(resolve) {
         var toSave = parsedData.length && parsedData[0][0]? parsedData[0][0]: null;
@@ -37,7 +37,7 @@ ItemStep.prototype.save = function(parsedData, dependencies) {
     });
 };
 
-GenericStep.prototype.loadData = function(preData, dependencies) {
+ItemStepSM.prototype.loadData = function(preData, dependencies) {
     var config = dependencies.config;
     var url = dependencies.handler.url;
     var inst = this;
@@ -63,5 +63,5 @@ GenericStep.prototype.loadData = function(preData, dependencies) {
 };
 
 module.exports = {
-    class: ItemStep
+    class: ItemStepSM
 };
