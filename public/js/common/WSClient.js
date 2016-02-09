@@ -4,6 +4,7 @@ var Observable = require('../common/Observable').class;
 
 
 WSClient = function(url) {
+    this.reconnect;
     this.url = url || this.url;
     this.autoReconnect = false;
     this.reconnectInterval = 5000;
@@ -20,6 +21,7 @@ WSClient.prototype.initClient = function() {
 
 WSClient.prototype.connect = function(url) {
     this.url = url || this.url;
+    console.log('try to connect to "%s"', this.url);
     this.client.connect(this.url, 'echo-protocol');
     return this;
 };
@@ -63,6 +65,8 @@ WSClient.prototype._initEvents = function() {
         });
 
         this.client.on('connect', function(connection) {
+            clearInterval(inst.reconnect);
+            inst.reconnect = null;
             inst.connection = connection;
             console.log('WebSocket Client Connected');
             inst.connection.on('error', function(error) {
@@ -92,13 +96,13 @@ WSClient.prototype.hasConnection = function() {
 
 WSClient.prototype.retryToConnect = function() {
     var inst = this;
-    var reconnect;
-    if (inst.autoReconnect && !inst.hasConnection()) {
-        reconnect = setInterval(function() {
+    if (!utils.hasContent(this.reconnect) && inst.autoReconnect && !inst.hasConnection()) {
+        this.reconnect = setInterval(function() {
             if (inst.autoReconnect && !inst.hasConnection()) {
                 inst.connect();
             } else {
-                clearInterval(reconnect);
+                clearInterval(inst.reconnect);
+                inst.reconnect = null;
             }
         }, inst.reconnectInterval);
     }

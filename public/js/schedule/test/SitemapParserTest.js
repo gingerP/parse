@@ -26,7 +26,9 @@ SitemapParser.prototype.readFromResources = function() {
                 if (listItems && listItems.length) {
                     listItems.forEach(function(item, index) {
                         if (index < maxIterate) {
-                            inst.queue.add(inst.getQueueTask(item, inst.config, inst.configCode));
+                            inst.queue.add(inst.getQueueTask(item, inst.config, inst.configCode)).then(function(data) {
+                                console.info('to SAVE');
+                            });
                         }
                     })
                 }

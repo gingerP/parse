@@ -125,7 +125,18 @@ DistributedLoadingQueue.prototype.resolveTask = function(data) {
 };
 
 DistributedLoadingQueue.prototype.removeTaskFromClient = function(url) {
-//TODO
+    function iterateTasks(tasks) {
+        return tasks.every(function(task, index) {
+            if (task.url == url) {
+                tasks.splice(index, 1);
+                return false;
+            }
+            return true;
+        });
+    }
+    this.clients.every(function(client) {
+        return iterateTasks(client.tasks);
+    });
 };
 
 DistributedLoadingQueue.prototype.start = function() {};
