@@ -1,7 +1,7 @@
 var server;
 var Observable = require('../common/Observable').class;
 var WebSocketServer = require('websocket').server;
-var utils = require('../utils');
+var log = require('global').log;
 var listenerToOut = '__toOut';
 var listenerToIn = '__toIn';
 
@@ -39,12 +39,12 @@ WSServer.prototype._initEvents = function() {
         if (!originIsAllowed(request.origin)) {
             // Make sure we only accept requests from an allowed origin
             request.reject();
-            console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+            log.warn('Connection from origin ' + request.origin + ' rejected.');
             return;
         }
         var connection = request.accept('echo-protocol', request.origin);
         var topic = inst.evaluateTopic(request.resource);
-        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' connected.');
+        log.info('Peer "%s" connected.', connection.remoteAddress);
         inst.addConnection(topic, connection, request.key);
         connection.on('message', function (message) {
             var data;
@@ -58,7 +58,7 @@ WSServer.prototype._initEvents = function() {
         });
         connection.on('close', function (reasonCode, description) {
             inst.removeConnection(this, {code: reasonCode, description: description});
-            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+            log.info('Peer "%s" disconnected.', connection.remoteAddress);
         });
     });
 };
@@ -88,7 +88,7 @@ WSServer.prototype.evaluateTopic = function(original) {
 WSServer.prototype.addConnection = function(topic, connection, id) {
     var connectionWraper;
     if (!topic) {
-        console.warn('Invalid topic for websocket connection: "&s"', topic);
+        log.warn('Invalid topic for websocket connection: "&s"', topic);
         return;
     }
     this.connections[topic] = this.connections[topic] || [];
