@@ -1,5 +1,6 @@
 var Observable = require('../common/Observable').class;
-var utils = require('../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var CronJob = require('cron').CronJob;
 var CronTime = require('cron').CronTime;
 ScheduleExecutor = function() {};
@@ -10,7 +11,7 @@ ScheduleExecutor.prototype.start = function() {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst.getCronInstance().start();
-        console.info('%s: Scheduler "%s" started!', Date(Date.now()), inst.getName());
+        log.info('Scheduler "%s" started!', inst.getName());
         resolve(true);
     });
 };
@@ -18,7 +19,7 @@ ScheduleExecutor.prototype.stop = function() {
     var inst = this;
     return new Promise(function(resolve, reject) {
         inst.getCronInstance().stop();
-        console.info('%s: Scheduler "%s" stoped!', Date(Date.now()), inst.getName());
+        log.info('Scheduler "%s" stoped!', inst.getName());
         resolve(true);
     });
 };

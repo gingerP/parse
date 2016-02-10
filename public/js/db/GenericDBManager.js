@@ -105,10 +105,10 @@ GenericDBManager.prototype._update = function(criteria, doc, callback, mappings,
                 raw: true
             }, function (error, result) {
                 if (error) {
-                    log.error('%s: An ERROR has occurred while updating document in "%s".', inst.getCollectionName());
+                    log.error('An ERROR has occurred while updating document in "%s".', inst.getCollectionName());
                     throw new Error(error);
                 } else if (typeof(callback) == 'function') {
-                    log.debug('%s: Document was successfully updated in "%s".', inst.getCollectionName());
+                    log.debug('Document was successfully updated in "%s".', inst.getCollectionName());
                     callback(result.upsertedId ? result.upsertedId._id : null);
                 }
             });
@@ -116,10 +116,10 @@ GenericDBManager.prototype._update = function(criteria, doc, callback, mappings,
             db.collection(inst.collectionName).find(criteria, function(error, cursor) {
                 cursor.next(function (error, cursorDoc) {
                     if (error) {
-                        log.error('%s: An ERROR has occurred while getting document from "%s" to update.', inst.getCollectionName());
+                        log.error('An ERROR has occurred while getting document from "%s" to update.', inst.getCollectionName());
                         callback({});
                     } else {
-                        log.debug('%s: Document {_id: "%s"} was successfully extracted from "%s".', doc ? doc._id : null, inst.getCollectionName());
+                        log.debug('Document {_id: "%s"} was successfully extracted from "%s".', doc ? doc._id : null, inst.getCollectionName());
                         inst._mergeTo(cursorDoc, doc, mappings);
                         inst._update({_id: cursorDoc._id}, cursorDoc, function() {
                             callback(true);
@@ -159,10 +159,10 @@ GenericDBManager.prototype._delete = function(criteria, callback) {
     this.exec(function(db) {
         db.collection(collName).removeOne(criteria, function(error, result) {
             if (error) {
-                log.error('%s: An ERROR has occurred while deleting document in "%s".', inst.getCollectionName());
+                log.error('An ERROR has occurred while deleting document in "%s".', inst.getCollectionName());
                 throw new Exception(error);
             } else if (typeof(callback) == 'function') {
-                log.debug('%s: Document was successfully deleted in "%s".', inst.getCollectionName());
+                log.debug('Document was successfully deleted in "%s".', inst.getCollectionName());
                 callback(result);
             }
         });

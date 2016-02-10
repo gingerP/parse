@@ -1,4 +1,5 @@
-var utils = require('../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var express = require('express');
 var router = express.Router();
 var GenericController = require('./GenericController').class;
@@ -15,7 +16,7 @@ ExternalController.prototype.getData = function(req, res, callback) {
 
 controller = new ExternalController();
 controller.setService(service);
-console.log('%s: MAPPING to "ApiConstructorController" controller.' , Date(Date.now()));
+log.info('MAPPING to "ApiConstructorController" controller.');
 utils.linkRequestsToModule([
     {path: '/get', method: 'getData', async: true}
 ], controller, router, 'post');

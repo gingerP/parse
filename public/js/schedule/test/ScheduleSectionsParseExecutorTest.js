@@ -6,7 +6,8 @@ var steps = [
     require('../ScheduleSectionsParseExecutorSteps/ItemStep').class,
     require('../ScheduleSectionsParseExecutorSteps/AuthorStep').class
 ];
-var utils = require('../../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var sectionsScheduleExtend = require('../../models/SectionsScheduleExtend.json');
 var ws_;
 var queue = require('../../common/GenericQueue').instance;
@@ -65,11 +66,11 @@ ScheduleSectionsParseExecutorTest.prototype.run = function(schedule, extend) {
     var destIndex = this._getStepIndex(extend.stepCode);
     var maxIteration = parseInt(extend.maxIteration);
     if (utils.hasContent(destIndex)) {
-        console.warn('Using default depth level "0" for testing purpose.');
+        log.warn('Using default depth level "0" for testing purpose.');
         destIndex = 0;
     }
     if (isNaN(maxIteration)) {
-        console.warn('Using default max iteration "1" for testing purpose.');
+        log.warn('Using default max iteration "1" for testing purpose.');
         maxIteration = 1;
     }
     return new Promise(function(resolve, reject) {
@@ -104,7 +105,7 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
                 new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
                     if (index == destIndex && !resItemIndex) {
                         setTimeout(function() {
-                            console.log('!!!!!!!!!!!!!!!!!!');
+                            log.info('!!!!!!!!!!!!!!!!!!');
                             callback(result);
                         }, 0);
                     }
@@ -129,7 +130,7 @@ ScheduleSectionsParseExecutorTest.prototype._run = function(schedule, index, pre
             new steps[index]().run(inst.getStepDependenciesCallback(schedule, stepCode, prevResult)).then(function (result) {
                 if (index == destIndex && !iterIndex) {
                     setTimeout(function() {
-                        console.log('!!!!!!!!!!!!!!!!!!');
+                        log.info('!!!!!!!!!!!!!!!!!!');
                         callback(result);
                     }, 0);
                 }

@@ -1,4 +1,5 @@
-var utils = require('../../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var ws;
 
 GenericStep = function() {
@@ -52,7 +53,7 @@ GenericStep.prototype.loadData = function(preData, dependencies) {
         try {
             utils.loadDom(url, function (error, body) {
                 if (error) {
-                    console.error(error.message);
+                    log.error(error.message);
                     reject(error.message);
                 }
                 inst.ws().propertyChange(inst.topic.load_finish, notifyData);
@@ -61,12 +62,12 @@ GenericStep.prototype.loadData = function(preData, dependencies) {
                     resolve(utils.extractDataFromHtml(body, config));
                     inst.ws().propertyChange(inst.topic.parse_finish, notifyData);
                 } catch (error) {
-                    console.error(error.message);
+                    log.error(error.message);
                     reject(error.message);
                 }
             }, 'koi8r');
         } catch (error) {
-            console.error(error.message);
+            log.error(error.message);
             reject(error.message);
         }
     });

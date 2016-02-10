@@ -16,7 +16,7 @@ function getRef(ref) {
         try {
             dependencies[ref] = require(dependencies[ref]);
         } catch(e) {
-            console.info(e.message);
+            log.info(e.message);
         }
     }
     return dependencies[ref];
@@ -164,14 +164,14 @@ var api = {
                     }
                 }
             })());
-            console.log('%s: Request "' + rout.path + '" mapped.', Date(Date.now()));
+            log.info('Request "%s" mapped.', rout.path);
         });
     },
     wrapResponse: function(data, error, response) {
         var reqPath = null;
         if (error) {
             reqPath  = response.req.originalUrl;
-            console.error('ERROR REQUEST ' + reqPath + ': ' + error);
+            log.error('ERROR REQUEST ' + reqPath + ': ' + error);
             return {
                 onError: error.message
             }
@@ -253,7 +253,7 @@ var api = {
         try {
             compiledHandler.runInContext(context);
         } catch (e) {
-            console.warn(e);
+            log.warn(e);
             context.ERROR_EVAL = e.message;
         }
         compiledHandler = null;

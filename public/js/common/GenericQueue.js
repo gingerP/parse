@@ -1,3 +1,4 @@
+var log = require('global').log;
 GenericQueue = function() {
     this.queue = [];
 };
@@ -26,12 +27,10 @@ GenericQueue.prototype._start = function(task) {
         //TODO
     },
     function(message) {
-        console.warn("There is an error while executing sitemap task. The task will be added to the queue again.");
-        console.warn(message);
+        log.warn("There is an error while executing sitemap task. The task will be added to the queue again. " + message);
         inst.add(task);
     }).catch(function(error) {
-        console.warn("There is an error while executing sitemap task. The task will be added to the queue again.");
-        console.warn(error.message);
+        log.warn("There is an error while executing sitemap task. The task will be added to the queue again. " + error.message);
         inst.add(task);
     });
 };

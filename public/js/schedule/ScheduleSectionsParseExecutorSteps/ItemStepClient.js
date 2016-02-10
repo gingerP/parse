@@ -1,5 +1,6 @@
 var GenericStep = require('./GenericStep').class;
-var utils = require('../../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var dbManager = require('../../db/GoodsDBManager').instance;
 
 ItemStepClient = function() {
@@ -38,18 +39,18 @@ ItemStepClient.prototype.loadData = function(preData, dependencies) {
         try {
             utils.loadDom(url, function (error, body) {
                 if (error) {
-                    console.error(error.message);
+                    log.error(error.message);
                     reject(error.message);
                 }
                 try {
                     resolve(utils.extractDataFromHtml(body, config));
                 } catch (error) {
-                    console.error(error.message);
+                    log.error(error.message);
                     reject(error.message);
                 }
             }, 'koi8r');
         } catch (error) {
-            console.error(error.message);
+            log.error(error.message);
             reject(error.message);
         }
     });

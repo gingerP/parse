@@ -1,5 +1,6 @@
 var GenericStep = require('./GenericStep').class;
-var utils = require('../../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 
 SectionNumberStep = function() {};
 
@@ -17,7 +18,7 @@ SectionNumberStep.prototype.pre = function(dependencies) {
         };
         utils.eval(handler, sandbox);
         if (!utils.hasContent(sandbox.URL)) {
-            console.error('Url for sectionNumber is not defined.');
+            log.error('Url for sectionNumber is not defined.');
             reject('Url for sectionNumber is not defined.');
         } else {
             resolve({

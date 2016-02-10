@@ -1,4 +1,5 @@
-var utils = require('../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var scheduleStatus = require('../models/ScheduleParseStatus.json');
 var c = require('../constants');
 var scheduleDBManager = require('../db/ScheduleDBManager').instance;
@@ -117,7 +118,7 @@ ScheduleService.prototype.updateStatus = function(id, status) {
             {property: 'status', input: 'status'}
         ]);
     } else {
-        console.error('%s: Status "%s" DIDN\'T exist in ScheduleStatus(%s).', Date(Date.now()), status, JSON.stringify(scheduleStatus));
+        log.error('Status "%s" DIDN\'T exist in ScheduleStatus(%s).', status, JSON.stringify(scheduleStatus));
         return new Promise(function(resolve, reject) {
             reject();
         })

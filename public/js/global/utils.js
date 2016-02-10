@@ -1,4 +1,4 @@
-var log = require("winston");
+var log = require("global").log;
 var dependencies = {
     extend: "extend",
     request: 'request',
@@ -10,14 +10,13 @@ var dependencies = {
     vm: 'vm'
 };
 var iconvLiteExtendNodeEncondins = false;
-log.add(log.transports.File, { filename: './utils.log' });
 
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
         try {
             dependencies[ref] = require(dependencies[ref]);
         } catch(e) {
-            console.info(e.message);
+            log.info(e.message);
         }
     }
     return dependencies[ref];
@@ -33,7 +32,7 @@ var api = {
             getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
-        log.log('Download: ' + url);
+        log.info('Download: ' + url);
         getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
             encoding: encodeFrom,
@@ -43,7 +42,7 @@ var api = {
             }
         }, function (error, response, body) {
             console.timeEnd('load');
-            log.log('Html body size: ' + api.getStringByteSize(body));
+            log.info('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {
@@ -165,14 +164,14 @@ var api = {
                     }
                 }
             })());
-            console.log('%s: Request "' + rout.path + '" mapped.', Date(Date.now()));
+            log.info('Request "%s" mapped.', rout.path);
         });
     },
     wrapResponse: function(data, error, response) {
         var reqPath = null;
         if (error) {
             reqPath  = response.req.originalUrl;
-            console.error('ERROR REQUEST ' + reqPath + ': ' + error);
+            log.error('ERROR REQUEST ' + reqPath + ': ' + error);
             return {
                 onError: error.message
             }
@@ -254,7 +253,7 @@ var api = {
         try {
             compiledHandler.runInContext(context);
         } catch (e) {
-            console.warn(e);
+            log.warn(e);
             context.ERROR_EVAL = e.message;
         }
         compiledHandler = null;

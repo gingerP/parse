@@ -3,7 +3,8 @@ var parseConfigDBManager = require('../db/ParseConfigDBManager').instance;
 var parseDataDBManager = require('../db/ParseDataDBManager').instance;
 var scheduleDBManager = require('../db/ScheduleDBManager').instance;
 var scheduleStatus = require('../models/ScheduleParseStatus.json');
-var utils = require('../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 /*var steps = [
     require('../ScheduleSectionsParseExecutorSteps/SectionStep').class,
     require('../ScheduleSectionsParseExecutorSteps/SectionNumberStep').class,
@@ -51,7 +52,7 @@ ScheduleParseExecutor.prototype.updateStatus = function(status) {
     if (this.parseConfig) {
         this.schedule.status = status;
     } else {
-        console.warn('UpdateStatus. There is now schedule config for schedule executor!');
+        log.warn('UpdateStatus. There is now schedule config for schedule executor!');
     }
 };
 
@@ -74,11 +75,11 @@ ScheduleParseExecutor.prototype.getExecutor = function() {
                 };
                 parseDataDBManager.saveByCriteria(entity, {code: inst.parseConfig.code}).then(function (id) {
                     //TODO what if error?
-                    console.info('%s: Scheduler "%s" was update data.', Date(Date.now()), inst.getName());
+                    log.info('Scheduler "%s" was update data.', inst.getName());
                     inst.propertyChange(inst.listenerPoints.parsedDataSaved);
                 });
             } catch(error) {
-                console.error();
+                log.error(error.message);
             }
         }, 'koi8r');*/
     };
@@ -101,7 +102,7 @@ ScheduleParseExecutor.prototype.loadDependencies = function(scheduleId) {
                     //TODO implement
                 })
             .catch(function (error) {
-                    console.error(error.getMessage());
+                    log.error(error.getMessage());
                 })
             .then(function (config) {
                 inst.parseConfig = config;

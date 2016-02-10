@@ -1,4 +1,5 @@
-var u = require('../utils');
+var utils = require('global').utils;
+var log = require('global').log;
 var c = require('../constants');
 var configDBManager= require('../db/ParseConfigDBManager').instance;
 var GenericService = require('./GenericService').class;
@@ -15,23 +16,23 @@ ConstructorService.prototype.test = function(id, callback) {
 };
 ConstructorService.prototype.testByConfig = function(config, callback) {
     var url = config.url;
-    console.log('START test loading and parsing for config "' + config.code + '(' + config._id + ')"');
-    u.loadDom(url, function(error, body) {
+    log.info('START test loading and parsing for config "%s(%s)"', config.code, config._id);
+    utils.loadDom(url, function(error, body) {
         var data;
         if (typeof(callback) == 'function') {
             if (error) {
-                console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')" with error ' + error.message);
+                log.info('FINISH test loading and parsing for config "%s(%s)" with error: %s' , config.code, config._id, error.message);
                 callback(error);
                 return;
             }
             try {
-                data = u.extractDataFromHtml(body, config);
+                data = utils.extractDataFromHtml(body, config);
             } catch (error) {
-                console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')" with error ' + error.message);
+                log.info('FINISH test loading and parsing for config "%s(%s)" with error: %s', config.code, config._id, error.message);
                 callback(error);
                 return;
             }
-            console.log('FINISH test loading and parsing for config "' + config.code + '(' + config._id + ')"');
+            log.info('FINISH test loading and parsing for config "%s(%s)"', config.code, config._id);
             callback(data);
         }
     }, 'koi8r');
