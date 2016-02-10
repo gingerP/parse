@@ -5,6 +5,7 @@ var itemStep = require('../ScheduleSectionsParseExecutorSteps/ItemStepSM').class
 var xml2js = require('xml2js');
 var instance;
 var maxIterate = 1000;
+var log = require('global').log;
 
 SitemapParser = function(configCode, http) {
     this.configCode = configCode;
@@ -20,17 +21,19 @@ SitemapParser.prototype.readFromResources = function() {
     configDBManager.getByCriteria({code: inst.configCode}).then(function (config) {
         inst.config = config;
         if (!config) {
-            console.warn('Config with code "%s" DIDN\'T found.', inst.configCode);
+            log.warn('Config with code "%s" DIDN\'T found.', inst.configCode);
         }
         while(index < argz.length) {
             inst.loadSitemap(argz[index]).then(function(listItems) {
                 if (listItems && listItems.length) {
-                    listItems.forEach(function(item, index) {
+                    listItems.every(function(item, index) {
                         if (index < maxIterate) {
                             inst.queue.add(inst.getQueueTask(item, inst.config, inst.configCode)).then(function(data) {
                                 inst.saveItem(data);
                             });
+                            return true;
                         }
+                        return false;
                     })
                 }
             });
@@ -63,7 +66,7 @@ SitemapParser.prototype.loadSitemap = function(file) {
                     }
                 });
                 console.timeEnd('Correcting xml');
-                console.log('Items num: ' + result.length);
+                log.info('Items num: ' + result.length);
                 resolve(result);
             });
         });

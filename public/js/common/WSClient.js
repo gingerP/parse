@@ -1,6 +1,7 @@
-var utils = require('../utils');
+var utils = require('global').utils;
 var WebSocketClient = require('websocket').client;
 var Observable = require('../common/Observable').class;
+var log = require('global').log;
 
 
 WSClient = function(url) {
@@ -21,7 +22,7 @@ WSClient.prototype.initClient = function() {
 
 WSClient.prototype.connect = function(url) {
     this.url = url || this.url;
-    console.log('try to connect to "%s"', this.url);
+    log.info('try to connect to "%s"', this.url);
     this.client.connect(this.url, 'echo-protocol');
     return this;
 };
@@ -47,8 +48,7 @@ WSClient.prototype.sendData = function(data, type, extend) {
         message = inst.prepareMessage(data, type, extend);
         this.connection.sendUTF(message);
         humanSize = utils.getStringByteSize(message);
-        console.log('%s: Message was send to "%s", size: %s. Data: %s',
-            Date(Date.now()),
+        log.info('Message was send to "%s", size: %s. Data: %s',
             this.url,
             humanSize,
             message.length > 200? message.slice(0, 200) + "...": message
@@ -60,7 +60,7 @@ WSClient.prototype._initEvents = function() {
     var inst = this;
     if (this.client) {
         this.client.on('connectFailed', function(error) {
-            console.error('Connect Error: ' + error.toString());
+            log.error('Connect Error: ' + error.toString());
             inst.retryToConnect();
         });
 
@@ -68,20 +68,20 @@ WSClient.prototype._initEvents = function() {
             clearInterval(inst.reconnect);
             inst.reconnect = null;
             inst.connection = connection;
-            console.log('WebSocket Client Connected');
+            log.log('WebSocket Client Connected');
             inst.connection.on('error', function(error) {
-                console.error("Connection Error: " + error.toString());
+                log.error("Connection Error: " + error.toString());
                 inst.retryToConnect();
             });
             inst.connection.on('close', function() {
-                console.error('Connection Closed');
+                log.error('Connection Closed');
                 inst.retryToConnect();
             });
             inst.connection.on('message', function(message) {
                 var data;
                 if (message.type === 'utf8') {
                     data = inst.extractMessage(message.utf8Data);
-                    console.log("Received: '" + message.utf8Data + "'");
+                    log.info("Received: '" + message.utf8Data + "'");
                     inst.propertyChange('income_' + data.type, data);
                 }
             });

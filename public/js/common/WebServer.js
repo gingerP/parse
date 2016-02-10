@@ -1,6 +1,7 @@
 var path = require('path');
 var fs = require("fs");
-var utils = require("../utils");
+var utils = require('global').utils;
+var log = require('global').log;
 
 WebServer = function() {
     this.app = require('express')();
@@ -39,9 +40,9 @@ WebServer.prototype._initHTTP = function() {
     inst.server = inst.transport.createServer(inst.app);
     inst.app.set('port', this.port);
     inst.server.listen(inst.props.network.http, inst.props.network.host, function () {
-        console.log('%s: Node server started on %s:%d ...', Date(Date.now()), inst.props.network.host, inst.props.network.http);
+        log.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.http);
     });
-    console.log('%s: HTTP server successfully created.', Date(Date.now()));
+    log.info('HTTP server successfully created.');
 };
 
 WebServer.prototype._initHTTPS = function() {
@@ -51,9 +52,9 @@ WebServer.prototype._initHTTPS = function() {
     inst.app.set('port', inst.port);
     inst.server = inst.transport.createServer(inst._getCertFiles(), inst.app);
     inst.server.listen(inst.props.network.https, inst.props.network.host, function () {
-        console.log('%s: Node server started on %s:%d ...', Date(Date.now()), inst.props.network.host, inst.props.network.https);
+        log.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.https);
     });
-    console.log('%s: HTTPS server successfully created.', Date(Date.now()));
+    log.info('%s: HTTPS server successfully created.');
 };
 
 WebServer.prototype._initEvents = function() {
@@ -73,11 +74,11 @@ WebServer.prototype._initEvents = function() {
         // handle specific listen errors with friendly messages
         switch (error.code) {
             case 'EACCES':
-                console.error(bind + ' requires elevated privileges');
+                log.error(bind + ' requires elevated privileges');
                 process.exit(1);
                 break;
             case 'EADDRINUSE':
-                console.error(bind + ' is already in use');
+                log.error(bind + ' is already in use');
                 process.exit(1);
                 break;
             default:

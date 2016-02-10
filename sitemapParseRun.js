@@ -3,7 +3,7 @@ var props = {
         https: 18443,
         ssl: {
             active: true,
-            path: "/home/vinni/env/ssl"
+            path: "/ssl"
         }
     }
 };

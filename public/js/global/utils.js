@@ -1,4 +1,4 @@
-var log = require("global").log;
+var log = require("winston");
 var dependencies = {
     extend: "extend",
     request: 'request',
@@ -10,6 +10,7 @@ var dependencies = {
     vm: 'vm'
 };
 var iconvLiteExtendNodeEncondins = false;
+log.add(log.transports.File, { filename: './utils.log' });
 
 function getRef(ref) {
     if (typeof(dependencies[ref]) == "string") {
@@ -32,7 +33,7 @@ var api = {
             getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
-        log.info('Download: ' + url);
+        log.log('Download: ' + url);
         getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
             encoding: encodeFrom,
@@ -42,7 +43,7 @@ var api = {
             }
         }, function (error, response, body) {
             console.timeEnd('load');
-            log.info('Html body size: ' + api.getStringByteSize(body));
+            log.log('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {

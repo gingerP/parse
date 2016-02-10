@@ -1,3 +1,4 @@
+var log = require('global').log;
 var wsServer;
 var clientTasksLimit = 100;
 var manageOrphanTasksInterval = 3000; //ms
@@ -16,7 +17,7 @@ DistributedLoadingQueue.prototype.add = function(task) {
     return new Promise(function(resolve) {
         inst.resolvers.push({
             url: task.url,
-            resolver: resolve
+            resolve: resolve
         })
     });
 };
@@ -59,6 +60,7 @@ DistributedLoadingQueue.prototype.manageOrphanTasks = function() {
         var tasksForClient = [];
         var reasonableTasksNumber = 0;
         if (inst.orphanTasks.length && inst.clients.length && client) {
+            log.info('Managing orphan tasks.');
             while(client) {
                 reasonableTasksNumber = clientTasksLimit - client.tasks.length;
                 tasksForClient = inst.orphanTasks.splice(0, reasonableTasksNumber);
@@ -116,8 +118,8 @@ DistributedLoadingQueue.prototype.resolveTask = function(data) {
     this.removeTaskFromClient(url);
     this.resolvers.every(function(resolver) {
         if (resolver.url == url) {
-            resolver.resolver(data);
-            console.log('Task for url "%s" was resolved.', url);
+            resolver.resolve(data);
+            log.info('Task for url "%s" was resolved.', url);
             return false;
         }
         return true;
@@ -127,7 +129,7 @@ DistributedLoadingQueue.prototype.resolveTask = function(data) {
 DistributedLoadingQueue.prototype.removeTaskFromClient = function(url) {
     function iterateTasks(tasks) {
         return tasks.every(function(task, index) {
-            if (task.url == url) {
+            if (task.task.url == url) {
                 tasks.splice(index, 1);
                 return false;
             }

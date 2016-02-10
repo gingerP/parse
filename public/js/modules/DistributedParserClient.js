@@ -1,6 +1,7 @@
 var WSClient = require('../common/WSClient').class;
 var stepDir = '../schedule/ScheduleSectionsParseExecutorSteps';
 var LoadQueue = require('../common/GenericQueue').class;
+var log = require('global').log;
 
 DistributedParserClient = function(url) {
     this.url = url;
@@ -72,7 +73,7 @@ DistributedParserClient.prototype.addTask = function(config, url) {
             function(data) {
                 inst.sendData(data, 'parsed_data', {url: url});
             }, function() {
-                console.warn('Task rejected. Will be re add to queue.');
+                log.warn('Task rejected. Will be re add to queue.');
                 inst.addTask(config, url);
             }
         );

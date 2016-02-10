@@ -4,6 +4,7 @@ var express = getApp();
 var fs = require('fs');
 var server = null;
 var sslOptions = null;
+var log = require('log').instance;
 if (prop.network.ssl.active === true) {
     server = require('https');
     sslOptions = {
@@ -61,11 +62,10 @@ var SampleApp = function() {
      */
     self.terminator = function(sig){
         if (typeof sig === "string") {
-           console.log('%s: Received %s - terminating sample app ...',
-                       Date(Date.now()), sig);
+           log.info('Received %s - terminating sample app ...', sig);
            //process.exit(1);
         }
-        console.log('%s: Node server stopped.', Date(Date.now()) );
+        log.info('Node server stopped.');
     };
 
 
@@ -100,10 +100,10 @@ var SampleApp = function() {
     self.initializeServer = function() {
         if (prop.network.ssl.active === true) {
             self.app = server.createServer(sslOptions, userApp);
-            console.log('%s: HTTPS server successfully created.', Date(Date.now()));
+            log.info('HTTPS server successfully created.');
         } else {
             self.app = server.createServer(userApp);
-            console.log('%s: HTTP server successfully created.', Date(Date.now()));
+            log.info('HTTP server successfully created.');
         }
         var wsServer = require('./public/js/common/WSServer').instance(self.app);
         require('./public/js/common/WSTest').run(wsServer);
@@ -128,8 +128,7 @@ var SampleApp = function() {
         //  Start the app on the specific interface (and port).
         self.app.listen(prop.network.ssl.active? self.httpsPort: self.port,
             self.ipaddress, function () {
-            console.log('%s: Node server started on %s:%d ...',
-                Date(Date.now()), self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
+            log.info('Node server started on %s:%d ...', self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
         });
     };
 
