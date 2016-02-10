@@ -1,5 +1,6 @@
 var log = require("winston");
 var dependencies = {
+    extend: "extend",
     request: 'request',
     cheerio: 'cheerio',
     iconv: 'iconv',
@@ -181,29 +182,6 @@ var api = {
             }
         }
     },
-    /*
-     * Recursively merge properties of two objects
-     */
-    merge: function(obj1, obj2) {
-        for (var p in obj2) {
-            try {
-                // Property in destination object set; update its value.
-                if ( obj2[p].constructor==Object ) {
-                    obj1[p] = this.merge(obj1[p], obj2[p]);
-
-                } else {
-                    obj1[p] = obj2[p];
-
-                }
-
-            } catch(e) {
-                // Property in destination object not set; create it and set its value.
-                obj1[p] = obj2[p];
-
-            }
-        }
-        return obj1;
-    },
     getCfg: function(configName) {
         return require('./dataConfigs/' + configName);
     },
@@ -300,6 +278,9 @@ var api = {
             return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
         }
         return "0 bytes";
+    },
+    merge: function(arg1, arg2) {
+        return getRef('extend')(true, arg1, arg2);
     }
 };
 

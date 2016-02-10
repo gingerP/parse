@@ -1,5 +1,6 @@
 var path = require('path');
 var fs = require("fs");
+var utils = require("../utils");
 
 WebServer = function() {
     this.app = require('express')();
@@ -15,14 +16,10 @@ WebServer = function() {
             }
         }
     };
-    this.props.network.ssl.cert = {
-        key: this.props.network.ssl.path + '/server.key',
-        cert: this.props.network.ssl.path + '/server.crt'
-    };
 };
 
 WebServer.prototype.init = function(props) {
-    //this.props = Object.assign(this.props, props);
+    this.props = utils.merge(this.props, props);
     return this;
 };
 
@@ -52,7 +49,7 @@ WebServer.prototype._initHTTPS = function() {
     inst.transport = require('https');
     inst.port = inst.props.network.https || 8443;
     inst.app.set('port', inst.port);
-    inst.server = inst.transport.createServer(inst._getCertFiles(inst.props.network.ssl.cert), inst.app);
+    inst.server = inst.transport.createServer(inst._getCertFiles(), inst.app);
     inst.server.listen(inst.props.network.https, inst.props.network.host, function () {
         console.log('%s: Node server started on %s:%d ...', Date(Date.now()), inst.props.network.host, inst.props.network.https);
     });
@@ -99,8 +96,8 @@ WebServer.prototype._initEvents = function() {
 
 WebServer.prototype._getCertFiles = function(pack) {
     return {
-        key: fs.readFileSync(pack.key),
-        cert: fs.readFileSync(pack.cert)
+        key: fs.readFileSync(this.props.network.ssl.path + '/server.key'),
+        cert: fs.readFileSync(this.props.network.ssl.path + '/server.crt')
     }
 };
 

@@ -1,4 +1,5 @@
-var configDBManager= require('../../db/ParseConfigDBManager').instance;
+var configDBManager = require('../../db/ParseConfigDBManager').instance;
+var goodsDBManager = require('../../db/GoodsDBManager').instance;
 var fs = require('fs');
 var itemStep = require('../ScheduleSectionsParseExecutorSteps/ItemStepSM').class;
 var xml2js = require('xml2js');
@@ -27,7 +28,7 @@ SitemapParser.prototype.readFromResources = function() {
                     listItems.forEach(function(item, index) {
                         if (index < maxIterate) {
                             inst.queue.add(inst.getQueueTask(item, inst.config, inst.configCode)).then(function(data) {
-                                console.info('to SAVE');
+                                inst.saveItem(data);
                             });
                         }
                     })
@@ -36,6 +37,11 @@ SitemapParser.prototype.readFromResources = function() {
             index++;
         }
     })
+};
+
+SitemapParser.prototype.saveItem = function(data) {
+    goodsDBManager.save(data).then(function() {
+    });
 };
 
 SitemapParser.prototype.loadSitemap = function(file) {
@@ -50,7 +56,7 @@ SitemapParser.prototype.loadSitemap = function(file) {
                 console.time('Correcting xml');
                 result = result.urlset.url.map(function(item) {
                     return {
-                        loc: (item.loc[0] || '').replace('oz.by', '127.0.0.1:11111'),
+                        loc: item.loc[0] || '',
                         changefreq: item.changefreq[0] || '',
                         lastmod: item.lastmod[0] || '',
                         priority: item.priority[0] || ''

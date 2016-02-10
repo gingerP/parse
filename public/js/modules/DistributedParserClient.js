@@ -57,21 +57,26 @@ DistributedParserClient.prototype.initListening = function() {
         if (data.step && data.urls && data.config) {
             step = inst._initStep(data.step);
             if (step) {
-                data.urls.forEach(function(url, index) {
-                    inst.queue.add(function() {
-                        return new inst.step().run(inst.getStepDependenciesCallback(data.config, url)).then(
-                            function(data) {
-                                inst.sendData(data, 'parsed_data', {url: url});
-                            }, function(result) {
-                                //TODO
-                                console.warn('Task rejected.');
-                            }
-                        );
-                    })
+                data.urls.forEach(function(url) {
+                    inst.addTask(data.config, url);
                 });
             }
         }
     });
+};
+
+DistributedParserClient.prototype.addTask = function(config, url) {
+    var inst = this;
+    inst.queue.add(function() {
+        return new inst.step().run(inst.getStepDependenciesCallback(config, url)).then(
+            function(data) {
+                inst.sendData(data, 'parsed_data', {url: url});
+            }, function() {
+                console.warn('Task rejected. Will be re add to queue.');
+                inst.addTask(config, url);
+            }
+        );
+    })
 };
 
 module.exports = {
