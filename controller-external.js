@@ -1,12 +1,13 @@
+var logger = _req('src/js/logger').create('controller-external');
 var handlers = [
-    {path: '/api/data', mod: require('./public/js/controller/ExternalController')}
+    {path: '/api/data', mod: require('./src/js/controller/ExternalController')}
 ];
 
 module.exports = {
     init: function(express) {
         handlers.forEach(function(handler) {
             express.use(handler.path, handler.mod.router);
-            console.log('%s: External api point "%s" successfully mapped.' , Date(Date.now()), handler.path);
+            logger.info('External api point "%s" successfully mapped.', handler.path);
         });
         return this;
     }

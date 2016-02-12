@@ -4,7 +4,7 @@ var express = getApp();
 var fs = require('fs');
 var server = null;
 var sslOptions = null;
-var log = require('log').instance;
+var logger = _req('src/js/logger').create('SERVER');
 if (prop.network.ssl.active === true) {
     server = require('https');
     sslOptions = {
@@ -62,10 +62,10 @@ var SampleApp = function() {
      */
     self.terminator = function(sig){
         if (typeof sig === "string") {
-           log.info('Received %s - terminating sample app ...', sig);
+            logger.info('Received %s - terminating sample app ...', sig);
            //process.exit(1);
         }
-        log.info('Node server stopped.');
+        logger.info('Node server stopped.');
     };
 
 
@@ -100,13 +100,13 @@ var SampleApp = function() {
     self.initializeServer = function() {
         if (prop.network.ssl.active === true) {
             self.app = server.createServer(sslOptions, userApp);
-            log.info('HTTPS server successfully created.');
+            logger.info('HTTPS server successfully created.');
         } else {
             self.app = server.createServer(userApp);
-            log.info('HTTP server successfully created.');
+            logger.info('HTTP server successfully created.');
         }
-        var wsServer = require('./public/js/common/WSServer').instance(self.app);
-        require('./public/js/common/WSTest').run(wsServer);
+        var wsServer = require('./src/js/common/WSServer').instance(self.app);
+        require('./src/js/common/WSTest').run(wsServer);
     };
 
 
@@ -128,7 +128,7 @@ var SampleApp = function() {
         //  Start the app on the specific interface (and port).
         self.app.listen(prop.network.ssl.active? self.httpsPort: self.port,
             self.ipaddress, function () {
-            log.info('Node server started on %s:%d ...', self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
+              logger.info('Node server started on %s:%d ...', self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
         });
     };
 

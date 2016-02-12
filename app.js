@@ -6,12 +6,11 @@ var im = {
   logger: require('morgan'),
   cookieParser: require('cookie-parser'),
   bodyParser: require('body-parser'),
-  InitDB: require('./public/js/db/InitDBM'),
-  env: require('./public/js/env'),
+  InitDB: require('./src/js/db/InitDBM'),
+  env: require('./src/js/env'),
   flash: require('connect-flash')
 };
 var app = im.express();
-console.info("Init DB");
 im.env.init();
 app.use(im.logger('dev'));
 app.use(im.bodyParser.json());

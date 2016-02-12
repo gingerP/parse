@@ -1,5 +1,5 @@
 var handlers = [
-    {path: '/api/main', mod: require('./public/js/api/main')}
+    {path: '/api/main', mod: require('./src/js/api/main')}
 ];
 
 module.exports = {
