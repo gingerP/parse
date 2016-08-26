@@ -15,9 +15,9 @@ var handlers = [
         '/admin/api',
         '/admin/cache'
     ],
-        fn: function(req, res) {
+    fn: function(req, res) {
         extendSession(req);
-        res.sendFile(__dirname + '/web/home.html');
+        res.sendFile(__dirname + '/src/web/home.html');
     }}
 ];
 
@@ -41,7 +41,7 @@ function initPassport(app) {
 
 function initLoginLogout(app) {
     app.get('/admin', function(req, res) {
-        res.sendFile(__dirname + '/web/login.html');
+        res.sendFile(__dirname + '/src/web/login.html');
     });
     app.get('/admin/logout', function(req, res) {
         req.logout();
@@ -83,12 +83,12 @@ module.exports = {
     init: function(app) {
         initPassport(app);
         initLoginLogout(app);
-        app.use('/static/css', express.static(__dirname + '/web/css'));
+        app.use('/static/css', express.static(__dirname + '/src/web/css'));
         app.use('/static/css/bower_components', express.static(__dirname + '/bower_components'));
-        app.use('/static/images', express.static(__dirname + '/web/images'));
-        app.use('/static/js', express.static(__dirname + '/web/js'));
-        app.use('/static/dhtmlx', express.static(__dirname + '/web/dhtmlx'));
-        app.use('/static/ace', express.static(__dirname + '/web/ace'));
+        app.use('/static/images', express.static(__dirname + '/src/web/images'));
+        app.use('/static/js', express.static(__dirname + '/src/web/js'));
+        app.use('/static/dhtmlx', express.static(__dirname + '/src/web/dhtmlx'));
+        app.use('/static/ace', express.static(__dirname + '/src/web/ace'));
         app.use('/static/js/bower_components', express.static(__dirname + '/bower_components'));
 
 

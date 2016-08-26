@@ -1,5 +1,3 @@
-var u = require('../utils');
-var c = require('../constants');
 var configDBManager= require('../db/ApiConstructorDBManager').instance;
 var GenericService = require('./GenericService').class;
 var externalService = require('./ExternalService').instance;

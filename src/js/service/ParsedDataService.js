@@ -1,5 +1,3 @@
-var utils = require('../utils');
-var c = require('../constants');
 var parsedDataDBManager= require('../db/ParseDataDBManager').instance;
 var GenericService = require('./GenericService').class;
 var service;

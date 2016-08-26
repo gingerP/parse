@@ -126,9 +126,10 @@ var SampleApp = function() {
      */
     self.start = function() {
         //  Start the app on the specific interface (and port).
-        self.app.listen(prop.network.ssl.active? self.httpsPort: self.port,
-            self.ipaddress, function () {
-              logger.info('Node server started on %s:%d ...', self.ipaddress, prop.network.ssl.active? self.httpsPort: self.port);
+        var protocol = prop.network.ssl.active ? 'htpps' : 'http';
+        var port = prop.network.ssl.active? self.httpsPort: self.port;
+        self.app.listen(port, self.ipaddress, function () {
+              logger.info('Node server started on %s://%s:%s', protocol, self.ipaddress, port);
         });
     };
 

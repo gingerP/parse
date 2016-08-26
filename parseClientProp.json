@@ -4,7 +4,7 @@
     "http": "88080",
     "https": "88443",
     "ssl": {
-      "active": true,
+      "active": false,
       "path": "/ssl"
     }
   },

@@ -1,4 +1,4 @@
-define(['/static/js/bower_components/vkBeautify/vkbeautify.js'],
+define(['/static/js/bower_components/vkBeautify/vkbeautify'],
     function() {
         var api;
         var editor;
