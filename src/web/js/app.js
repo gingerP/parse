@@ -26,7 +26,9 @@ $(document).ready(function() {
         })
         .init()
 });
-
+requirejs.config({
+    baseUrl: '/static/js/'
+});
 sideBarModule = (function() {
     var api = null;
     var sideBar = null;

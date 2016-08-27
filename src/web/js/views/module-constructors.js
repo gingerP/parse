@@ -1,12 +1,12 @@
 define([
-        '../views-dependencies/constructor/module-view-level.js',
-        '../views-dependencies/constructor/module-view-levels-config.js',
-        '../views-dependencies/constructor/module-view-src-editor.js',
-        '../views-dependencies/module-view-test-data-viewer.js',
-        '../service/ConstructorService.js',
-        '../service/LevelService.js',
-        '../../ace/ace.js',
-        '/static/js/bower_components/vkBeautify/vkbeautify.js'
+        'views-dependencies/constructor/module-view-level',
+        'views-dependencies/constructor/module-view-levels-config',
+        'views-dependencies/constructor/module-view-src-editor',
+        'views-dependencies/module-view-test-data-viewer',
+        'service/ConstructorService',
+        'service/LevelService',
+        'ace/ace',
+        'bower_components/vkBeautify/vkbeautify'
     ],
     function(LevelModule, levelsConfigModule, srcEditor, testDataViewer, ConstructorService, LevelService) {
         var api;

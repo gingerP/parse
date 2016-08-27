@@ -1,5 +1,6 @@
-define(['/static/js/bower_components/vkBeautify/vkbeautify'],
-    function() {
+define([
+        'bower_components/vkBeautify/vkbeautify'
+    ], function () {
         var api;
         var editor;
         var toolbar;
@@ -14,7 +15,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
         function getSrcEditorFeatures() {
             return [
                 // APPLY
-                (function() {
+                (function () {
                     var feature = new GenericFeature().init({
                         label: 'Apply',
                         type: 'button',
@@ -27,7 +28,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
                         var source = editor.getValue();
                         try {
                             source = JSON.parse(source);
-                        } catch(error) {
+                        } catch (error) {
                             dhtmlx.alert({
                                 title: 'Error',
                                 type: 'error',
@@ -41,7 +42,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
                     return feature;
                 })(),
                 // ROLLBACK
-                (function() {
+                (function () {
                     var feature = new GenericFeature().init({
                         label: 'Rollback',
                         type: 'button',
@@ -59,7 +60,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
                     return feature;
                 })(),
                 // FORMATTER
-                (function() {
+                (function () {
                     var feature = new GenericFeature().init({
                         label: 'Format',
                         type: 'button',
@@ -67,7 +68,7 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
                         image: '/static/images/format.png',
                         imageDis: '/static/images/format.png'
                     });
-                    feature.exec = function() {
+                    feature.exec = function () {
                         var value = editor.getValue();
                         editor.setValue(vkbeautify.json(value));
                     };
@@ -86,35 +87,35 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
             editor.setReadOnly(false);
             editor.$blockScrolling = Infinity;
             return {
-                setValue: function(value) {
+                setValue: function (value) {
                     value = vkbeautify.json(value);
                     editor.setValue(value);
                     editor.clearSelection();
                 },
-                getValue: function() {
+                getValue: function () {
                     return editor.getValue();
                 },
-                resize: function() {
+                resize: function () {
                     editor.resize();
                 }
             };
         }
 
         api = {
-            init: function(container) {
+            init: function (container) {
                 toolbar = createToolbar(container);
                 editor = createEditor(container);
                 return api;
             },
-            setValue: function(data) {
+            setValue: function (data) {
                 editor.setValue(data);
                 return api;
             },
-            setDataSource: function(module) {
+            setDataSource: function (module) {
                 dataSource = module;
                 return api;
             },
-            onSizeChange: function(names) {
+            onSizeChange: function (names) {
                 editor.resize();
             }
         };

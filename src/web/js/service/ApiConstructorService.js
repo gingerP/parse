@@ -1,8 +1,12 @@
 define([
-    './GenericService.js'
+    'service/GenericService'
 ], function(GenericService) {
+    'use strict';
+
     var api;
-    ApiConstructorService = function() {};
+
+    function ApiConstructorService() {}
+
     ApiConstructorService.prototype = Object.create(GenericService.class.prototype);
     ApiConstructorService.prototype.constructor = ApiConstructorService;
     ApiConstructorService.prototype.test = function(id, callback) {

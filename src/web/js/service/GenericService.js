@@ -1,8 +1,12 @@
 define([
-	'./CoreTransport.js'
+	'service/CoreTransport'
 ], function(transport) {
+	'use strict';
+
 	var api;
-	GenericService = function() {};
+
+	function GenericService() {}
+
 	GenericService.prototype.save = function(data, callback) {
 		this._load(this.getUrl('save'), callback, data);
 	};

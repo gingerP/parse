@@ -1,10 +1,11 @@
-'use strict'
 define([
-        '../../service/ScheduleService.js',
-        '../../service/ConstructorService.js',
-        '/static/js/bower_components/vkBeautify/vkbeautify.js'
-],
-    function(ScheduleService, ConstructorService) {
+        'service/ScheduleService',
+        'service/ConstructorService',
+        'bower_components/vkBeautify/vkbeautify'
+    ],
+    function (ScheduleService, ConstructorService) {
+        'use strict';
+
         var api;
         var win;
         var layout;
@@ -38,7 +39,7 @@ define([
             schedule: new DataManager(ScheduleService.instance),
         };
         var listPromises = [
-            function() {
+            function () {
                 return new Promise(function (resolve, reject) {
                     var combo = list.grid.getCombo(list.getColIndex('config'));
                     manager.constructor.list(function (data) {
@@ -54,31 +55,34 @@ define([
             }
         ];
         var action = {
-            save: function() {
+            save: function () {
                 var entity = api.getData();
                 if (scheduleListener) {
                     scheduleListener.updateSchedule(entity);
                 }
             },
-            cancel: function() {
+            cancel: function () {
                 api.hide();
             },
-            test: function() {
+            test: function () {
                 var entity = api.getData();
                 var selected = list.getSelectedData();
                 if (selected) {
-                    manager.schedule.exec('test', [entity, {stepCode: selected.code, maxIteration: 10}, function (result) {
+                    manager.schedule.exec('test', [entity, {
+                        stepCode: selected.code,
+                        maxIteration: 10
+                    }, function (result) {
                         parsedDataViewer.setValue(result);
                     }]);
                 }
             },
-            loadConfig: function() {
+            loadConfig: function () {
 
             }
         };
         var features = [
             //SAVE
-            (function() {
+            (function () {
                 var feature = new GenericFeature().init({
                     label: 'Save',
                     type: 'button',
@@ -90,7 +94,7 @@ define([
                 return feature;
             })(),
             //CANCEL
-            (function() {
+            (function () {
                 var feature = new GenericFeature().init({
                     label: 'Cancel',
                     type: 'button',
@@ -105,7 +109,7 @@ define([
 
         var testFeatures = [
             //TEST
-            (function() {
+            (function () {
                 var feature = new GenericFeature().init({
                     label: 'Test',
                     type: 'button',
@@ -117,7 +121,7 @@ define([
                 return feature;
             })(),
             //LOAD
-            (function() {
+            (function () {
                 var feature = new GenericFeature().init({
                     label: 'Load config data',
                     type: 'button',
@@ -133,15 +137,15 @@ define([
         function createWindow() {
             var myWins = new dhtmlXWindows({
                 image_path: "codebase/imgs/",
-                skin:       "dhx_blue"
+                skin: "dhx_blue"
             });
             var win = myWins.createWindow({
                 id: "itemsSchedulesEditor",
-                width:  1100,
+                width: 1100,
                 height: 530,
                 center: true
             });
-            win.attachEvent('onClose', function() {
+            win.attachEvent('onClose', function () {
                 win.setModal(false);
                 win.hide();
                 api.clear();
@@ -149,10 +153,10 @@ define([
             win.setModal(true);
             win.setText('Config editor');
             win.cell.className += ' schedule-config-win';
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 win.centerOnScreen();
             });
-            document.addEventListener('keydown', function(event) {
+            document.addEventListener('keydown', function (event) {
                 if (event.keyCode === 27) {
                     win.close();
                 }
@@ -167,6 +171,7 @@ define([
             layout.cells('c').hideHeader();
             return layout;
         }
+
         function createToolbar(win) {
             var toolbar = win.attachToolbar();
             var vToolbar = new Toolbar().init(toolbar);
@@ -187,11 +192,13 @@ define([
             ];
             var formConfig = [
                 {type: 'settings', inputWidth: 200, labelWidth: 100, labelAlign: 'left'},
-                {type: 'block', width: 'auto', blockOffset: 0, list: [
+                {
+                    type: 'block', width: 'auto', blockOffset: 0, list: [
                     {type: 'container', name: 'configs_container', inputWidth: 650, inputHeight: 400},
                     {type: 'newcolumn'},
                     {type: 'container', name: 'config_handler', inputWidth: 400, inputHeight: 400}
-                ]}
+                ]
+                }
             ];
             var form = layout.attachForm(formConfig);
             var vController = new FormController().init();
@@ -222,10 +229,10 @@ define([
 
         function initListBRules(list) {
             list.addBRules({
-                '__before_select': function(/*grid, newRow, oldRow, canChange*/) {
+                '__before_select': function (/*grid, newRow, oldRow, canChange*/) {
                     preSaveJSHandlers();
                 },
-                '_select_': function(grid, entity) {
+                '_select_': function (grid, entity) {
                     var hasSelected = U.hasContent(entity);
                     if (hasSelected) {
                         preEditor.setValue(entity.preHandler);
@@ -278,15 +285,15 @@ define([
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
             api = {
-                setValue: function(value) {
-                    editor.setValue(U.hasContent(value)? '' + value: '');
+                setValue: function (value) {
+                    editor.setValue(U.hasContent(value) ? '' + value : '');
                     editor.clearSelection();
                     return api;
                 },
-                getValue: function() {
+                getValue: function () {
                     return editor.getValue();
                 },
-                enable: function(state) {
+                enable: function (state) {
                     editor.setReadOnly(!state);
                     return api;
                 }
@@ -306,15 +313,15 @@ define([
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
             api = {
-                setValue: function(value) {
-                    editor.setValue(U.hasContent(value)? '' + value: '');
+                setValue: function (value) {
+                    editor.setValue(U.hasContent(value) ? '' + value : '');
                     editor.clearSelection();
                     return api;
                 },
-                getValue: function() {
+                getValue: function () {
                     return editor.getValue();
                 },
-                enable: function(state) {
+                enable: function (state) {
                     editor.setReadOnly(!state);
                     return api;
                 }
@@ -333,16 +340,16 @@ define([
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
             api = {
-                setValue: function(value) {
+                setValue: function (value) {
                     value = vkbeautify.json(value);
                     editor.setValue(value || "{}");
                     editor.clearSelection();
                     return api;
                 },
-                getValue: function() {
+                getValue: function () {
                     return editor.getValue();
                 },
-                enable: function(state) {
+                enable: function (state) {
                     editor.setReadOnly(!state);
                     return api;
                 }
@@ -361,26 +368,26 @@ define([
             editor.getSession().setMode("ace/mode/json");
             editor.setReadOnly(true);
             editor.$blockScrolling = Infinity;
-            win.attachEvent("onMinimize", function() {
+            win.attachEvent("onMinimize", function () {
                 editor.resize();
             });
-            win.attachEvent("onMaximize", function() {
+            win.attachEvent("onMaximize", function () {
                 editor.resize();
             });
-            cell.attachEvent("onResizeFinish", function() {
+            cell.attachEvent("onResizeFinish", function () {
                 editor.resize();
             });
             api = {
-                setValue: function(value) {
+                setValue: function (value) {
                     value = vkbeautify.json(value);
                     editor.setValue(value || "{}");
                     editor.clearSelection();
                     return api;
                 },
-                getValue: function() {
+                getValue: function () {
                     return editor.getValue();
                 },
-                enable: function(state) {
+                enable: function (state) {
                     editor.setReadOnly(!state);
                     return api;
                 }
@@ -389,7 +396,7 @@ define([
         }
 
         function preLoad(callback) {
-            Promise.all(listPromises.map(function(prom){
+            Promise.all(listPromises.map(function (prom) {
                 return prom()
             })).then(callback);
         }
@@ -411,10 +418,10 @@ define([
         }
 
         api = {
-            init: function() {
+            init: function () {
                 return api;
             },
-            show: function(data) {
+            show: function (data) {
                 if (!win) {
                     win = createWindow();
                     win.show();
@@ -426,7 +433,7 @@ define([
                     testToolbar = createTestToolbar(testLayout);
                     parsedDataViewer = createParsedDataViwer(testLayout.cells('b'));
                     createEditors(testLayout.cells('a'));
-                    preLoad(function() {
+                    preLoad(function () {
                         api.clear();
                         api.setData(data);
                     })
@@ -438,28 +445,28 @@ define([
                 win.setModal(true);
                 return api;
             },
-            hide: function() {
+            hide: function () {
                 win.close();
                 return api;
             },
-            getData: function() {
+            getData: function () {
                 var entity = form.updateData();
                 preSaveJSHandlers();
                 entity.extend.handlers = list.updateData();
                 return entity;
             },
-            setData: function(entity) {
+            setData: function (entity) {
                 form.setData(entity);
                 list.controller.setData(entity.extend.handlers);
                 return api;
             },
-            clear: function() {
+            clear: function () {
                 list.clear();
                 postEditor.setValue();
                 preEditor.setValue();
                 parsedDataViewer.setValue();
             },
-            addScheduleListener: function(listener) {
+            addScheduleListener: function (listener) {
                 scheduleListener = listener;
                 return api;
             }

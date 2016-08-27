@@ -1,7 +1,7 @@
 var u = require('../utils');
 var express = require('express');
 var router = express.Router();
-var service = require('../service/mainPageService');
+//var service = require('../service/mainPageService');
 var routes = [
     {path: '/get', method: 'main', async: true}
 ];
@@ -12,7 +12,7 @@ module.stuf = (function () {
     var api = null;
 
     function main(req, res, callback) {
-        service.init(function() {
+        /*service.init(function() {
             var index = 2;
             var result = {};
             console.time('sections');
@@ -33,7 +33,7 @@ module.stuf = (function () {
                     callback(result);
                 }
             });
-        });
+        });*/
     }
 
     api = {

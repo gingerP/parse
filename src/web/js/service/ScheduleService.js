@@ -1,8 +1,12 @@
 define([
-    './GenericService.js'
+    'service/GenericService'
 ], function(GenericService) {
+    'use strict';
+
     var api;
-    ScheduleService = function() {};
+
+    function ScheduleService() {}
+
     ScheduleService.prototype = Object.create(GenericService.class.prototype);
     ScheduleService.prototype.constructor = ScheduleService;
     ScheduleService.prototype.start = function(id, callback) {

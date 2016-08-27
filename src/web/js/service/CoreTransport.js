@@ -1,5 +1,7 @@
 define([],
     function() {
+        'use strict';
+
         var api;
         var prefix = '/api/';
         function message(message, type) {

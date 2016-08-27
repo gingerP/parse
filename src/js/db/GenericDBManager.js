@@ -1,4 +1,4 @@
- var logger = _req('src/js/logger').create('DB');
+var logger = _req('src/js/logger').create('DB');
 var appRoot = require('app-root-path');
 var cfg = require(appRoot + '/prop').db;
 var utils = _req('src/js/utils');

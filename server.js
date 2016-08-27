@@ -1,3 +1,4 @@
+global._req = require('app-root-path').require;
 var prop = require('./prop.json');
 var userApp = require('./app');
 var express = getApp();

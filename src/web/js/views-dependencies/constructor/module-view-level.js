@@ -1,5 +1,5 @@
 define([
-        './module-business.js'
+        'views-dependencies/constructor/module-business'
     ],
     function(Business) {
         return function() {

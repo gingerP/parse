@@ -1,8 +1,12 @@
 define([
-    './GenericService.js'
+    'service/GenericService'
 ], function(GenericService) {
+    'use strict';
+
     var api;
-    LevelService = function() {};
+
+    function LevelService() {}
+
     LevelService.prototype = Object.create(GenericService.class.prototype);
     LevelService.prototype.constructor = LevelService;
     LevelService.prototype.getNew = function() {

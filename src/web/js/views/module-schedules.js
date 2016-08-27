@@ -1,10 +1,10 @@
 define([
-        '../service/ScheduleService.js',
-        '../service/ConstructorService.js',
-        '../service/ParsedDataService.js',
-        '../views-dependencies/module-view-test-data-viewer.js',
-        '../views-dependencies/scheduler/module-view-config-editor.js',
-        '../../ace/ace.js'
+        'service/ScheduleService',
+        'service/ConstructorService',
+        'service/ParsedDataService',
+        'views-dependencies/module-view-test-data-viewer',
+        'views-dependencies/scheduler/module-view-config-editor',
+        'ace/ace'
 ],
     function(ScheduleService, ConstructorService, ParsedDataService, parseDataViewer, schedulerConfigEditor){
         var api;

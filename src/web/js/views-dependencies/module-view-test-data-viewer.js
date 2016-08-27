@@ -1,7 +1,8 @@
-define(['/static/js/bower_components/vkBeautify/vkbeautify'],
-    function() {
+define([
+        'bower_components/vkBeautify/vkbeautify'
+    ], function () {
         return {
-            create: function() {
+            create: function () {
                 var api;
                 var editor;
                 var editorContainer;
@@ -19,36 +20,36 @@ define(['/static/js/bower_components/vkBeautify/vkbeautify'],
                     editor.$blockScrolling = Infinity;
                     //init events
                     if (container.layout) {
-                        container.layout.attachEvent("onResizeFinish", function(names){
+                        container.layout.attachEvent("onResizeFinish", function (names) {
                             editor.resize();
                         });
-                        container.layout.attachEvent("onPanelResizeFinish", function(names){
+                        container.layout.attachEvent("onPanelResizeFinish", function (names) {
                             editor.resize();
                         });
                     }
                     return {
-                        setValue: function(value) {
+                        setValue: function (value) {
                             value = vkbeautify.json(value);
                             editor.setValue(value);
                             editor.clearSelection();
                         },
-                        getValue: function() {
+                        getValue: function () {
                             return editor.getValue();
                         }
                     };
                 }
 
                 api = {
-                    init: function(_container, title) {
+                    init: function (_container, title) {
                         container = _container;
                         editor = init(container, title);
                         return api;
                     },
-                    setData: function(data) {
+                    setData: function (data) {
                         editor.setValue(data);
                         return api;
                     },
-                    getContainer: function() {
+                    getContainer: function () {
                         return container;
                     }
                 };

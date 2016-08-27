@@ -1,8 +1,8 @@
 define([
-        '../service/ApiConstructorService.js',
-        '../service/ConstructorService.js',
-        '../views-dependencies/module-view-test-data-viewer.js',
-        '../../ace/ace.js'
+        'service/ApiConstructorService',
+        'service/ConstructorService',
+        'views-dependencies/module-view-test-data-viewer',
+        'ace/ace'
     ],
     function(ApiConstructorService, ConstructorService, parseDataViewer){
         var api;

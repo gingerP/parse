@@ -39,7 +39,7 @@ var api = {
             getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
-        logger.ld.info('Download: ' + url);
+        logger.ld.debug('Download: ' + url);
         getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
             encoding: encodeFrom,
@@ -49,7 +49,7 @@ var api = {
             }
         }, function (error, response, body) {
             console.timeEnd('load');
-            logger.ld.info('Html body size: ' + api.getStringByteSize(body));
+            logger.ld.debug('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');
             if (!error && response.statusCode == 200) {

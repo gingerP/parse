@@ -1,8 +1,12 @@
 define([
-    './GenericService.js'
+    'service/GenericService'
 ], function(GenericService) {
+    'use strict';
+
     var api;
-    ParsedDataService = function() {};
+
+    function ParsedDataService() {}
+
     ParsedDataService.prototype = Object.create(GenericService.class.prototype);
     ParsedDataService.prototype.constructor = ParsedDataService;
     ParsedDataService.prototype.getNew = function() {
