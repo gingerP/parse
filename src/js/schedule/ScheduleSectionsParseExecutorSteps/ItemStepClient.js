@@ -53,7 +53,7 @@
                     function(data) {
                         var message;
                         if (data.error) {
-                            message = error.message;
+                            message = data.error.message;
                             logger.error(message);
                         } else {
                             message = url + ' ' + data.statusCode;

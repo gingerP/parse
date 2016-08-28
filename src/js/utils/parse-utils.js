@@ -29,7 +29,7 @@
                     } else {
                         reject({
                             error: error,
-                            statusCode: response.statusCode
+                            statusCode: response ? response.statusCode : "-1"
                         });
                     }
                 });

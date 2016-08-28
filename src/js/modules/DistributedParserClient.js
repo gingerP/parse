@@ -70,13 +70,13 @@
         });
     };
 
-    DistributedParserClient.prototype.manageTaskResult = function (data) {
-        this.sendData(data, 'parsed_data', {url: data.url});
+    DistributedParserClient.prototype.manageTaskResult = function (url, data) {
+        this.sendData(data, 'parsed_data', {url: url});
     };
 
-    DistributedParserClient.prototype.manageTaskError = function (data) {
+    DistributedParserClient.prototype.manageTaskError = function (url, data) {
         logger.warn('Task rejected. Will be re add to queue.');
-        this.addTask(data.config, data.url);
+        this.addTask(data.config, url);
 
     };
 
@@ -85,8 +85,8 @@
         inst.queue.add(function () {
             return new inst.step()
                 .run(inst.getStepDependenciesCallback(config, url))
-                .then(inst.manageTaskResult.bind(inst))
-                .catch(inst.manageTaskError.bind(inst));
+                .then(inst.manageTaskResult.bind(inst, url))
+                .catch(inst.manageTaskError.bind(inst, url));
         });
 
     };
