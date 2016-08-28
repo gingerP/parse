@@ -34,21 +34,23 @@ var api = {
         if (typeof(url) === 'string' && (url.indexOf('http://') != 0 && url.indexOf('https://') != 0)) {
             url = 'http://' + url;
         }
-        console.time('load');
+        //----console.time('load');
         if (!iconvLiteExtendNodeEncondins) {
-            getRef('iconvLite').extendNodeEncodings();
+            //getRef('iconvLite').extendNodeEncodings();
             iconvLiteExtendNodeEncondins = true;
         }
         logger.ld.debug('Download: ' + url);
         getRef('request').defaults({pool: {maxSockets: Infinity}, timeout: 100 * 1000})({
             url: url,
-            encoding: encodeFrom,
+            gzip: true,
+            //encoding: encodeFrom,
             headers: {
-                "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36",
-                "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                'Transfer-Encoding': 'chunked',
+                'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36',
+                'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
         }, function (error, response, body) {
-            console.timeEnd('load');
+            //----console.timeEnd('load');
             logger.ld.debug('Html body size: ' + api.getStringByteSize(body));
             var res = null;
             //var translator = new (getRef('iconv'))(encodeFrom, 'utf8');

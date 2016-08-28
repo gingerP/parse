@@ -1,61 +1,75 @@
-var GenericStep = require('./GenericStep').class;
-var utils = require('global').utils;
-var log = require('global').log;
-var dbManager = require('../../db/GoodsDBManager').instance;
+(function() {
+    'use strict';
 
-ItemStepClient = function() {
-    this.setDBManager(dbManager);
-};
+    var GenericStep = require('./GenericStep').class;
+    var logger = _req('src/js/logger').create('ItemStepClient');
+    var utils = _req('src/js/utils');
+    var parseUtils = _req('src/js/utils/parse-utils');
+    var dbManager = require('../../db/GoodsDBManager').instance;
 
-ItemStepClient.prototype = Object.create(GenericStep.prototype);
-ItemStepClient.prototype.constructor = ItemStepClient;
+    function ItemStepClient() {
+        this.setDBManager(dbManager);
+    }
 
-ItemStepClient.prototype.pre = function(dependencies) {
-    var inst = this;
-    return new Promise(function(resolve) {
-        resolve({
-            url: dependencies.handler.url
-        }, dependencies);
-    });
-};
+    ItemStepClient.prototype = Object.create(GenericStep.prototype);
+    ItemStepClient.prototype.constructor = ItemStepClient;
 
-ItemStepClient.prototype.post = function(parsedData, preData, dependencies) {
-    return new Promise(function(resolve) {
-        resolve(parsedData);
-    });
-};
+    ItemStepClient.prototype.pre = function(dependencies) {
+        var inst = this;
+        return new Promise(function(resolve) {
+            resolve({
+                url: dependencies.handler.url
+            }, dependencies);
+        });
+    };
 
-ItemStepClient.prototype.save = function(parsedData, dependencies) {
-    return new Promise(function(resolve) {
-        resolve();
-    });
-};
+    ItemStepClient.prototype.post = function(parsedData, preData, dependencies) {
+        return new Promise(function(resolve) {
+            resolve(parsedData);
+        });
+    };
 
-ItemStepClient.prototype.loadData = function(preData, dependencies) {
-    var config = dependencies.config;
-    var url = dependencies.handler.url;
-    var inst = this;
-    return new Promise(function(resolve, reject) {
-        try {
-            utils.loadDom(url, function (error, body) {
-                if (error) {
-                    log.error(error.message);
-                    reject(error.message);
-                }
-                try {
-                    resolve(utils.extractDataFromHtml(body, config));
-                } catch (error) {
-                    log.error(error.message);
-                    reject(error.message);
-                }
-            }, 'koi8r');
-        } catch (error) {
-            log.error(error.message);
-            reject(error.message);
-        }
-    });
-};
+    ItemStepClient.prototype.save = function(parsedData, dependencies) {
+        return new Promise(function(resolve) {
+            resolve();
+        });
+    };
 
-module.exports = {
-    class: ItemStepClient
-};
+    ItemStepClient.prototype.loadData = function(preData, dependencies) {
+        var config = dependencies.config;
+        var url = dependencies.handler.url;
+        var inst = this;
+        return new Promise(function(resolve, reject) {
+            try {
+                parseUtils.loadDom(url).then(
+                    function(body) {
+                        try {
+                            resolve(utils.extractDataFromHtml(body, config));
+                        } catch (error) {
+                            logger.error(error.message);
+                            reject(error.message);
+                        }
+                    },
+                    function(data) {
+                        var message;
+                        if (data.error) {
+                            message = error.message;
+                            logger.error(message);
+                        } else {
+                            message = url + ' ' + data.statusCode;
+                            logger.error(message);
+                        }
+                        reject(message);
+                    }
+                );
+            } catch (error) {
+                logger.error(error.message);
+                reject(error.message);
+            }
+        });
+    };
+
+    module.exports = {
+        class: ItemStepClient
+    };
+})();

@@ -1,7 +1,7 @@
 var path = require('path');
 var fs = require("fs");
-var utils = require('global').utils;
-var log = require('global').log;
+var logger = _req('src/js/logger').create('WebServer');
+var utils = _req('src/js/utils');
 
 WebServer = function() {
     this.app = require('express')();
@@ -40,9 +40,9 @@ WebServer.prototype._initHTTP = function() {
     inst.server = inst.transport.createServer(inst.app);
     inst.app.set('port', this.port);
     inst.server.listen(inst.props.network.http, inst.props.network.host, function () {
-        log.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.http);
+        logger.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.http);
     });
-    log.info('HTTP server successfully created.');
+    logger.info('HTTP server successfully created.');
 };
 
 WebServer.prototype._initHTTPS = function() {
@@ -52,9 +52,9 @@ WebServer.prototype._initHTTPS = function() {
     inst.app.set('port', inst.port);
     inst.server = inst.transport.createServer(inst._getCertFiles(), inst.app);
     inst.server.listen(inst.props.network.https, inst.props.network.host, function () {
-        log.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.https);
+        logger.info('Node server started on %s:%d ...', inst.props.network.host, inst.props.network.https);
     });
-    log.info('%s: HTTPS server successfully created.');
+    logger.info('%s: HTTPS server successfully created.');
 };
 
 WebServer.prototype._initEvents = function() {
@@ -74,11 +74,11 @@ WebServer.prototype._initEvents = function() {
         // handle specific listen errors with friendly messages
         switch (error.code) {
             case 'EACCES':
-                log.error(bind + ' requires elevated privileges');
+                logger.error(bind + ' requires elevated privileges');
                 process.exit(1);
                 break;
             case 'EADDRINUSE':
-                log.error(bind + ' is already in use');
+                logger.error(bind + ' is already in use');
                 process.exit(1);
                 break;
             default:

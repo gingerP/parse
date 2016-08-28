@@ -1,85 +1,97 @@
-var WSClient = require('../common/WSClient').class;
-var stepDir = '../schedule/ScheduleSectionsParseExecutorSteps';
-var LoadQueue = require('../common/GenericQueue').class;
-var log = require('global').log;
+(function () {
+    'use strict';
 
-DistributedParserClient = function(url) {
-    this.url = url;
-    this.queue = new LoadQueue().start();
-    this.step;
-    this.initListening();
-};
+    var WSClient = require('../common/WSClient').class;
+    var stepDir = '../schedule/ScheduleSectionsParseExecutorSteps';
+    var LoadQueue = require('../common/GenericQueue').class;
+    var logger = _req('src/js/logger').create('DistributedParserClient');
+    var utils = _req('src/js/utils');
 
-DistributedParserClient.prototype = Object.create(WSClient.prototype);
-DistributedParserClient.prototype.constructor = DistributedParserClient;
-
-DistributedParserClient.prototype._initStep = function(stepName) {
-    if (stepName) {
-        this.stepName = stepName;
-        this.step = require(stepDir + '/' + stepName).class;
+    function DistributedParserClient(url) {
+        this.url = url;
+        this.queue = new LoadQueue().start();
+        this.step;
+        this.initListening();
     }
-    return this.step;
-};
 
-DistributedParserClient.prototype.getStepDependenciesCallback = function(config, url) {
-    var inst = this;
-    return {
-        get: function() {
-            return new Promise(function(resolve) {
-                resolve({
-                    schedule: {},
-                    config: config,
-                    PREV_RESULT: null,
-                    handler: {
-                        url: url,
-                        postHandler: "",
-                        preHandler: "",
-                        saveHandler: "",
-                        code: inst.stepName
-                    }
-                });
-            });
+    DistributedParserClient.prototype = Object.create(WSClient.prototype);
+    DistributedParserClient.prototype.constructor = DistributedParserClient;
+
+    DistributedParserClient.prototype._initStep = function (stepName) {
+        if (stepName) {
+            this.stepName = stepName;
+            this.step = require(stepDir + '/' + stepName).class;
         }
-    }
-};
+        return this.step;
+    };
 
-DistributedParserClient.prototype.initListening = function() {
-    var inst = this;
-    this.addListener('income_parse_params', function(message) {
-        /*
-         * data: {
-         *   step: 'item',
-         *   config: {...}
-         *   urls: [...]
-         * }
-         * */
-        var step;
-        var data = message.data;
-        if (data.step && data.urls && data.config) {
-            step = inst._initStep(data.step);
-            if (step) {
-                data.urls.forEach(function(url) {
-                    inst.addTask(data.config, url);
+    DistributedParserClient.prototype.getStepDependenciesCallback = function (config, url) {
+        var inst = this;
+        return {
+            get: function () {
+                return new Promise(function (resolve) {
+                    resolve({
+                        schedule: {},
+                        config: config,
+                        PREV_RESULT: null,
+                        handler: {
+                            url: url,
+                            postHandler: "",
+                            preHandler: "",
+                            saveHandler: "",
+                            code: inst.stepName
+                        }
+                    });
                 });
             }
         }
-    });
-};
+    };
 
-DistributedParserClient.prototype.addTask = function(config, url) {
-    var inst = this;
-    inst.queue.add(function() {
-        return new inst.step().run(inst.getStepDependenciesCallback(config, url)).then(
-            function(data) {
-                inst.sendData(data, 'parsed_data', {url: url});
-            }, function() {
-                log.warn('Task rejected. Will be re add to queue.');
-                inst.addTask(config, url);
+    DistributedParserClient.prototype.initListening = function () {
+        var inst = this;
+        this.addListener('income_parse_params', function (message) {
+            /*
+             * data: {
+             *   step: 'item',
+             *   config: {...}
+             *   urls: [...]
+             * }
+             * */
+            var step;
+            var data = message.data;
+            if (data.step && data.urls && data.config) {
+                step = inst._initStep(data.step);
+                if (step) {
+                    data.urls.forEach(function (url) {
+                        inst.addTask(data.config, url);
+                    });
+                }
             }
-        );
-    })
-};
+        });
+    };
 
-module.exports = {
-    class: DistributedParserClient
-};
+    DistributedParserClient.prototype.manageTaskResult = function (data) {
+        this.sendData(data, 'parsed_data', {url: data.url});
+    };
+
+    DistributedParserClient.prototype.manageTaskError = function (data) {
+        logger.warn('Task rejected. Will be re add to queue.');
+        this.addTask(data.config, data.url);
+
+    };
+
+    DistributedParserClient.prototype.addTask = function (config, url) {
+        var inst = this;
+        inst.queue.add(function () {
+            return new inst.step()
+                .run(inst.getStepDependenciesCallback(config, url))
+                .then(inst.manageTaskResult.bind(inst))
+                .catch(inst.manageTaskError.bind(inst));
+        });
+
+    };
+
+    module.exports = {
+        class: DistributedParserClient
+    };
+})();
