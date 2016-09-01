@@ -7,7 +7,7 @@
     var itemStep = require('../ScheduleSectionsParseExecutorSteps/ItemStepSM').class;
     var xml2js = require('xml2js');
     var instance;
-    var maxIterate = 1000;
+    var maxIterate = 1000 * 1000;
     var logger = _req('src/js/logger').create('SitemapParser');
 
     function SitemapParser(configCode, http) {

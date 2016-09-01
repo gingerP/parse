@@ -1,30 +1,47 @@
+global._req = require('app-root-path').require;
+
 (function () {
-    global._req = require('app-root-path').require;
+    'use strict';
+
     var request = require('request');
+    var _ = require('lodash');
+    var cookieParser = require('cookie-parser');
     var urlList = require('../resources/goods-1');
     var logger = _req('src/js/logger').create('Test');
-    var utils = _req('src/js/utils/parse-utils');
+    var httpUtils = _req('src/js/utils/http-utils');
+    var cookieUtils = _req('src/js/utils/cookies-utils');
+    var CookieTrick = _req('src/js/tricks/cookies-trick');
+    var cookieTrick = new CookieTrick(cookieUtils.getDefaultCookies());
     var index = 0;
     var LIMIT = 100000;
     var failed = 0;
+    var headers = parseUtils.getDefaultHeaders();
+    headers.Cookie = cookieTrick.getAsString();
+
+    function getErrorMessage(error) {
+        return error && error.message ? error.message : error;
+    }
+
     logger.setLevel('INFO');
 
     var cycle = setInterval(function () {
         var url = urlList[index];
         var indexx = index;
-        utils
-            .loadDom(url)
+        headers.Cookie = cookieTrick.getAsString();
+        httpUtils
+            .loadDom(url, headers)
             .then(
                 function (result) {
-                    logger.info('(Failed: %s) %s %s', failed, indexx, url);
+                    cookieTrick.setAsStringsList(result.response.headers['set-cookie']);
+                    logger.info('Failed/All: %s/%s, Status code: %s, Url: %s', failed, indexx, result.response.statusCode, url);
                 },
-                function (url) {
+                function (result) {
                     failed++;
-                    logger.info('%s %s', indexx, url);
+                    logger.error('Failed/All: %s/%s, Status code: %s, Url: %s, Error: %s', failed, indexx, result.statusCode, url, getErrorMessage(result.error));
                 });
         index++;
         if (index > LIMIT) {
             clearInterval(cycle);
         }
-    }, 100);
+    }, 300);
 })();

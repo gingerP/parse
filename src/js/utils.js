@@ -289,6 +289,16 @@ var api = {
     },
     merge: function(arg1, arg2) {
         return getRef('extend')(true, arg1, arg2);
+    },
+    initMemoryTalking: function() {
+        process.on('message', function(key) {
+            if (key === 'memory') {
+                process.send({memory: process.memoryUsage()});
+            }
+        });
+    },
+    requestParentForRestart: function() {
+        process.send('request_for_restart');
     }
 };
 
