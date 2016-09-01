@@ -91,6 +91,12 @@
         var inst = this;
         inst.queue.add(function () {
             if (inst.requestsCount > REQUEST_COUNT_FOR_RESTART || inst.errorCount > ERROR_COUNT_FOR_RESTART) {
+                if (inst.requestsCount > REQUEST_COUNT_FOR_RESTART) {
+                    logger.warn('Request for restart by request count: %s', inst.requestsCount);
+                }
+                if (inst.errorCount > ERROR_COUNT_FOR_RESTART) {
+                    logger.warn('Request for restart by error count: %s', inst.errorCount);
+                }
                 utils.requestParentForRestart();
             }
             inst.requestsCount++;
