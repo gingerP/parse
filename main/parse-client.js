@@ -3,7 +3,7 @@
 
     global._req = require('app-root-path').require;
     var child = require('child_process');
-    var logger = _req('src/js/logger').create('ParseClientMaster');
+    var logger = _req('src/js/logger').create('ParseClientMaster', 'logs/ParseClientMaster.log');
     var childProcess;
     var MANAGING_TIMEOUT = 1000;
     var MAX_MEMORY = 1024 * 1024 * 500;

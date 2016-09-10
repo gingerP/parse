@@ -1,16 +1,15 @@
-(function() {
-    'use strict';
+'use strict';
 
-    function GenericTrick() {}
+function GenericTrick() {
+}
 
-    GenericTrick.prototype.handleRequest = function(request) {
-        return this;
-    };
+GenericTrick.prototype.handleRequest = function (request) {
+    return this;
+};
 
-    GenericTrick.prototype.handleResponse = function(response) {
-        return this;
-    };
+GenericTrick.prototype.handleResponse = function (response) {
+    return this;
+};
 
-    module.exports = GenericTrick;
+module.exports = GenericTrick;
 
-})();

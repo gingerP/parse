@@ -10,9 +10,15 @@ module.exports = {
 		logger.setLevel(level || DEFAULT_LEVEL);
 		return logger;
 	},
-	create: function(category, level) {
+	create: function(category, path, level) {
 		var logger = log4js.getLogger(category || '');
 		logger.setLevel(level || DEFAULT_LEVEL);
+		if (path) {
+			log4js.addAppender(log4js.appenders.file(path), category || 'Logger');
+		}
 		return logger;
+	},
+	addFile: function(path, category) {
+		log4js.addAppender(log4js.appenders.file(path), category || 'Logger');
 	}
 };
